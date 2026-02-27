@@ -13,16 +13,22 @@ export default function Home() {
   const [events, setEvents] = useState<AnyJson[] | null>(null);
   const [loadingEvents, setLoadingEvents] = useState(false);
 
+  const [verifyOut, setVerifyOut] = useState<AnyJson | null>(null);
+  const [verifying, setVerifying] = useState(false);
+
   async function crearProceso() {
     setLoading(true);
     setOut(null);
     setEvents(null);
+    setVerifyOut(null);
+
     try {
       const res = await fetch("/api/process/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tipo_proceso: tipo }),
       });
+
       const json = await res.json();
       setOut(json);
 
@@ -39,13 +45,31 @@ export default function Home() {
 
     setLoadingEvents(true);
     setEvents(null);
+
     try {
       const res = await fetch(`/api/process/${pid}/events`);
       const json = await res.json();
+
       if (json?.ok) setEvents(json.events ?? []);
       else setEvents([{ error: json?.error ?? "Error" }]);
     } finally {
       setLoadingEvents(false);
+    }
+  }
+
+  async function verificarCadena() {
+    const pid = processId.trim();
+    if (!pid) return;
+
+    setVerifying(true);
+    setVerifyOut(null);
+
+    try {
+      const res = await fetch(`/api/process/${pid}/verify`);
+      const json = await res.json();
+      setVerifyOut(json);
+    } finally {
+      setVerifying(false);
     }
   }
 
@@ -79,9 +103,11 @@ export default function Home() {
           </pre>
         )}
 
-        <hr className="my-4" />
+        <hr className="my-6" />
 
-        <label className="text-sm font-medium">Process ID (para ver timeline)</label>
+        <label className="text-sm font-medium">
+          Process ID (para ver timeline o verificar integridad)
+        </label>
         <input
           className="border rounded px-3 py-2"
           value={processId}
@@ -89,17 +115,33 @@ export default function Home() {
           placeholder="pega aquí un out_process_id..."
         />
 
-        <button
-          onClick={cargarEventos}
-          disabled={loadingEvents || !processId.trim()}
-          className="rounded border px-4 py-2 disabled:opacity-50"
-        >
-          {loadingEvents ? "Cargando..." : "Ver Timeline (Eventos)"}
-        </button>
+        <div className="flex gap-3 flex-wrap">
+          <button
+            onClick={cargarEventos}
+            disabled={loadingEvents || !processId.trim()}
+            className="rounded border px-4 py-2 disabled:opacity-50"
+          >
+            {loadingEvents ? "Cargando..." : "Ver Timeline (Eventos)"}
+          </button>
+
+          <button
+            onClick={verificarCadena}
+            disabled={verifying || !processId.trim()}
+            className="rounded border px-4 py-2 disabled:opacity-50"
+          >
+            {verifying ? "Verificando..." : "Verificar Integridad (hash-chain)"}
+          </button>
+        </div>
 
         {events && (
           <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
             {JSON.stringify(events, null, 2)}
+          </pre>
+        )}
+
+        {verifyOut && (
+          <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
+            {JSON.stringify(verifyOut, null, 2)}
           </pre>
         )}
       </div>
