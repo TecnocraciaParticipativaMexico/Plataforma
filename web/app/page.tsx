@@ -16,6 +16,11 @@ export default function Home() {
   const [verifyOut, setVerifyOut] = useState<AnyJson | null>(null);
   const [verifying, setVerifying] = useState(false);
 
+  const [status, setStatus] = useState("Draft");
+const [note, setNote] = useState("");
+const [eventOut, setEventOut] = useState<any>(null);
+const [sendingEvent, setSendingEvent] = useState(false);
+
   async function crearProceso() {
     setLoading(true);
     setOut(null);
@@ -73,6 +78,30 @@ export default function Home() {
     }
   }
 
+async function enviarEvento(event_type: string, payload: any) {
+  const pid = processId.trim();
+  if (!pid) return;
+
+  setSendingEvent(true);
+  setEventOut(null);
+
+  try {
+    const res = await fetch(`/api/process/${pid}/event`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event_type, payload }),
+    });
+    const json = await res.json();
+    setEventOut(json);
+
+    // refresca timeline + verify automáticamente
+    await cargarEventos();
+    await verificarCadena();
+  } finally {
+    setSendingEvent(false);
+  }
+}
+
   return (
     <main className="min-h-screen p-8">
       <h1 className="text-3xl font-semibold">Tecnocracia Participativa</h1>
@@ -123,6 +152,64 @@ export default function Home() {
           >
             {loadingEvents ? "Cargando..." : "Ver Timeline (Eventos)"}
           </button>
+
+          <hr className="my-6" />
+
+<h2 className="text-lg font-semibold">Agregar Eventos al Proceso</h2>
+<p className="text-sm text-gray-600">
+  MVP A: StatusChanged + CitizenNoteAdded (append-only, hash-chain por proceso).
+</p>
+
+<div className="mt-3 flex flex-col gap-3">
+  <label className="text-sm font-medium">Cambiar Estado</label>
+  <select
+    className="border rounded px-3 py-2"
+    value={status}
+    onChange={(e) => setStatus(e.target.value)}
+  >
+    <option value="Draft">Draft</option>
+    <option value="Evidence">Evidence</option>
+    <option value="Deliberation">Deliberation</option>
+    <option value="Review">Review</option>
+    <option value="Published">Published</option>
+    <option value="Cancelled">Cancelled</option>
+  </select>
+
+  <button
+    onClick={() => enviarEvento("StatusChanged", { status })}
+    disabled={sendingEvent || !processId.trim()}
+    className="rounded border px-4 py-2 disabled:opacity-50"
+  >
+    {sendingEvent ? "Enviando..." : "Guardar StatusChanged"}
+  </button>
+
+  <label className="text-sm font-medium">Nota ciudadana (sin PII)</label>
+  <textarea
+    className="border rounded px-3 py-2 min-h-[90px]"
+    value={note}
+    onChange={(e) => setNote(e.target.value)}
+    placeholder="Escribe una nota (evita emails/teléfonos)."
+  />
+
+  <button
+    onClick={() => {
+      const n = note.trim();
+      if (!n) return;
+      enviarEvento("CitizenNoteAdded", { note: n });
+      setNote("");
+    }}
+    disabled={sendingEvent || !processId.trim() || !note.trim()}
+    className="rounded border px-4 py-2 disabled:opacity-50"
+  >
+    {sendingEvent ? "Enviando..." : "Guardar CitizenNoteAdded"}
+  </button>
+
+  {eventOut && (
+    <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
+      {JSON.stringify(eventOut, null, 2)}
+    </pre>
+  )}
+</div>  
 
           <button
             onClick={verificarCadena}
