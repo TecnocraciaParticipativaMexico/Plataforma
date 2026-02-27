@@ -2,14 +2,21 @@
 
 import { useState } from "react";
 
+type AnyJson = any;
+
 export default function Home() {
   const [tipo, setTipo] = useState("Reporte");
   const [loading, setLoading] = useState(false);
-  const [out, setOut] = useState<any>(null);
+  const [out, setOut] = useState<AnyJson>(null);
+
+  const [processId, setProcessId] = useState("");
+  const [events, setEvents] = useState<AnyJson[] | null>(null);
+  const [loadingEvents, setLoadingEvents] = useState(false);
 
   async function crearProceso() {
     setLoading(true);
     setOut(null);
+    setEvents(null);
     try {
       const res = await fetch("/api/process/create", {
         method: "POST",
@@ -18,8 +25,27 @@ export default function Home() {
       });
       const json = await res.json();
       setOut(json);
+
+      const pid = json?.result?.out_process_id;
+      if (pid) setProcessId(pid);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function cargarEventos() {
+    const pid = processId.trim();
+    if (!pid) return;
+
+    setLoadingEvents(true);
+    setEvents(null);
+    try {
+      const res = await fetch(`/api/process/${pid}/events`);
+      const json = await res.json();
+      if (json?.ok) setEvents(json.events ?? []);
+      else setEvents([{ error: json?.error ?? "Error" }]);
+    } finally {
+      setLoadingEvents(false);
     }
   }
 
@@ -30,7 +56,7 @@ export default function Home() {
         MVP constitucional: ProcesoCivico + AppendOnlyEvent (hash-chain) — sin PII, sin admin.
       </p>
 
-      <div className="mt-8 flex flex-col gap-3 max-w-md">
+      <div className="mt-8 flex flex-col gap-3 max-w-xl">
         <label className="text-sm font-medium">Tipo de Proceso</label>
         <input
           className="border rounded px-3 py-2"
@@ -50,6 +76,30 @@ export default function Home() {
         {out && (
           <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
             {JSON.stringify(out, null, 2)}
+          </pre>
+        )}
+
+        <hr className="my-4" />
+
+        <label className="text-sm font-medium">Process ID (para ver timeline)</label>
+        <input
+          className="border rounded px-3 py-2"
+          value={processId}
+          onChange={(e) => setProcessId(e.target.value)}
+          placeholder="pega aquí un out_process_id..."
+        />
+
+        <button
+          onClick={cargarEventos}
+          disabled={loadingEvents || !processId.trim()}
+          className="rounded border px-4 py-2 disabled:opacity-50"
+        >
+          {loadingEvents ? "Cargando..." : "Ver Timeline (Eventos)"}
+        </button>
+
+        {events && (
+          <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
+            {JSON.stringify(events, null, 2)}
           </pre>
         )}
       </div>
