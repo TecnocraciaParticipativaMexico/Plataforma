@@ -34,6 +34,10 @@ export default function Home() {
   const [eventOut, setEventOut] = useState<any>(null);
   const [sendingEvent, setSendingEvent] = useState(false);
 
+  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
+  const [uploadingEvidence, setUploadingEvidence] = useState(false);
+  const [evidenceOut, setEvidenceOut] = useState<any>(null);
+  
   async function crearProceso() {
     setLoading(true);
     setOut(null);
@@ -80,48 +84,76 @@ export default function Home() {
   }
 
   async function verificarCadena() {
-    const pid = processId.trim();
-    if (!pid) return;
+  const pid = processId.trim();
+  if (!pid) return;
 
-    setVerifying(true);
-    setVerifyOut(null);
+  setVerifying(true);
+  setVerifyOut(null);
 
-    try {
-      const res = await fetch(`/api/process/${pid}/verify`);
-      const json = await res.json();
-      setVerifyOut(json);
-    } finally {
-      setVerifying(false);
-    }
+  try {
+    const res = await fetch(`/api/process/${pid}/verify`);
+    const json = await res.json();
+    setVerifyOut(json);
+  } finally {
+    setVerifying(false);
+  }
+}
+
+async function enviarEvento(event_type: string, payload: any) {
+  const pid = processId.trim();
+  if (!pid) return;
+
+  setSendingEvent(true);
+  setEventOut(null);
+
+  try {
+    const res = await fetch(`/api/process/${pid}/event`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event_type,
+        actor_hash: actorHash,
+        payload,
+      }),
+    });
+
+    const json = await res.json();
+    setEventOut(json);
+  } finally {
+    setSendingEvent(false);
+  }
+}
+
+async function subirEvidencia() {
+  const pid = processId.trim();
+  if (!pid) {
+    setEvidenceOut({ ok: false, error: "Primero crea o pega un Process ID" });
+    return;
+  }
+  if (!evidenceFile) {
+    setEvidenceOut({ ok: false, error: "Selecciona un archivo" });
+    return;
   }
 
-  async function enviarEvento(event_type: string, payload: any) {
-    const pid = processId.trim();
-    if (!pid) return;
+  setUploadingEvidence(true);
+  setEvidenceOut(null);
 
-    setSendingEvent(true);
-    setEventOut(null);
+  try {
+    const fd = new FormData();
+    fd.append("actor_hash", actorHash);
+    fd.append("file", evidenceFile);
 
-    try {
-      const res = await fetch(`/api/process/${pid}/event`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    event_type,
-    actor_hash: actorHash,
-    payload,
-  }),
-});
-      const json = await res.json();
-      setEventOut(json);
+    const res = await fetch(`/api/process/${pid}/evidence/upload`, {
+      method: "POST",
+      body: fd,
+    });
 
-      // refresca timeline + verify automáticamente
-      await cargarEventos();
-      await verificarCadena();
-    } finally {
-      setSendingEvent(false);
-    }
+    const json = await res.json();
+    setEvidenceOut(json);
+  } finally {
+    setUploadingEvidence(false);
   }
+}
 
   return (
     <main className="min-h-screen p-8">
@@ -240,6 +272,31 @@ export default function Home() {
             </pre>
           )}
         </div>
+
+              <hr className="my-8" />
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">Subir Evidencia (Documento de Verdad)</h2>
+
+        <input
+          type="file"
+          onChange={(e) => setEvidenceFile(e.target.files?.[0] ?? null)}
+        />
+
+        <button
+  className="border px-4 py-2 rounded disabled:opacity-50"
+  onClick={subirEvidencia}
+  disabled={uploadingEvidence || !processId.trim() || !evidenceFile}
+>
+  {uploadingEvidence ? "Subiendo..." : "Subir Evidencia"}
+</button>
+
+        {evidenceOut && (
+          <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
+            {JSON.stringify(evidenceOut, null, 2)}
+          </pre>
+        )}
+      </section>
 
         {events && (
           <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
