@@ -2,9 +2,22 @@
 
 import { useState } from "react";
 
+function getOrCreateActorHash() {
+  if (typeof window === "undefined") return "";
+
+  let actor = localStorage.getItem("tp_actor_hash");
+  if (!actor) {
+    actor = crypto.randomUUID();
+    localStorage.setItem("tp_actor_hash", actor);
+  }
+  return actor;
+}
+
 type AnyJson = any;
 
 export default function Home() {
+  const actorHash = getOrCreateActorHash();
+
   const [tipo, setTipo] = useState("Reporte");
   const [loading, setLoading] = useState(false);
   const [out, setOut] = useState<AnyJson>(null);
@@ -30,10 +43,13 @@ export default function Home() {
 
     try {
       const res = await fetch("/api/process/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tipo_proceso: tipo }),
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    tipo_proceso: tipo,
+    actor_hash: actorHash,
+  }),
+});
 
       const json = await res.json();
       setOut(json);
@@ -88,10 +104,14 @@ export default function Home() {
 
     try {
       const res = await fetch(`/api/process/${pid}/event`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event_type, payload }),
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    event_type,
+    actor_hash: actorHash,
+    payload,
+  }),
+});
       const json = await res.json();
       setEventOut(json);
 

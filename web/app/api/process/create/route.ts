@@ -42,7 +42,14 @@ export async function POST(req: Request) {
 
     // MVP: actor_hash anónimo (sin identidad civil).
     // En la siguiente fase, esto vendrá de IdentidadCivicaAnonima.
-    const actor_hash = "anon";
+    const actor_hash = String(body?.actor_hash || "").trim();
+
+if (!actor_hash) {
+  return NextResponse.json(
+    { ok: false, error: "actor_hash requerido" },
+    { status: 400 }
+  );
+}
 
     const { data, error } = await supabaseServer.rpc("create_process_with_event", {
       p_tipo_proceso: tipo_proceso,

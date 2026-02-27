@@ -84,7 +84,14 @@ export async function POST(
     }
 
     // MVP actor_hash fijo; luego vendrá IdentidadCivicaAnonima
-    const actor_hash = "anon";
+    const actor_hash = String(body?.actor_hash || "").trim();
+
+if (!actor_hash) {
+  return NextResponse.json(
+    { ok: false, error: "actor_hash requerido" },
+    { status: 400 }
+  );
+}
 
     // ✅ Bloqueo anti-PII (servidor) - aplica a TODO el payload
     // (y además hacemos validación específica para CitizenNoteAdded)
