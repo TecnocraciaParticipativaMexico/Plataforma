@@ -34,9 +34,9 @@ export default function Home() {
   const [eventOut, setEventOut] = useState<any>(null);
   const [sendingEvent, setSendingEvent] = useState(false);
 
-  const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
-  const [uploadingEvidence, setUploadingEvidence] = useState(false);
-  const [evidenceOut, setEvidenceOut] = useState<any>(null);
+const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
+const [uploadingEvidence, setUploadingEvidence] = useState(false);
+const [evidenceOut, setEvidenceOut] = useState<any>(null);
   
   async function crearProceso() {
     setLoading(true);
@@ -130,26 +130,40 @@ async function subirEvidencia() {
     setEvidenceOut({ ok: false, error: "Primero crea o pega un Process ID" });
     return;
   }
-  if (!evidenceFile) {
-    setEvidenceOut({ ok: false, error: "Selecciona un archivo" });
+  if (!evidenceFiles || evidenceFiles.length === 0) {
+    setEvidenceOut({ ok: false, error: "Selecciona uno o más archivos" });
     return;
   }
 
   setUploadingEvidence(true);
   setEvidenceOut(null);
 
+  const results: any[] = [];
+
   try {
-    const fd = new FormData();
-    fd.append("actor_hash", actorHash);
-    fd.append("file", evidenceFile);
+    for (const file of evidenceFiles) {
+      const fd = new FormData();
+      fd.append("actor_hash", actorHash);
+      fd.append("file", file);
 
-    const res = await fetch(`/api/process/${pid}/evidence/upload`, {
-      method: "POST",
-      body: fd,
-    });
+      const res = await fetch(`/api/process/${pid}/evidence/upload`, {
+        method: "POST",
+        body: fd,
+      });
 
-    const json = await res.json();
-    setEvidenceOut(json);
+      const json = await res.json();
+      results.push({
+        file_name: file.name,
+        mime_type: file.type,
+        size_bytes: file.size,
+        response: json,
+      });
+
+      // si alguno falla, seguimos con los demás (más amigable)
+    }
+
+    setEvidenceOut({ ok: true, uploaded: results });
+    setEvidenceFiles([]); // limpia selección al final
   } finally {
     setUploadingEvidence(false);
   }
@@ -273,31 +287,66 @@ async function subirEvidencia() {
           )}
         </div>
 
-              <hr className="my-8" />
+<hr className="my-8" />
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Subir Evidencia (Documento de Verdad)</h2>
+<section className="space-y-3">
+  <h2 className="text-lg font-semibold">Subir Evidencia (Documento de Verdad)</h2>
 
-        <input
-  type="file"
-  accept="image/jpeg,image/png,application/pdf,audio/mpeg,audio/mp4,audio/x-m4a,video/mp4"
-  onChange={(e) => setEvidenceFile(e.target.files?.[0] ?? null)}
-/>
+  {/* Input real, oculto */}
+  <input
+    id="evidenceInput"
+    type="file"
+    multiple
+    className="hidden"
+    accept="image/jpeg,image/png,application/pdf,audio/mpeg,audio/mp4,audio/x-m4a,video/mp4"
+    onChange={(e) => setEvidenceFiles(Array.from(e.target.files ?? []))}
+  />
 
-        <button
-  className="border px-4 py-2 rounded disabled:opacity-50"
-  onClick={subirEvidencia}
-  disabled={uploadingEvidence || !processId.trim() || !evidenceFile}
->
-  {uploadingEvidence ? "Subiendo..." : "Subir Evidencia"}
-</button>
+  {/* Botón que abre el selector (rápido) */}
+  <div className="flex items-center gap-3">
+    <label
+      htmlFor="evidenceInput"
+      className="inline-block rounded border px-4 py-2 cursor-pointer"
+    >
+      Elegir archivos
+    </label>
 
-        {evidenceOut && (
-          <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
-            {JSON.stringify(evidenceOut, null, 2)}
-          </pre>
-        )}
-      </section>
+    <button
+      className="rounded border px-4 py-2 disabled:opacity-50"
+      onClick={subirEvidencia}
+      disabled={uploadingEvidence || !processId.trim() || evidenceFiles.length === 0}
+    >
+      {uploadingEvidence ? "Subiendo..." : "Subir evidencia"}
+    </button>
+  </div>
+
+  {/* Vista rápida de selección */}
+  <div className="text-sm text-gray-600">
+    {evidenceFiles.length > 0 ? (
+      <div>
+        <div className="font-medium">
+          {evidenceFiles.length} archivo(s) seleccionado(s):
+        </div>
+        <ul className="list-disc pl-5">
+          {evidenceFiles.slice(0, 8).map((f, idx) => (
+            <li key={idx}>
+              {f.name} ({Math.round(f.size / 1024)} KB)
+            </li>
+          ))}
+          {evidenceFiles.length > 8 && <li>… y {evidenceFiles.length - 8} más</li>}
+        </ul>
+      </div>
+    ) : (
+      <div>No hay archivos seleccionados.</div>
+    )}
+  </div>
+
+  {evidenceOut && (
+    <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
+      {JSON.stringify(evidenceOut, null, 2)}
+    </pre>
+  )}
+</section>
 
         {events && (
           <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
