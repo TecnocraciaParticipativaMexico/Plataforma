@@ -279,9 +279,10 @@ async function subirEvidencia() {
         <h2 className="text-lg font-semibold">Subir Evidencia (Documento de Verdad)</h2>
 
         <input
-          type="file"
-          onChange={(e) => setEvidenceFile(e.target.files?.[0] ?? null)}
-        />
+  type="file"
+  accept="image/jpeg,image/png,application/pdf,audio/mpeg,audio/mp4,audio/x-m4a,video/mp4"
+  onChange={(e) => setEvidenceFile(e.target.files?.[0] ?? null)}
+/>
 
         <button
   className="border px-4 py-2 rounded disabled:opacity-50"
