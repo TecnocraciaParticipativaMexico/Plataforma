@@ -299,8 +299,21 @@ async function subirEvidencia() {
     multiple
     className="hidden"
     accept="image/jpeg,image/png,application/pdf,audio/mpeg,audio/mp4,audio/x-m4a,video/mp4"
-    onChange={(e) => setEvidenceFiles(Array.from(e.target.files ?? []))}
-  />
+    onChange={(e) => {
+  const newFiles = Array.from(e.target.files ?? []);
+  if (newFiles.length === 0) return;
+
+  setEvidenceFiles((prev) => {
+    // evita duplicados por nombre+tamaño+tipo
+    const key = (f: File) => `${f.name}|${f.size}|${f.type}`;
+    const map = new Map(prev.map((f) => [key(f), f]));
+    newFiles.forEach((f) => map.set(key(f), f));
+    return Array.from(map.values());
+  });
+
+  // permite seleccionar el mismo archivo otra vez si quieren
+  e.currentTarget.value = "";
+}}
 
   {/* Botón que abre el selector (rápido) */}
   <div className="flex items-center gap-3">
@@ -339,7 +352,13 @@ async function subirEvidencia() {
     ) : (
       <div>No hay archivos seleccionados.</div>
     )}
-  </div>
+  </div><button
+  className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+  onClick={() => setEvidenceFiles([])}
+  disabled={uploadingEvidence || evidenceFiles.length === 0}
+>
+  Limpiar selección
+</button>
 
   {evidenceOut && (
     <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
