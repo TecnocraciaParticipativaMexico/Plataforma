@@ -2,383 +2,241 @@
 
 import { useState } from "react";
 
-function getOrCreateActorHash() {
-  if (typeof window === "undefined") return "";
-
-  let actor = localStorage.getItem("tp_actor_hash");
-  if (!actor) {
-    actor = crypto.randomUUID();
-    localStorage.setItem("tp_actor_hash", actor);
-  }
-  return actor;
-}
-
 type AnyJson = any;
 
 export default function Home() {
-  const actorHash = getOrCreateActorHash();
-
-  const [tipo, setTipo] = useState("Reporte");
-  const [loading, setLoading] = useState(false);
-  const [out, setOut] = useState<AnyJson>(null);
-
+  const [tipo, setTipo] = useState("Reporte ciudadano");
   const [processId, setProcessId] = useState("");
-  const [events, setEvents] = useState<AnyJson[] | null>(null);
-  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [out, setOut] = useState<AnyJson>(null);
+  const [timelineOut, setTimelineOut] = useState<AnyJson>(null);
+  const [verifyOut, setVerifyOut] = useState<AnyJson>(null);
+  const [loadingCreate, setLoadingCreate] = useState(false);
+  const [loadingTimeline, setLoadingTimeline] = useState(false);
+  const [loadingVerify, setLoadingVerify] = useState(false);
 
-  const [verifyOut, setVerifyOut] = useState<AnyJson | null>(null);
-  const [verifying, setVerifying] = useState(false);
-
-  const [status, setStatus] = useState("Draft");
-  const [note, setNote] = useState("");
-  const [eventOut, setEventOut] = useState<any>(null);
-  const [sendingEvent, setSendingEvent] = useState(false);
-
-const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
-const [uploadingEvidence, setUploadingEvidence] = useState(false);
-const [evidenceOut, setEvidenceOut] = useState<any>(null);
-  
-  async function crearProceso() {
-    setLoading(true);
-    setOut(null);
-    setEvents(null);
-    setVerifyOut(null);
-    setEventOut(null);
-
+  async function createProcess() {
     try {
+      setLoadingCreate(true);
+      setOut(null);
+
       const res = await fetch("/api/process/create", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    tipo_proceso: tipo,
-    actor_hash: actorHash,
-  }),
-});
-
-      const json = await res.json();
-      setOut(json);
-
-      const pid = json?.result?.out_process_id;
-      if (pid) setProcessId(pid);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function cargarEventos() {
-    const pid = processId.trim();
-    if (!pid) return;
-
-    setLoadingEvents(true);
-    setEvents(null);
-
-    try {
-      const res = await fetch(`/api/process/${pid}/events`);
-      const json = await res.json();
-
-      if (json?.ok) setEvents(json.events ?? []);
-      else setEvents([{ error: json?.error ?? "Error" }]);
-    } finally {
-      setLoadingEvents(false);
-    }
-  }
-
-  async function verificarCadena() {
-  const pid = processId.trim();
-  if (!pid) return;
-
-  setVerifying(true);
-  setVerifyOut(null);
-
-  try {
-    const res = await fetch(`/api/process/${pid}/verify`);
-    const json = await res.json();
-    setVerifyOut(json);
-  } finally {
-    setVerifying(false);
-  }
-}
-
-async function enviarEvento(event_type: string, payload: any) {
-  const pid = processId.trim();
-  if (!pid) return;
-
-  setSendingEvent(true);
-  setEventOut(null);
-
-  try {
-    const res = await fetch(`/api/process/${pid}/event`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        event_type,
-        actor_hash: actorHash,
-        payload,
-      }),
-    });
-
-    const json = await res.json();
-    setEventOut(json);
-  } finally {
-    setSendingEvent(false);
-  }
-}
-
-async function subirEvidencia() {
-  const pid = processId.trim();
-  if (!pid) {
-    setEvidenceOut({ ok: false, error: "Primero crea o pega un Process ID" });
-    return;
-  }
-  if (!evidenceFiles || evidenceFiles.length === 0) {
-    setEvidenceOut({ ok: false, error: "Selecciona uno o más archivos" });
-    return;
-  }
-
-  setUploadingEvidence(true);
-  setEvidenceOut(null);
-
-  const results: any[] = [];
-
-  try {
-    for (const file of evidenceFiles) {
-      const fd = new FormData();
-      fd.append("actor_hash", actorHash);
-      fd.append("file", file);
-
-      const res = await fetch(`/api/process/${pid}/evidence/upload`, {
         method: "POST",
-        body: fd,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tipo_proceso: tipo }),
       });
 
-      const json = await res.json();
-      results.push({
-        file_name: file.name,
-        mime_type: file.type,
-        size_bytes: file.size,
-        response: json,
-      });
+      const data = await res.json();
+      setOut(data);
 
-      // si alguno falla, seguimos con los demás (más amigable)
+      const newId = data?.result?.out_process_id;
+      if (newId) setProcessId(newId);
+    } catch (err: any) {
+      setOut({ ok: false, error: err?.message || "Error creando proceso" });
+    } finally {
+      setLoadingCreate(false);
     }
-
-    setEvidenceOut({ ok: true, uploaded: results });
-    setEvidenceFiles([]); // limpia selección al final
-  } finally {
-    setUploadingEvidence(false);
   }
-}
+
+  async function loadTimeline() {
+    if (!processId) return;
+    try {
+      setLoadingTimeline(true);
+      setTimelineOut(null);
+
+      const res = await fetch(`/api/process/${processId}/events`);
+      const data = await res.json();
+      setTimelineOut(data);
+    } catch (err: any) {
+      setTimelineOut({ ok: false, error: err?.message || "Error cargando timeline" });
+    } finally {
+      setLoadingTimeline(false);
+    }
+  }
+
+  async function verifyChain() {
+    if (!processId) return;
+    try {
+      setLoadingVerify(true);
+      setVerifyOut(null);
+
+      const res = await fetch(`/api/process/${processId}/verify`);
+      const data = await res.json();
+      setVerifyOut(data);
+    } catch (err: any) {
+      setVerifyOut({ ok: false, error: err?.message || "Error verificando integridad" });
+    } finally {
+      setLoadingVerify(false);
+    }
+  }
 
   return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-3xl font-semibold">Tecnocracia Participativa</h1>
-      <p className="mt-2 text-sm text-gray-600">
-        MVP constitucional: ProcesoCivico + AppendOnlyEvent (hash-chain) — sin PII, sin admin.
-      </p>
+    <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
+      <div className="mx-auto max-w-md px-4 pb-28 pt-6">
+        <header className="mb-6 flex items-center justify-between">
+          <button className="text-2xl text-[#0A4E84]">☰</button>
+          <h1 className="text-lg font-bold">Tecnocracia Participativa</h1>
+          <button className="text-lg">🌐</button>
+        </header>
 
-      <div className="mt-8 flex flex-col gap-3 max-w-xl">
-        <label className="text-sm font-medium">Tipo de Proceso</label>
-        <input
-          className="border rounded px-3 py-2"
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-          placeholder="Reporte / Consulta / Dictamen..."
-        />
+        <section className="mb-6 rounded-[28px] bg-gradient-to-br from-[#0B78A8] to-[#0A4E84] p-6 text-white shadow-lg">
+          <div className="mb-3 inline-block rounded-full bg-[#F2C94C] px-3 py-1 text-xs font-bold tracking-wide text-[#1F2937]">
+            PORTAL CIUDADANO
+          </div>
 
-        <button
-          onClick={crearProceso}
-          disabled={loading}
-          className="rounded bg-black text-white px-4 py-2 disabled:opacity-50"
-        >
-          {loading ? "Creando..." : "Crear Proceso Cívico"}
-        </button>
+          <h2 className="mb-4 text-4xl font-extrabold leading-tight">
+            Bienvenido,
+            <br />
+            Ciudadano.
+          </h2>
+
+          <p className="mb-6 text-base leading-7 text-white/90">
+            Tu voz construye el futuro de nuestra comunidad. Reporta incidencias,
+            crea procesos verificables y consulta el avance con transparencia total.
+          </p>
+
+          <div className="flex gap-3">
+            <button className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0A4E84] shadow">
+              Perfil Ciudadano
+            </button>
+            <button className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30">
+              Miembro de Comité
+            </button>
+          </div>
+        </section>
+
+        <section className="mb-6 grid grid-cols-1 gap-4">
+          <div className="rounded-[28px] bg-white p-6 shadow-sm">
+            <div className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+              Acción principal
+            </div>
+            <h3 className="mb-2 text-3xl font-bold text-[#0A4E84]">
+              Crear Reporte Verificable
+            </h3>
+            <p className="mb-5 text-sm leading-6 text-slate-600">
+              Inicia un proceso ciudadano append-only con hash-chain para dar
+              seguimiento transparente a un caso real.
+            </p>
+
+            <label className="mb-2 block text-sm font-semibold text-[#0A4E84]">
+              Tipo de proceso
+            </label>
+            <input
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value)}
+              className="mb-4 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none focus:border-[#0A4E84]"
+              placeholder="Ej. Bache en calle Morelos"
+            />
+
+            <button
+              onClick={createProcess}
+              disabled={loadingCreate}
+              className="w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00] transition hover:translate-y-[1px]"
+            >
+              {loadingCreate ? "Creando..." : "Crear Proceso Cívico"}
+            </button>
+          </div>
+
+          <div className="rounded-[28px] bg-white p-6 shadow-sm">
+            <div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Seguimiento
+            </div>
+
+            <label className="mb-2 block text-sm font-semibold text-[#0A4E84]">
+              Process ID
+            </label>
+            <input
+              value={processId}
+              onChange={(e) => setProcessId(e.target.value)}
+              className="mb-4 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 outline-none focus:border-[#0A4E84]"
+              placeholder="Pega aquí el process_id"
+            />
+
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                onClick={loadTimeline}
+                disabled={loadingTimeline || !processId}
+                className="rounded-2xl border border-[#0A4E84] bg-white px-4 py-3 font-semibold text-[#0A4E84]"
+              >
+                {loadingTimeline ? "Cargando..." : "Ver Timeline"}
+              </button>
+
+              <button
+                onClick={verifyChain}
+                disabled={loadingVerify || !processId}
+                className="rounded-2xl bg-[#0A4E84] px-4 py-3 font-semibold text-white"
+              >
+                {loadingVerify ? "Verificando..." : "Verificar Integridad"}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-6 grid grid-cols-2 gap-4">
+          <div className="rounded-[28px] bg-white p-5 shadow-sm">
+            <div className="mb-2 text-4xl font-extrabold text-[#0A4E84]">
+              01
+            </div>
+            <div className="text-lg font-bold text-black">Reportar</div>
+            <p className="mt-2 text-sm text-slate-600">
+              Crear procesos ciudadanos verificables.
+            </p>
+          </div>
+
+          <div className="rounded-[28px] bg-white p-5 shadow-sm">
+            <div className="mb-2 text-4xl font-extrabold text-[#0A4E84]">
+              02
+            </div>
+            <div className="text-lg font-bold text-black">Seguir</div>
+            <p className="mt-2 text-sm text-slate-600">
+              Revisar eventos y evidencia del proceso.
+            </p>
+          </div>
+        </section>
 
         {out && (
-          <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
-            {JSON.stringify(out, null, 2)}
-          </pre>
+          <section className="mb-4 rounded-[24px] bg-white p-4 shadow-sm">
+            <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">Resultado de creación</h4>
+            <pre className="overflow-x-auto whitespace-pre-wrap rounded-2xl bg-slate-50 p-3 text-xs text-slate-800">
+              {JSON.stringify(out, null, 2)}
+            </pre>
+          </section>
         )}
 
-        <hr className="my-6" />
-
-        <label className="text-sm font-medium">
-          Process ID (para ver timeline o verificar integridad)
-        </label>
-        <input
-          className="border rounded px-3 py-2"
-          value={processId}
-          onChange={(e) => setProcessId(e.target.value)}
-          placeholder="pega aquí un out_process_id..."
-        />
-
-        <div className="flex gap-3 flex-wrap">
-          <button
-            onClick={cargarEventos}
-            disabled={loadingEvents || !processId.trim()}
-            className="rounded border px-4 py-2 disabled:opacity-50"
-          >
-            {loadingEvents ? "Cargando..." : "Ver Timeline (Eventos)"}
-          </button>
-
-          <button
-            onClick={verificarCadena}
-            disabled={verifying || !processId.trim()}
-            className="rounded border px-4 py-2 disabled:opacity-50"
-          >
-            {verifying ? "Verificando..." : "Verificar Integridad (hash-chain)"}
-          </button>
-        </div>
-
-        <hr className="my-6" />
-
-        <h2 className="text-lg font-semibold">Agregar Eventos al Proceso</h2>
-        <p className="text-sm text-gray-600">
-          MVP A: StatusChanged + CitizenNoteAdded (append-only, hash-chain por proceso).
-        </p>
-
-        <div className="mt-3 flex flex-col gap-3">
-          <label className="text-sm font-medium">Cambiar Estado</label>
-          <select
-            className="border rounded px-3 py-2"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="Draft">Draft</option>
-            <option value="Evidence">Evidence</option>
-            <option value="Deliberation">Deliberation</option>
-            <option value="Review">Review</option>
-            <option value="Published">Published</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-
-          <button
-            onClick={() => enviarEvento("StatusChanged", { status })}
-            disabled={sendingEvent || !processId.trim()}
-            className="rounded border px-4 py-2 disabled:opacity-50"
-          >
-            {sendingEvent ? "Enviando..." : "Guardar StatusChanged"}
-          </button>
-
-          <label className="text-sm font-medium">Nota ciudadana (sin PII)</label>
-          <textarea
-            className="border rounded px-3 py-2 min-h-[90px]"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Escribe una nota (evita emails/teléfonos)."
-          />
-
-          <button
-            onClick={() => {
-              const n = note.trim();
-              if (!n) return;
-              enviarEvento("CitizenNoteAdded", { note: n });
-              setNote("");
-            }}
-            disabled={sendingEvent || !processId.trim() || !note.trim()}
-            className="rounded border px-4 py-2 disabled:opacity-50"
-          >
-            {sendingEvent ? "Enviando..." : "Guardar CitizenNoteAdded"}
-          </button>
-
-          {eventOut && (
-            <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
-              {JSON.stringify(eventOut, null, 2)}
+        {timelineOut && (
+          <section className="mb-4 rounded-[24px] bg-white p-4 shadow-sm">
+            <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">Timeline del proceso</h4>
+            <pre className="overflow-x-auto whitespace-pre-wrap rounded-2xl bg-slate-50 p-3 text-xs text-slate-800">
+              {JSON.stringify(timelineOut, null, 2)}
             </pre>
-          )}
-        </div>
-
-<hr className="my-8" />
-
-<section className="space-y-3">
-  <h2 className="text-lg font-semibold">Subir Evidencia (Documento de Verdad)</h2>
-
-  {/* Input real, oculto */}
-  <input
-    id="evidenceInput"
-    type="file"
-    multiple
-    className="hidden"
-    accept="image/jpeg,image/png,application/pdf,audio/mpeg,audio/mp4,audio/x-m4a,video/mp4"
-    onChange={(e) => {
-  const newFiles = Array.from(e.target.files ?? []);
-  if (newFiles.length === 0) return;
-
-  setEvidenceFiles((prev) => {
-    // evita duplicados por nombre+tamaño+tipo
-    const key = (f: File) => `${f.name}|${f.size}|${f.type}`;
-    const map = new Map(prev.map((f) => [key(f), f]));
-    newFiles.forEach((f) => map.set(key(f), f));
-    return Array.from(map.values());
-  });
-
-  // permite seleccionar el mismo archivo otra vez si quieren
-  e.currentTarget.value = "";
-}}
-
-  {/* Botón que abre el selector (rápido) */}
-  <div className="flex items-center gap-3">
-    <label
-      htmlFor="evidenceInput"
-      className="inline-block rounded border px-4 py-2 cursor-pointer"
-    >
-      Elegir archivos
-    </label>
-
-    <button
-      className="rounded border px-4 py-2 disabled:opacity-50"
-      onClick={subirEvidencia}
-      disabled={uploadingEvidence || !processId.trim() || evidenceFiles.length === 0}
-    >
-      {uploadingEvidence ? "Subiendo..." : "Subir evidencia"}
-    </button>
-  </div>
-
-  {/* Vista rápida de selección */}
-  <div className="text-sm text-gray-600">
-    {evidenceFiles.length > 0 ? (
-      <div>
-        <div className="font-medium">
-          {evidenceFiles.length} archivo(s) seleccionado(s):
-        </div>
-        <ul className="list-disc pl-5">
-          {evidenceFiles.slice(0, 8).map((f, idx) => (
-            <li key={idx}>
-              {f.name} ({Math.round(f.size / 1024)} KB)
-            </li>
-          ))}
-          {evidenceFiles.length > 8 && <li>… y {evidenceFiles.length - 8} más</li>}
-        </ul>
-      </div>
-    ) : (
-      <div>No hay archivos seleccionados.</div>
-    )}
-  </div><button
-  className="rounded border px-3 py-1 text-sm disabled:opacity-50"
-  onClick={() => setEvidenceFiles([])}
-  disabled={uploadingEvidence || evidenceFiles.length === 0}
->
-  Limpiar selección
-</button>
-
-  {evidenceOut && (
-    <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
-      {JSON.stringify(evidenceOut, null, 2)}
-    </pre>
-  )}
-</section>
-
-        {events && (
-          <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
-            {JSON.stringify(events, null, 2)}
-          </pre>
+          </section>
         )}
 
         {verifyOut && (
-          <pre className="text-xs bg-gray-100 p-3 rounded overflow-auto">
-            {JSON.stringify(verifyOut, null, 2)}
-          </pre>
+          <section className="mb-4 rounded-[24px] bg-white p-4 shadow-sm">
+            <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">Verificación de integridad</h4>
+            <pre className="overflow-x-auto whitespace-pre-wrap rounded-2xl bg-slate-50 p-3 text-xs text-slate-800">
+              {JSON.stringify(verifyOut, null, 2)}
+            </pre>
+          </section>
         )}
       </div>
+
+      <nav className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-md items-center justify-around px-4 py-3 text-xs">
+          <div className="flex flex-col items-center text-[#0A4E84]">
+            <span className="text-lg">🏠</span>
+            <span>Inicio</span>
+          </div>
+          <div className="flex flex-col items-center text-slate-500">
+            <span className="text-lg">🧩</span>
+            <span>Módulos</span>
+          </div>
+          <div className="flex flex-col items-center text-slate-500">
+            <span className="text-lg">👤</span>
+            <span>Perfil</span>
+          </div>
+        </div>
+      </nav>
     </main>
   );
 }
