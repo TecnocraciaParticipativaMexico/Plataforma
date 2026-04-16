@@ -10,40 +10,8 @@ export default function Home() {
   const [out, setOut] = useState<AnyJson>(null);
   const [timelineOut, setTimelineOut] = useState<AnyJson>(null);
   const [verifyOut, setVerifyOut] = useState<AnyJson>(null);
-  const [loadingCreate, setLoadingCreate] = useState(false);
   const [loadingTimeline, setLoadingTimeline] = useState(false);
   const [loadingVerify, setLoadingVerify] = useState(false);
-
-  let actorHash = localStorage.getItem("actor_hash");
-
-if (!actorHash) {
-  actorHash = crypto.randomUUID();
-  localStorage.setItem("actor_hash", actorHash);
-}
-  async function createProcess() {
-    try {
-      setLoadingCreate(true);
-      setOut(null);
-
-      const res = await fetch("/api/process/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-       body: JSON.stringify({
-  tipo_proceso: tipo,
-  actor_hash: actorHash,
-}),
-
-      const data = await res.json();
-      setOut(data);
-
-      const newId = data?.result?.out_process_id;
-      if (newId) setProcessId(newId);
-    } catch (err: any) {
-      setOut({ ok: false, error: err?.message || "Error creando proceso" });
-    } finally {
-      setLoadingCreate(false);
-    }
-  }
 
   async function loadTimeline() {
     if (!processId) return;
@@ -117,9 +85,11 @@ if (!actorHash) {
             <div className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
               Acción principal
             </div>
+
             <h3 className="mb-2 text-3xl font-bold text-[#0A4E84]">
               Crear Reporte Verificable
             </h3>
+
             <p className="mb-5 text-sm leading-6 text-slate-600">
               Inicia un proceso ciudadano append-only con hash-chain para dar
               seguimiento transparente a un caso real.
@@ -128,6 +98,7 @@ if (!actorHash) {
             <label className="mb-2 block text-sm font-semibold text-[#0A4E84]">
               Tipo de proceso
             </label>
+
             <input
               value={tipo}
               onChange={(e) => setTipo(e.target.value)}
@@ -136,16 +107,11 @@ if (!actorHash) {
             />
 
             <a
-  href="/reportar"
-  className="block w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-center text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00]"
->
-  Crear Denuncia
-</a>
-              disabled={loadingCreate}
-              className="w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00] transition hover:translate-y-[1px]"
+              href="/reportar"
+              className="block w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-center text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00]"
             >
-              {loadingCreate ? "Creando..." : "Crear Proceso Cívico"}
-            </button>
+              Crear Denuncia
+            </a>
           </div>
 
           <div className="rounded-[28px] bg-white p-6 shadow-sm">
@@ -156,6 +122,7 @@ if (!actorHash) {
             <label className="mb-2 block text-sm font-semibold text-[#0A4E84]">
               Process ID
             </label>
+
             <input
               value={processId}
               onChange={(e) => setProcessId(e.target.value)}
@@ -185,9 +152,7 @@ if (!actorHash) {
 
         <section className="mb-6 grid grid-cols-2 gap-4">
           <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="mb-2 text-4xl font-extrabold text-[#0A4E84]">
-              01
-            </div>
+            <div className="mb-2 text-4xl font-extrabold text-[#0A4E84]">01</div>
             <div className="text-lg font-bold text-black">Reportar</div>
             <p className="mt-2 text-sm text-slate-600">
               Crear procesos ciudadanos verificables.
@@ -195,9 +160,7 @@ if (!actorHash) {
           </div>
 
           <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="mb-2 text-4xl font-extrabold text-[#0A4E84]">
-              02
-            </div>
+            <div className="mb-2 text-4xl font-extrabold text-[#0A4E84]">02</div>
             <div className="text-lg font-bold text-black">Seguir</div>
             <p className="mt-2 text-sm text-slate-600">
               Revisar eventos y evidencia del proceso.
@@ -207,7 +170,9 @@ if (!actorHash) {
 
         {out && (
           <section className="mb-4 rounded-[24px] bg-white p-4 shadow-sm">
-            <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">Resultado de creación</h4>
+            <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">
+              Resultado de creación
+            </h4>
             <pre className="overflow-x-auto whitespace-pre-wrap rounded-2xl bg-slate-50 p-3 text-xs text-slate-800">
               {JSON.stringify(out, null, 2)}
             </pre>
@@ -216,7 +181,9 @@ if (!actorHash) {
 
         {timelineOut && (
           <section className="mb-4 rounded-[24px] bg-white p-4 shadow-sm">
-            <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">Timeline del proceso</h4>
+            <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">
+              Timeline del proceso
+            </h4>
             <pre className="overflow-x-auto whitespace-pre-wrap rounded-2xl bg-slate-50 p-3 text-xs text-slate-800">
               {JSON.stringify(timelineOut, null, 2)}
             </pre>
@@ -225,7 +192,9 @@ if (!actorHash) {
 
         {verifyOut && (
           <section className="mb-4 rounded-[24px] bg-white p-4 shadow-sm">
-            <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">Verificación de integridad</h4>
+            <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">
+              Verificación de integridad
+            </h4>
             <pre className="overflow-x-auto whitespace-pre-wrap rounded-2xl bg-slate-50 p-3 text-xs text-slate-800">
               {JSON.stringify(verifyOut, null, 2)}
             </pre>
