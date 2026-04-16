@@ -132,7 +132,7 @@ export default function ReportarPage() {
             </div>
 
             <a
-              href={`/?processId=${resultado.result?.out_process_id}`}
+              href={`/seguimiento?processId=${resultado.result?.out_process_id}`}
               className="inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
             >
               Ver seguimiento
