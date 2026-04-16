@@ -14,6 +14,12 @@ export default function Home() {
   const [loadingTimeline, setLoadingTimeline] = useState(false);
   const [loadingVerify, setLoadingVerify] = useState(false);
 
+  let actorHash = localStorage.getItem("actor_hash");
+
+if (!actorHash) {
+  actorHash = crypto.randomUUID();
+  localStorage.setItem("actor_hash", actorHash);
+}
   async function createProcess() {
     try {
       setLoadingCreate(true);
@@ -22,8 +28,10 @@ export default function Home() {
       const res = await fetch("/api/process/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tipo_proceso: tipo }),
-      });
+       body: JSON.stringify({
+  tipo_proceso: tipo,
+  actor_hash: actorHash,
+}),
 
       const data = await res.json();
       setOut(data);
