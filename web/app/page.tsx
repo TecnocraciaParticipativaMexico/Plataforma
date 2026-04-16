@@ -127,8 +127,12 @@ export default function Home() {
               placeholder="Ej. Bache en calle Morelos"
             />
 
-            <button
-              onClick={createProcess}
+            <a
+  href="/reportar"
+  className="block w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-center text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00]"
+>
+  Crear Denuncia
+</a>
               disabled={loadingCreate}
               className="w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00] transition hover:translate-y-[1px]"
             >
