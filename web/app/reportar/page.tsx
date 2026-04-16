@@ -119,31 +119,33 @@ export default function ReportarPage() {
           </button>
         </div>
 
-       {resultado && resultado.ok && (
-  <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm text-center">
-    <div className="text-green-600 text-xl font-bold mb-2">
-      ✅ Tu denuncia fue creada
-    </div>
+        {resultado && resultado.ok && (
+          <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm text-center">
+            <div className="mb-2 text-xl font-bold text-green-600">
+              ✅ Tu denuncia fue creada
+            </div>
 
-    <div className="text-sm text-gray-600 mb-2">
-      ID del proceso:
-    </div>
+            <div className="mb-2 text-sm text-gray-600">ID del proceso:</div>
 
-    <div className="text-xs break-all mb-4 font-mono">
-      {resultado.result?.out_process_id}
-    </div>
+            <div className="mb-4 break-all font-mono text-xs">
+              {resultado.result?.out_process_id}
+            </div>
 
-    <a
-      href={`/?processId=${resultado.result?.out_process_id}`}
-      className="inline-block rounded-xl bg-[#0A4E84] px-4 py-2 text-white font-semibold"
-    >
-      Ver seguimiento
-    </a>
-  </div>
-)}
+            <a
+              href={`/?processId=${resultado.result?.out_process_id}`}
+              className="inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
+            >
+              Ver seguimiento
+            </a>
+          </div>
+        )}
 
-{resultado && !resultado.ok && (
-  <div className="mt-6 rounded-2xl bg-red-50 p-4 text-red-700">
-    ❌ Error: {resultado.error}
-  </div>
-)}
+        {resultado && !resultado.ok && (
+          <div className="mt-6 rounded-2xl bg-red-50 p-4 text-red-700">
+            ❌ Error: {resultado.error}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
