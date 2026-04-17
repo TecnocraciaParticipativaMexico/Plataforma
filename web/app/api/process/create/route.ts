@@ -3,7 +3,6 @@ import { supabaseServer } from "@/lib/supabaseServer";
 
 /**
  * Crear Proceso
- * - Por ahora solo recibe tipo_proceso
  * - actor_hash viene del frontend como identidad anónima persistente
  * - Si viene note, se agrega como CitizenNoteAdded
  */
@@ -66,9 +65,9 @@ export async function POST(req: Request) {
     if (process_id && note) {
       const { error: noteError } = await supabaseServer.rpc("add_process_event", {
         p_process_id: process_id,
-        p_actor_hash: actor_hash,
         p_event_type: "CitizenNoteAdded",
-        p_payload_json: {
+        p_actor_hash: actor_hash,
+        p_payload: {
           note,
         },
       });
