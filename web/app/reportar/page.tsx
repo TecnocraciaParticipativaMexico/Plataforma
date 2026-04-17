@@ -30,9 +30,10 @@ export default function ReportarPage() {
         },
         body: JSON.stringify({
   tipo_proceso: tipoProceso,
-  note: `${descripcion} (Ubicación: ${ubicacion})`
+  actor_hash: actorHash,
+  note: `${descripcion} (Ubicación: ${ubicacion || "No especificada"})`,
 })
-      });
+});
 
       const data = await res.json();
       setResultado(data);
