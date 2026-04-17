@@ -9,6 +9,7 @@ export default function ReportarPage() {
   const [ubicacion, setUbicacion] = useState("");
   const [resultado, setResultado] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [archivo, setArchivo] = useState<File | null>(null);
 
   async function enviarReporte() {
     try {
@@ -36,9 +37,27 @@ export default function ReportarPage() {
 });
 
       const data = await res.json();
-      setResultado(data);
 
-      const processId = data?.result?.out_process_id;
+const processId = data?.result?.out_process_id;
+
+if (data?.ok && processId && archivo) {
+  const formData = new FormData();
+  formData.append("files", archivo);
+
+  const uploadRes = await fetch(`/api/process/${processId}/evidence/upload`, {
+    method: "POST",
+    body: formData,
+  });
+
+  const uploadData = await uploadRes.json();
+
+  setResultado({
+    ...data,
+    upload: uploadData,
+  });
+} else {
+  setResultado(data);
+}
 
       if (processId && descripcion.trim()) {
         await fetch(`/api/process/${processId}/event`, {
@@ -110,6 +129,13 @@ export default function ReportarPage() {
             className="mb-6 w-full rounded-2xl border px-4 py-3"
             placeholder="Ej. Calle Morelos esquina Juárez"
           />
+
+          <label className="mb-2 block font-semibold">Evidencia (opcional)</label>
+<input
+  type="file"
+  onChange={(e) => setArchivo(e.target.files?.[0] || null)}
+  className="mb-6 w-full rounded-2xl border px-4 py-3"
+/>
 
           <button
             onClick={enviarReporte}
