@@ -29,9 +29,9 @@ export default function ReportarPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          tipo_proceso: tipoProceso,
-          actor_hash: actorHash,
-        }),
+  tipo_proceso: tipoProceso,
+  note: `${descripcion} (Ubicación: ${ubicacion})`
+})
       });
 
       const data = await res.json();
