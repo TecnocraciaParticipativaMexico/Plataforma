@@ -43,6 +43,7 @@ const processId = data?.result?.out_process_id;
 if (data?.ok && processId && archivo) {
   const formData = new FormData();
   formData.append("files", archivo);
+  formData.append("actor_hash", actorHash);
 
   const uploadRes = await fetch(`/api/process/${processId}/evidence/upload`, {
     method: "POST",
