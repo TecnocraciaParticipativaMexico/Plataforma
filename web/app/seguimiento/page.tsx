@@ -121,24 +121,60 @@ export default function SeguimientoPage() {
 
             <div className="space-y-4">
               {eventos.map((evento, index) => (
-                <div
-                  key={evento.event_id}
-                  className="rounded-2xl border border-slate-200 p-4"
-                >
-                  <div className="mb-1 text-sm font-bold text-[#0A4E84]">
-                    {index + 1}. {traducirEvento(evento.event_type)}
-                  </div>
+<div
+  key={evento.event_id}
+  className="rounded-2xl border border-slate-200 p-4"
+>
+  <div className="mb-1 text-sm font-bold text-[#0A4E84]">
+    {index + 1}. {traducirEvento(evento.event_type)}
+  </div>
 
-                  <div className="mb-2 text-xs text-slate-500">
-                    {new Date(evento.created_at).toLocaleString()}
-                  </div>
+  <div className="mb-3 text-xs text-slate-500">
+    {new Date(evento.created_at).toLocaleString()}
+  </div>
 
-                  {evento.payload_json && (
-                    <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
-                      {JSON.stringify(evento.payload_json, null, 2)}
-                    </pre>
-                  )}
-                </div>
+  {evento.event_type === "ProcessCreated" && (
+    <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+      <div>
+        <span className="font-semibold">Proceso:</span>{" "}
+        {evento.payload_json?.tipo_proceso || "Sin tipo"}
+      </div>
+      <div className="mt-2 break-all text-xs text-slate-500">
+        ID: {evento.payload_json?.process_id || evento.event_id}
+      </div>
+    </div>
+  )}
+
+  {evento.event_type === "CitizenNoteAdded" && (
+    <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+      <div className="font-semibold mb-1">Nota ciudadana</div>
+      <div>{evento.payload_json?.note || "Sin contenido"}</div>
+    </div>
+  )}
+
+  {evento.event_type === "EvidenceSubmitted" && (
+    <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+      <div className="font-semibold mb-1">Evidencia subida</div>
+      <div>Archivo registrado en la cadena de custodia.</div>
+      {evento.payload_json?.evidence_id && (
+        <div className="mt-2 text-xs text-slate-500 break-all">
+          Evidencia ID: {evento.payload_json.evidence_id}
+        </div>
+      )}
+      {evento.payload_json?.mime_type && (
+        <div className="mt-1 text-xs text-slate-500">
+          Tipo: {evento.payload_json.mime_type}
+        </div>
+      )}
+    </div>
+  )}
+
+  {!["ProcessCreated", "CitizenNoteAdded", "EvidenceSubmitted"].includes(evento.event_type) && evento.payload_json && (
+    <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
+      {JSON.stringify(evento.payload_json, null, 2)}
+    </pre>
+  )}
+</div>
               ))}
             </div>
           </div>
