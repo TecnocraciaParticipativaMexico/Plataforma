@@ -153,21 +153,28 @@ export default function SeguimientoPage() {
   )}
 
   {evento.event_type === "EvidenceSubmitted" && (
-    <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-      <div className="font-semibold mb-1">Evidencia subida</div>
-      <div>Archivo registrado en la cadena de custodia.</div>
-      {evento.payload_json?.evidence_id && (
-        <div className="mt-2 text-xs text-slate-500 break-all">
-          Evidencia ID: {evento.payload_json.evidence_id}
-        </div>
-      )}
-      {evento.payload_json?.mime_type && (
-        <div className="mt-1 text-xs text-slate-500">
-          Tipo: {evento.payload_json.mime_type}
-        </div>
-      )}
+  <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+    <div className="font-semibold mb-1">📸 Evidencia subida</div>
+
+    <div className="mt-2">
+      <div>Archivo: {evento.payload_json?.file_name}</div>
+      <div>Tipo: {evento.payload_json?.mime_type}</div>
     </div>
-  )}
+
+    {evento.payload_json?.storage_path && (
+      <img
+        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/evidence/${evento.payload_json.storage_path}`}
+        className="mt-3 rounded-xl"
+      />
+    )}
+
+    {evento.payload_json?.evidence_id && (
+      <div className="mt-2 text-xs text-slate-500 break-all">
+        Evidencia ID: {evento.payload_json.evidence_id}
+      </div>
+    )}
+  </div>
+)}
 
   {!["ProcessCreated", "CitizenNoteAdded", "EvidenceSubmitted"].includes(evento.event_type) && evento.payload_json && (
     <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
