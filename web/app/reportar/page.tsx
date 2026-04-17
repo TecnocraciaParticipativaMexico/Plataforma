@@ -146,26 +146,35 @@ if (data?.ok && processId && archivo) {
           </button>
         </div>
 
-        {resultado && resultado.ok && (
-          <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm text-center">
-            <div className="mb-2 text-xl font-bold text-green-600">
-              ✅ Tu denuncia fue creada
-            </div>
+{resultado && resultado.ok && (
+  <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm text-center">
+    <div className="mb-2 text-xl font-bold text-green-600">
+      ✅ Tu denuncia fue creada
+    </div>
 
-            <div className="mb-2 text-sm text-gray-600">ID del proceso:</div>
+    <div className="mb-2 text-sm text-gray-600">ID del proceso:</div>
 
-            <div className="mb-4 break-all font-mono text-xs">
-              {resultado.result?.out_process_id}
-            </div>
+    <div className="mb-4 break-all font-mono text-xs">
+      {resultado.result?.out_process_id}
+    </div>
 
-            <a
-              href={`/seguimiento?processId=${resultado.result?.out_process_id}`}
-              className="inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
-            >
-              Ver seguimiento
-            </a>
-          </div>
-        )}
+    {resultado.upload && (
+      <div className="mb-4 rounded-xl bg-slate-50 p-3 text-left text-xs text-slate-700">
+        <div className="mb-1 font-semibold">Resultado de evidencia</div>
+        <pre className="overflow-x-auto whitespace-pre-wrap">
+          {JSON.stringify(resultado.upload, null, 2)}
+        </pre>
+      </div>
+    )}
+
+    <a
+      href={`/seguimiento?processId=${resultado.result?.out_process_id}`}
+      className="inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
+    >
+      Ver seguimiento
+    </a>
+  </div>
+)}
 
         {resultado && !resultado.ok && (
           <div className="mt-6 rounded-2xl bg-red-50 p-4 text-red-700">
