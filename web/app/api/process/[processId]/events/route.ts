@@ -1,21 +1,32 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { createClient } from "@supabase/supabase-js";
 
 export async function GET(
-  _req: Request,
-  context: { params: Promise<{ processId: string }> }
+  req: Request,
+  { params }: { params: { id: string } }
 ) {
-  const { processId } = await context.params;
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
-  const { data, error } = await supabaseServer
-    .from("append_only_event")
-    .select("*")
-    .eq("entity_id", processId)
-    .order("created_at", { ascending: true });
+    const { data, error } = await supabase
+      .from("append_only_event")
+      .select("*")
+      .eq("entity_id", params.id)
+      .eq("entity_type", "ProcesoCivico")
+      .order("created_at", { ascending: true });
 
-  if (error) {
-    return NextResponse.json({ ok: false, error: error.message });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message || "Error interno" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ ok: true, events: data });
 }
