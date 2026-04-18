@@ -160,13 +160,10 @@ if (data?.ok && processId && archivo) {
     </div>
 
     {resultado.upload && (
-      <div className="mb-4 rounded-xl bg-slate-50 p-3 text-left text-xs text-slate-700">
-        <div className="mb-1 font-semibold">Resultado de evidencia</div>
-        <pre className="overflow-x-auto whitespace-pre-wrap">
-          {JSON.stringify(resultado.upload, null, 2)}
-        </pre>
-      </div>
-    )}
+  <div className="mb-4 text-sm text-slate-700">
+    📸 Evidencia subida correctamente
+  </div>
+)}
 
     <a
       href={`/seguimiento?processId=${resultado.result?.out_process_id}`}
