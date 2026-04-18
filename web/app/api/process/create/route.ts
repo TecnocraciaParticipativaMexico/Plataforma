@@ -71,14 +71,14 @@ export async function POST(req: Request) {
 
     // ✅ Nuevo: registrar estado inicial del caso
     const { error: statusError } = await supabaseServer.rpc("add_process_event", {
-      p_process_id: process_id,
-      p_event_type: "CaseStatusChanged",
-      p_actor_hash: actor_hash,
-      p_payload: {
-        status: "recibido",
-        label: "Recibido",
-      },
-    });
+  p_process_id: process_id,
+  p_event_type: "StatusChanged",
+  p_actor_hash: actor_hash,
+  p_payload: {
+    status: "Draft",
+    label: "Recibido",
+  },
+});
 
     if (statusError) {
       return NextResponse.json(
@@ -110,7 +110,8 @@ export async function POST(req: Request) {
       ok: true,
       result: {
         ...result,
-        initial_status: "recibido",
+        initial_status: "Draft",
+initial_status_label: "Recibido",
       },
     });
   } catch (e: any) {
