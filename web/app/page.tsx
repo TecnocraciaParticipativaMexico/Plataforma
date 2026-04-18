@@ -56,7 +56,7 @@ export default function Home() {
           <button className="text-lg">🌐</button>
         </header>
 
-        <section className="mb-6 rounded-[28px] bg-[#E11D74] p-6 text-white shadow-lg">
+        <section className="mb-6 rounded-[28px] bg-gradient-to-br from-[#F472B6] to-[#DB2777] p-6 text-white shadow-lg">
           <div className="mb-3 inline-block rounded-full bg-[#F2C94C] px-3 py-1 text-xs font-bold tracking-wide text-[#1F2937]">
             PORTAL CIUDADANO
           </div>
