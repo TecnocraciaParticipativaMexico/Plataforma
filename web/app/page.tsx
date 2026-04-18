@@ -49,12 +49,14 @@ export default function Home() {
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
       <div className="mx-auto max-w-md px-4 pb-28 pt-6">
         <header className="mb-6 flex items-center justify-between">
-          <button className="text-2xl text-[#E6007E]">☰</button>
-          <h1 className="text-lg font-bold">Tecnocracia Participativa</h1>
+          <button className="text-2xl text-[#16A34A]">☰</button>
+        <h1 className="text-3xl font-extrabold text-[#0A4E84]">
+  Tecnocracia Participativa
+</h1>
           <button className="text-lg">🌐</button>
         </header>
 
-        <section className="mb-6 rounded-[28px] bg-gradient-to-br from-[#0B78A8] to-[#0A4E84] p-6 text-white shadow-lg">
+        <section className="mb-6 rounded-[28px] bg-[#E11D74] p-6 text-white shadow-lg">
           <div className="mb-3 inline-block rounded-full bg-[#F2C94C] px-3 py-1 text-xs font-bold tracking-wide text-[#1F2937]">
             PORTAL CIUDADANO
           </div>
@@ -71,10 +73,10 @@ export default function Home() {
           </p>
 
           <div className="flex gap-3">
-            <button className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0A4E84] shadow">
+            <button className="rounded-xl bg-[#F97316] px-4 py-2 text-sm font-semibold text-white shadow"
               Perfil Ciudadano
             </button>
-            <button className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30">
+            <button className="rounded-xl bg-[#3B82F6] px-4 py-2 text-sm font-semibold text-white shadow"
               Miembro de Comité
             </button>
           </div>
