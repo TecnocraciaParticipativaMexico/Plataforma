@@ -49,7 +49,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
       <div className="mx-auto max-w-md px-4 pb-28 pt-6">
         <header className="mb-6 flex items-center justify-between">
-          <button className="text-2xl text-[#0A4E84]">☰</button>
+          <button className="text-2xl text-[#E6007E]">☰</button>
           <h1 className="text-lg font-bold">Tecnocracia Participativa</h1>
           <button className="text-lg">🌐</button>
         </header>
@@ -142,7 +142,7 @@ export default function Home() {
               <button
                 onClick={verifyChain}
                 disabled={loadingVerify || !processId}
-                className="rounded-2xl bg-[#0A4E84] px-4 py-3 font-semibold text-white"
+                className="rounded-2xl bg-[#E6007E] px-4 py-3 font-semibold text-white"
               >
                 {loadingVerify ? "Verificando..." : "Verificar Integridad"}
               </button>
