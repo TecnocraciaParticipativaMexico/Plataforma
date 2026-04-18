@@ -16,6 +16,8 @@ export default function SeguimientoPage() {
   const [loadingEventos, setLoadingEventos] = useState(false);
   const [loadingVerify, setLoadingVerify] = useState(false);
   const [error, setError] = useState("");
+  const [nuevaNota, setNuevaNota] = useState("");
+  const [enviandoNota, setEnviandoNota] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -50,6 +52,45 @@ export default function SeguimientoPage() {
     }
   }
 
+  async function agregarNota() {
+    if (!processId || !nuevaNota.trim()) return;
+
+    try {
+      setEnviandoNota(true);
+      setError("");
+
+      const actorHash = localStorage.getItem("actor_hash") || "anon";
+
+      const res = await fetch(`/api/process/${processId}/event`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          event_type: "CitizenNoteAdded",
+          actor_hash: actorHash,
+          payload: {
+            note: nuevaNota.trim(),
+          },
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data?.ok) {
+        setError(data?.error || "No se pudo agregar la actualización.");
+        return;
+      }
+
+      setNuevaNota("");
+      await cargarEventos();
+    } catch {
+      setError("Error agregando actualización.");
+    } finally {
+      setEnviandoNota(false);
+    }
+  }
+  
   async function verificarIntegridad() {
     if (!processId) return;
 
@@ -126,7 +167,7 @@ export default function SeguimientoPage() {
           </div>
         )}
 
-                {eventos.length > 0 && (
+                        {eventos.length > 0 && (
           <div className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
             <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="text-sm font-semibold text-slate-500">
@@ -140,6 +181,28 @@ export default function SeguimientoPage() {
                   Código interno: {estadoActualRaw}
                 </div>
               )}
+            </div>
+
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="mb-2 text-sm font-semibold text-slate-600">
+                Agregar actualización
+              </div>
+
+              <textarea
+                value={nuevaNota}
+                onChange={(e) => setNuevaNota(e.target.value)}
+                placeholder="Escribe información adicional del caso..."
+                className="w-full rounded-xl border border-slate-300 p-3 text-sm"
+                rows={4}
+              />
+
+              <button
+                onClick={agregarNota}
+                disabled={enviandoNota || !nuevaNota.trim()}
+                className="mt-3 rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white disabled:opacity-50"
+              >
+                {enviandoNota ? "Enviando..." : "Agregar nota"}
+              </button>
             </div>
 
             <h2 className="mb-4 text-xl font-bold">Línea de tiempo</h2>
