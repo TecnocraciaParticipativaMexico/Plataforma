@@ -5,6 +5,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
  * Crear Proceso
  * - actor_hash viene del frontend como identidad anónima persistente
  * - Si viene note, se agrega como CitizenNoteAdded
+ * - Nuevo: al crear el proceso, se registra estado inicial "recibido"
  */
 
 function piiSuspected(text: string) {
@@ -19,6 +20,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const tipo_proceso = String(body?.tipo_proceso ?? "").trim();
     const note = String(body?.note ?? "").trim();
+    const actor_hash = String(body?.actor_hash || "").trim();
 
     if (!tipo_proceso) {
       return NextResponse.json(
@@ -37,8 +39,6 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    const actor_hash = String(body?.actor_hash || "").trim();
 
     if (!actor_hash) {
       return NextResponse.json(
@@ -62,7 +62,33 @@ export async function POST(req: Request) {
     const result = data?.[0] ?? data;
     const process_id = result?.out_process_id;
 
-    if (process_id && note) {
+    if (!process_id) {
+      return NextResponse.json(
+        { ok: false, error: "No se pudo obtener process_id" },
+        { status: 500 }
+      );
+    }
+
+    // ✅ Nuevo: registrar estado inicial del caso
+    const { error: statusError } = await supabaseServer.rpc("add_process_event", {
+      p_process_id: process_id,
+      p_event_type: "CaseStatusChanged",
+      p_actor_hash: actor_hash,
+      p_payload: {
+        status: "recibido",
+        label: "Recibido",
+      },
+    });
+
+    if (statusError) {
+      return NextResponse.json(
+        { ok: false, error: statusError.message },
+        { status: 500 }
+      );
+    }
+
+    // ✅ Si viene nota inicial, también la guardamos
+    if (note) {
       const { error: noteError } = await supabaseServer.rpc("add_process_event", {
         p_process_id: process_id,
         p_event_type: "CitizenNoteAdded",
@@ -80,7 +106,13 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ ok: true, result });
+    return NextResponse.json({
+      ok: true,
+      result: {
+        ...result,
+        initial_status: "recibido",
+      },
+    });
   } catch (e: any) {
     return NextResponse.json(
       { ok: false, error: e?.message ?? "error" },
