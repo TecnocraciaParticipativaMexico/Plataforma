@@ -201,11 +201,20 @@ export default function SeguimientoPage() {
   </div>
 )}
 
-  {!["ProcessCreated", "CitizenNoteAdded", "EvidenceSubmitted"].includes(evento.event_type) && evento.payload_json && (
-    <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
-      {JSON.stringify(evento.payload_json, null, 2)}
-    </pre>
-  )}
+  {evento.event_type === "StatusChanged" && (
+  <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+    <div className="font-semibold mb-1">Estado del caso</div>
+    <div className="text-lg font-bold text-green-600">
+      {evento.payload_json?.label || evento.payload_json?.status || "Estado actualizado"}
+    </div>
+  </div>
+)}
+
+{!["ProcessCreated", "CitizenNoteAdded", "EvidenceSubmitted", "StatusChanged"].includes(evento.event_type) && evento.payload_json && (
+  <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
+    {JSON.stringify(evento.payload_json, null, 2)}
+  </pre>
+)}
 </div>
               ))}
             </div>
