@@ -73,6 +73,17 @@ export default function SeguimientoPage() {
     return tipo;
   }
 
+  const ultimoEstado = [...eventos]
+    .reverse()
+    .find((evento) => evento.event_type === "StatusChanged");
+
+  const estadoActualLabel =
+    ultimoEstado?.payload_json?.label ||
+    ultimoEstado?.payload_json?.status ||
+    "Sin estado";
+
+  const estadoActualRaw = ultimoEstado?.payload_json?.status || "";
+  
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
       <div className="mx-auto max-w-md px-4 py-6">
@@ -115,8 +126,22 @@ export default function SeguimientoPage() {
           </div>
         )}
 
-        {eventos.length > 0 && (
+                {eventos.length > 0 && (
           <div className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="text-sm font-semibold text-slate-500">
+                Estado actual
+              </div>
+              <div className="mt-1 text-2xl font-bold text-green-600">
+                {estadoActualLabel}
+              </div>
+              {estadoActualRaw && (
+                <div className="mt-1 text-xs text-slate-400">
+                  Código interno: {estadoActualRaw}
+                </div>
+              )}
+            </div>
+
             <h2 className="mb-4 text-xl font-bold">Línea de tiempo</h2>
 
             <div className="space-y-4">
