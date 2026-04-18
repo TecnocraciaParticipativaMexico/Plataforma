@@ -50,7 +50,7 @@ export default function Home() {
       <div className="mx-auto max-w-md px-4 pb-28 pt-6">
         <header className="mb-6 flex items-center justify-between">
           <button className="text-2xl text-[#16A34A]">☰</button>
-        <h1 className="text-3xl font-extrabold text-[#0A4E84]">
+        <h1 className="text-4xl font-extrabold text-[#0A4E84] leading-tight">
   Tecnocracia Participativa
 </h1>
           <button className="text-lg">🌐</button>
@@ -73,13 +73,13 @@ export default function Home() {
           </p>
 
           <div className="flex gap-3">
-            <button className="rounded-xl bg-[#F97316] px-4 py-2 text-sm font-semibold text-white shadow"
-              Perfil Ciudadano
-            </button>
-            <button className="rounded-xl bg-[#3B82F6] px-4 py-2 text-sm font-semibold text-white shadow"
-              Miembro de Comité
-            </button>
-          </div>
+  <button className="rounded-xl bg-[#F97316] px-4 py-2 text-sm font-semibold text-white shadow">
+    Perfil Ciudadano
+  </button>
+  <button className="rounded-xl bg-[#3B82F6] px-4 py-2 text-sm font-semibold text-white shadow">
+    Miembro de Comité
+  </button>
+</div>
         </section>
 
         <section className="mb-6 grid grid-cols-1 gap-4">
