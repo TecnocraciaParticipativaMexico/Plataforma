@@ -20,7 +20,8 @@ export default function ReportarPage() {
     try {
       setLoading(true);
       setResultado(null);
-            if (!calleNumero.trim() || !municipio.trim() || !estadoLugar.trim()) {
+
+      if (!calleNumero.trim() || !municipio.trim() || !estadoLugar.trim()) {
         setResultado({
           ok: false,
           error: "Completa al menos calle y número, municipio y estado.",
@@ -36,7 +37,8 @@ export default function ReportarPage() {
       }
 
       const tipoProceso = `${categoria}: ${titulo || "Sin título"}`;
-            const ubicacionFinal = [
+
+      const ubicacionFinal = [
         calleNumero,
         colonia,
         municipio,
@@ -52,35 +54,35 @@ export default function ReportarPage() {
         headers: {
           "Content-Type": "application/json",
         },
-                body: JSON.stringify({
+        body: JSON.stringify({
           tipo_proceso: tipoProceso,
           actor_hash: actorHash,
           note: `${descripcion} (Ubicación: ${ubicacionFinal || "No especificada"})`,
         }),
+      });
 
       const data = await res.json();
+      const processId = data?.result?.out_process_id;
 
-const processId = data?.result?.out_process_id;
+      if (data?.ok && processId && archivo) {
+        const formData = new FormData();
+        formData.append("file", archivo);
+        formData.append("actor_hash", actorHash);
 
-if (data?.ok && processId && archivo) {
-  const formData = new FormData();
-  formData.append("file", archivo);
-  formData.append("actor_hash", actorHash);
+        const uploadRes = await fetch(`/api/process/${processId}/evidence/upload`, {
+          method: "POST",
+          body: formData,
+        });
 
-  const uploadRes = await fetch(`/api/process/${processId}/evidence/upload`, {
-    method: "POST",
-    body: formData,
-  });
+        const uploadData = await uploadRes.json();
 
-  const uploadData = await uploadRes.json();
-
-  setResultado({
-    ...data,
-    upload: uploadData,
-  });
-} else {
-  setResultado(data);
-}
+        setResultado({
+          ...data,
+          upload: uploadData,
+        });
+      } else {
+        setResultado(data);
+      }
 
       if (processId && descripcion.trim()) {
         await fetch(`/api/process/${processId}/event`, {
@@ -91,8 +93,8 @@ if (data?.ok && processId && archivo) {
           body: JSON.stringify({
             actor_hash: actorHash,
             event_type: "CitizenNoteAdded",
-            payload_json: {
-            note: `${descripcion}\n\nUbicación: ${ubicacionFinal || "No especificada"}`,
+            payload: {
+              note: `${descripcion}\n\nUbicación: ${ubicacionFinal || "No especificada"}`,
             },
           }),
         });
