@@ -179,14 +179,6 @@ function extraerGoogleMapsLink(texto: string) {
   return match ? match[0] : null;
 }
 
-    return index === primeraNotaIndex
-      ? "Reporte inicial"
-      : "Actualización ciudadana";
-  }
-
-  return tipo;
-}
-
   const ultimoEstado = [...eventos]
     .reverse()
     .find((evento) => evento.event_type === "StatusChanged");
