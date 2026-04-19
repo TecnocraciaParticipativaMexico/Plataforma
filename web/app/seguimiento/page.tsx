@@ -18,6 +18,8 @@ export default function SeguimientoPage() {
   const [error, setError] = useState("");
   const [nuevaNota, setNuevaNota] = useState("");
   const [enviandoNota, setEnviandoNota] = useState(false);
+  const [nuevoEstado, setNuevoEstado] = useState("Draft");
+const [cambiandoEstado, setCambiandoEstado] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -90,6 +92,52 @@ export default function SeguimientoPage() {
       setEnviandoNota(false);
     }
   }
+
+  async function cambiarEstado() {
+  if (!processId) return;
+
+  try {
+    setCambiandoEstado(true);
+    setError("");
+
+    const actorHash = localStorage.getItem("actor_hash") || "anon";
+
+    const res = await fetch(`/api/process/${processId}/event`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event_type: "StatusChanged",
+        actor_hash: actorHash,
+        payload: {
+          status: nuevoEstado,
+          label:
+            nuevoEstado === "Draft"
+              ? "Recibido"
+              : nuevoEstado === "Review"
+              ? "En revisión"
+              : nuevoEstado === "Published"
+              ? "Resuelto"
+              : nuevoEstado,
+        },
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data?.ok) {
+      setError(data?.error || "No se pudo cambiar estado");
+      return;
+    }
+
+    await cargarEventos();
+  } catch {
+    setError("Error cambiando estado");
+  } finally {
+    setCambiandoEstado(false);
+  }
+}
   
   async function verificarIntegridad() {
     if (!processId) return;
@@ -188,6 +236,30 @@ export default function SeguimientoPage() {
                 Agregar actualización
               </div>
 
+<div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+  <div className="mb-2 text-sm font-semibold text-slate-600">
+    Cambiar estado del caso
+  </div>
+
+  <select
+    value={nuevoEstado}
+    onChange={(e) => setNuevoEstado(e.target.value)}
+    className="w-full rounded-xl border border-slate-300 p-2 text-sm"
+  >
+    <option value="Draft">Recibido</option>
+    <option value="Review">En revisión</option>
+    <option value="Published">Resuelto</option>
+  </select>
+
+  <button
+    onClick={cambiarEstado}
+    disabled={cambiandoEstado}
+    className="mt-3 rounded-xl bg-green-600 px-4 py-2 text-white font-semibold"
+  >
+    {cambiandoEstado ? "Guardando..." : "Actualizar estado"}
+  </button>
+</div>
+              
               <textarea
                 value={nuevaNota}
                 onChange={(e) => setNuevaNota(e.target.value)}
