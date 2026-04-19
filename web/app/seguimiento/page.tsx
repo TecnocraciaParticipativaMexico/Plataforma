@@ -154,13 +154,23 @@ const [cambiandoEstado, setCambiandoEstado] = useState(false);
     }
   }
 
-  function traducirEvento(tipo: string) {
-    if (tipo === "ProcessCreated") return "Proceso creado";
-    if (tipo === "CitizenNoteAdded") return "Nota ciudadana agregada";
-    if (tipo === "EvidenceSubmitted") return "Evidencia subida";
-    if (tipo === "StatusChanged") return "Estado actualizado";
-    return tipo;
+function traducirEvento(tipo: string, index: number, eventos: any[]) {
+  if (tipo === "ProcessCreated") return "Proceso creado";
+  if (tipo === "EvidenceSubmitted") return "Evidencia subida";
+  if (tipo === "StatusChanged") return "Estado actualizado";
+
+  if (tipo === "CitizenNoteAdded") {
+    const primeraNotaIndex = eventos.findIndex(
+      (evento) => evento.event_type === "CitizenNoteAdded"
+    );
+
+    return index === primeraNotaIndex
+      ? "Reporte inicial"
+      : "Actualización ciudadana";
   }
+
+  return tipo;
+}
 
   const ultimoEstado = [...eventos]
     .reverse()
@@ -286,7 +296,7 @@ const [cambiandoEstado, setCambiandoEstado] = useState(false);
   className="rounded-2xl border border-slate-200 p-4"
 >
   <div className="mb-1 text-sm font-bold text-[#0A4E84]">
-    {index + 1}. {traducirEvento(evento.event_type)}
+    {index + 1}. {traducirEvento(evento.event_type, index, eventos)}
   </div>
 
   <div className="mb-3 text-xs text-slate-500">
