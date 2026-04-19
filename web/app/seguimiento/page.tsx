@@ -164,6 +164,21 @@ function traducirEvento(tipo: string, index: number, eventos: any[]) {
       (evento) => evento.event_type === "CitizenNoteAdded"
     );
 
+      return index === primeraNotaIndex
+      ? "Reporte inicial"
+      : "Actualización ciudadana";
+  }
+
+  return tipo;
+}  
+
+function extraerGoogleMapsLink(texto: string) {
+  if (!texto) return null;
+
+  const match = texto.match(/https?:\/\/[^\s]+/);
+  return match ? match[0] : null;
+}
+
     return index === primeraNotaIndex
       ? "Reporte inicial"
       : "Actualización ciudadana";
@@ -315,12 +330,33 @@ function traducirEvento(tipo: string, index: number, eventos: any[]) {
     </div>
   )}
 
-  {evento.event_type === "CitizenNoteAdded" && (
-    <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-      <div className="font-semibold mb-1">Nota ciudadana</div>
-      <div>{evento.payload_json?.note || "Sin contenido"}</div>
+{evento.event_type === "CitizenNoteAdded" && (
+  <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+    <div className="font-semibold mb-1">
+      {traducirEvento(evento.event_type, index, eventos) === "Reporte inicial"
+        ? "Descripción del reporte"
+        : "Nota ciudadana"}
     </div>
-  )}
+
+    <div className="whitespace-pre-wrap break-words">
+      {(evento.payload_json?.note || "Sin contenido").replace(
+        /Google Maps:\s*https?:\/\/[^\s]+/g,
+        "Google Maps"
+      )}
+    </div>
+
+    {extraerGoogleMapsLink(evento.payload_json?.note || "") && (
+      <a
+        href={extraerGoogleMapsLink(evento.payload_json?.note || "") || "#"}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
+      >
+        Abrir en Google Maps
+      </a>
+    )}
+  </div>
+)}
 
   {evento.event_type === "EvidenceSubmitted" && (
   <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
