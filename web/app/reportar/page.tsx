@@ -52,6 +52,27 @@ function esLinkGoogleMapsValido(link: string) {
   }
 }
 
+function extraerCoordenadasDeLink(link: string) {
+  if (!link) return null;
+
+  try {
+    const decoded = decodeURIComponent(link);
+
+    const match = decoded.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+
+    if (match) {
+      return {
+        lat: parseFloat(match[1]),
+        lng: parseFloat(match[2]),
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export default function ReportarPage() {
   const [categoria, setCategoria] = useState("Baches");
   const [titulo, setTitulo] = useState("");
@@ -102,6 +123,12 @@ export default function ReportarPage() {
         return;
       }
 
+    const coords = extraerCoordenadasDeLink(mapsLink);
+
+      if (mapsLink && !coords) {
+        console.warn("No se pudieron extraer coordenadas del link de Maps");
+      }
+
       if (!calleNumero.trim() || !municipio.trim() || !estadoLugar.trim()) {
         setResultado({
           ok: false,
@@ -127,6 +154,7 @@ export default function ReportarPage() {
         codigoPostal ? `CP ${codigoPostal}` : "",
         referencia ? `Referencia: ${referencia}` : "",
         mapsLink ? `Google Maps: ${mapsLink}` : "",
+        coords ? `Coords: ${coords.lat}, ${coords.lng}` : "",
       ]
         .filter(Boolean)
         .join(", ");
