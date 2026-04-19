@@ -107,6 +107,29 @@ export default function ReportarPage() {
         .filter(Boolean)
         .join(" ");
 
+// Validación REAL contra mapa
+const direccionCompleta = `${calleNumero}, ${colonia}, ${municipio}, ${estadoLugar}, ${codigoPostal}`;
+
+const validacion = await fetch("/api/validar-direccion", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    direccion: direccionCompleta,
+  }),
+});
+
+const dataValidacion = await validacion.json();
+
+if (!dataValidacion.ok) {
+  setErrorUbicacion(
+    "La dirección no parece existir en el mapa. Revísala."
+  );
+  setLoading(false);
+  return;
+}
+      
       if (textoSospechoso(textoUbicacionParaValidar)) {
         setErrorUbicacion(
           "La ubicación parece inválida o poco seria. Revisa la dirección del hecho."
@@ -155,6 +178,7 @@ export default function ReportarPage() {
         referencia ? `Referencia: ${referencia}` : "",
         mapsLink ? `Google Maps: ${mapsLink}` : "",
         coords ? `Coords: ${coords.lat}, ${coords.lng}` : "",
+        `Coords reales: ${dataValidacion.result.lat}, ${dataValidacion.result.lon}`,
       ]
         .filter(Boolean)
         .join(", ");
