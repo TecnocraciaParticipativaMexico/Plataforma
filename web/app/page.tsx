@@ -121,6 +121,13 @@ export default function Home() {
               Seguimiento
             </div>
 
+<Link
+  href="/mapa"
+  className="rounded-xl bg-white px-4 py-3 font-semibold text-[#0A4E84] border border-[#0A4E84]"
+>
+  Ver mapa ciudadano
+</Link>
+            
             <label className="mb-2 block text-sm font-semibold text-[#0A4E84]">
               Process ID
             </label>
