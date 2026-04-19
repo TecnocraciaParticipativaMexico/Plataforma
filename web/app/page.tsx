@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 type AnyJson = any;
@@ -117,20 +118,22 @@ export default function Home() {
           </div>
 
           <div className="rounded-[28px] bg-white p-6 shadow-sm">
-            <div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-              Seguimiento
-            </div>
+<div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+  Seguimiento
+</div>
 
-<Link
-  href="/mapa"
-  className="rounded-xl bg-white px-4 py-3 font-semibold text-[#0A4E84] border border-[#0A4E84]"
->
-  Ver mapa ciudadano
-</Link>
-            
-            <label className="mb-2 block text-sm font-semibold text-[#0A4E84]">
-              Process ID
-            </label>
+<div className="mb-4">
+  <Link
+    href="/mapa"
+    className="inline-block rounded-xl border border-[#0A4E84] bg-white px-4 py-3 font-semibold text-[#0A4E84]"
+  >
+    Ver mapa ciudadano
+  </Link>
+</div>
+
+<label className="mb-2 block text-sm font-semibold text-[#0A4E84]">
+  Process ID
+</label>
 
             <input
               value={processId}
