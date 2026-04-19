@@ -84,21 +84,6 @@ export default function ReportarPage() {
         setResultado(data);
       }
 
-      if (processId && descripcion.trim()) {
-        await fetch(`/api/process/${processId}/event`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            actor_hash: actorHash,
-            event_type: "CitizenNoteAdded",
-            payload: {
-              note: `${descripcion}\n\nUbicación: ${ubicacionFinal || "No especificada"}`,
-            },
-          }),
-        });
-      }
     } catch (err: any) {
       setResultado({
         ok: false,
