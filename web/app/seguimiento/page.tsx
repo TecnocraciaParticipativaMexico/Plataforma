@@ -179,6 +179,28 @@ function extraerGoogleMapsLink(texto: string) {
   return match ? match[0] : null;
 }
 
+function extraerCoordsDireccion(texto: string) {
+  if (!texto) return null;
+
+  const match = texto.match(/Coords dirección:\s*(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/i);
+  if (!match) return null;
+
+  return {
+    lat: match[1],
+    lng: match[2],
+  };
+}
+
+function limpiarTextoReporte(texto: string) {
+  if (!texto) return "";
+
+  return texto
+    .replace(/Google Maps:\s*https?:\/\/[^\s]+/gi, "Google Maps")
+    .replace(/Coords dirección:\s*-?\d+\.?\d*,\s*-?\d+\.?\d*/gi, "")
+    .replace(/,\s*,/g, ", ")
+    .trim();
+}  
+
   const ultimoEstado = [...eventos]
     .reverse()
     .find((evento) => evento.event_type === "StatusChanged");
@@ -331,11 +353,44 @@ function extraerGoogleMapsLink(texto: string) {
     </div>
 
     <div className="whitespace-pre-wrap break-words">
-      {(evento.payload_json?.note || "Sin contenido").replace(
-        /Google Maps:\s*https?:\/\/[^\s]+/g,
-        "Google Maps"
-      )}
+      {limpiarTextoReporte(evento.payload_json?.note || "Sin contenido")}
     </div>
+
+    {extraerCoordsDireccion(evento.payload_json?.note || "") && (
+      <div className="mt-3 rounded-xl bg-white p-3 text-xs text-slate-600">
+        <div className="font-semibold text-slate-700">Coordenadas detectadas</div>
+        <div className="mt-1">
+          Lat: {extraerCoordsDireccion(evento.payload_json?.note || "")?.lat}
+        </div>
+        <div>
+          Lng: {extraerCoordsDireccion(evento.payload_json?.note || "")?.lng}
+        </div>
+      </div>
+    )}
+
+    {extraerCoordsDireccion(evento.payload_json?.note || "") && (
+      <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200">
+        <iframe
+          title="Mini mapa del reporte"
+          width="100%"
+          height="220"
+          loading="lazy"
+          src={`https://www.openstreetmap.org/export/embed.html?bbox=${
+            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lng) - 0.003
+          }%2C${
+            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lat) - 0.003
+          }%2C${
+            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lng) + 0.003
+          }%2C${
+            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lat) + 0.003
+          }&layer=mapnik&marker=${
+            extraerCoordsDireccion(evento.payload_json?.note || "")?.lat
+          }%2C${
+            extraerCoordsDireccion(evento.payload_json?.note || "")?.lng
+          }`}
+        />
+      </div>
+    )}
 
     {extraerGoogleMapsLink(evento.payload_json?.note || "") && (
       <a
