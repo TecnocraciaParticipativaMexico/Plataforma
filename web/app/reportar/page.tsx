@@ -117,6 +117,7 @@ const validacion = await fetch("/api/validar-direccion", {
   },
   body: JSON.stringify({
     direccion: direccionCompleta,
+    mapsLink: mapsLink || null,
   }),
 });
 
@@ -129,6 +130,20 @@ if (!dataValidacion.ok) {
   setLoading(false);
   return;
 }
+
+let mensajeUbicacion = "Ubicación validada";
+
+if (dataValidacion.result.comparacion) {
+  const comp = dataValidacion.result.comparacion;
+
+  if (comp.estado === "coincide") {
+    mensajeUbicacion = "Ubicación confirmada con Google Maps";
+  } else if (comp.estado === "aproximado") {
+    mensajeUbicacion = "Ubicación cercana al punto de Google Maps";
+  } else {
+    mensajeUbicacion = "⚠️ El punto de Google Maps no coincide con la dirección";
+  }
+}      
       
       if (textoSospechoso(textoUbicacionParaValidar)) {
         setErrorUbicacion(
@@ -169,19 +184,19 @@ if (!dataValidacion.ok) {
 
       const tipoProceso = `${categoria}: ${titulo || "Sin título"}`;
 
-      const ubicacionFinal = [
-        calleNumero,
-        colonia,
-        municipio,
-        estadoLugar,
-        codigoPostal ? `CP ${codigoPostal}` : "",
-        referencia ? `Referencia: ${referencia}` : "",
-        mapsLink ? `Google Maps: ${mapsLink}` : "",
-        coords ? `Coords: ${coords.lat}, ${coords.lng}` : "",
-        `Coords reales: ${dataValidacion.result.lat}, ${dataValidacion.result.lon}`,
-      ]
-        .filter(Boolean)
-        .join(", ");
+const ubicacionFinal = [
+  calleNumero,
+  colonia,
+  municipio,
+  estadoLugar,
+  codigoPostal ? `CP ${codigoPostal}` : "",
+  referencia ? `Referencia: ${referencia}` : "",
+  mapsLink ? `Google Maps: ${mapsLink}` : "",
+  `Coords dirección: ${dataValidacion.result.direccionCoords.lat}, ${dataValidacion.result.direccionCoords.lon}`,
+  mensajeUbicacion,
+]
+  .filter(Boolean)
+  .join(", ");
 
       const res = await fetch("/api/process/create", {
         method: "POST",
