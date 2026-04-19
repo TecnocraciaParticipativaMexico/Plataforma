@@ -12,6 +12,7 @@ export default function ReportarPage() {
   const [estadoLugar, setEstadoLugar] = useState("");
   const [codigoPostal, setCodigoPostal] = useState("");
   const [referencia, setReferencia] = useState("");
+  const [mapsLink, setMapsLink] = useState("");
   const [resultado, setResultado] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [archivo, setArchivo] = useState<File | null>(null);
@@ -45,6 +46,7 @@ export default function ReportarPage() {
         estadoLugar,
         codigoPostal ? `CP ${codigoPostal}` : "",
         referencia ? `Referencia: ${referencia}` : "",
+        mapsLink ? `Google Maps: ${mapsLink}` : "",
       ]
         .filter(Boolean)
         .join(", ");
@@ -135,6 +137,7 @@ export default function ReportarPage() {
                     <label className="mb-2 block font-semibold">Ubicación del hecho</label>
           <p className="mb-3 text-sm text-slate-500">
             Escribe la ubicación del hecho. No pedimos tu ubicación en vivo.
+            También puedes pegar un link de Google Maps del lugar.
           </p>
 
           <input
@@ -179,6 +182,16 @@ export default function ReportarPage() {
             rows={3}
             placeholder="Referencia opcional (ej. frente a la primaria, esquina con...)"
           />
+          <input
+            value={mapsLink}
+            onChange={(e) => setMapsLink(e.target.value)}
+            className="mb-3 w-full rounded-2xl border px-4 py-3"
+            placeholder="Link de Google Maps (opcional)"
+          />
+
+          <p className="mb-6 text-xs text-slate-500">
+            Puedes pegar aquí el enlace del lugar en Google Maps para ubicar mejor el hecho.
+          </p>
 
           <label className="mb-2 block font-semibold">Evidencia (opcional)</label>
 <input
