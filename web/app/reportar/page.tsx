@@ -6,7 +6,12 @@ export default function ReportarPage() {
   const [categoria, setCategoria] = useState("Baches");
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [ubicacion, setUbicacion] = useState("");
+  const [calleNumero, setCalleNumero] = useState("");
+  const [colonia, setColonia] = useState("");
+  const [municipio, setMunicipio] = useState("");
+  const [estadoLugar, setEstadoLugar] = useState("");
+  const [codigoPostal, setCodigoPostal] = useState("");
+  const [referencia, setReferencia] = useState("");
   const [resultado, setResultado] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [archivo, setArchivo] = useState<File | null>(null);
@@ -15,6 +20,14 @@ export default function ReportarPage() {
     try {
       setLoading(true);
       setResultado(null);
+            if (!calleNumero.trim() || !municipio.trim() || !estadoLugar.trim()) {
+        setResultado({
+          ok: false,
+          error: "Completa al menos calle y número, municipio y estado.",
+        });
+        setLoading(false);
+        return;
+      }
 
       let actorHash = localStorage.getItem("actor_hash");
       if (!actorHash) {
@@ -23,18 +36,27 @@ export default function ReportarPage() {
       }
 
       const tipoProceso = `${categoria}: ${titulo || "Sin título"}`;
+            const ubicacionFinal = [
+        calleNumero,
+        colonia,
+        municipio,
+        estadoLugar,
+        codigoPostal ? `CP ${codigoPostal}` : "",
+        referencia ? `Referencia: ${referencia}` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
 
       const res = await fetch("/api/process/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-  tipo_proceso: tipoProceso,
-  actor_hash: actorHash,
-  note: `${descripcion} (Ubicación: ${ubicacion || "No especificada"})`,
-})
-});
+                body: JSON.stringify({
+          tipo_proceso: tipoProceso,
+          actor_hash: actorHash,
+          note: `${descripcion} (Ubicación: ${ubicacionFinal || "No especificada"})`,
+        }),
 
       const data = await res.json();
 
@@ -70,7 +92,7 @@ if (data?.ok && processId && archivo) {
             actor_hash: actorHash,
             event_type: "CitizenNoteAdded",
             payload_json: {
-              note: `${descripcion}\n\nUbicación: ${ubicacion || "No especificada"}`,
+            note: `${descripcion}\n\nUbicación: ${ubicacionFinal || "No especificada"}`,
             },
           }),
         });
@@ -123,12 +145,52 @@ if (data?.ok && processId && archivo) {
             placeholder="Describe el problema..."
           />
 
-          <label className="mb-2 block font-semibold">Ubicación</label>
+                    <label className="mb-2 block font-semibold">Ubicación del hecho</label>
+          <p className="mb-3 text-sm text-slate-500">
+            Escribe la ubicación del hecho. No pedimos tu ubicación en vivo.
+          </p>
+
           <input
-            value={ubicacion}
-            onChange={(e) => setUbicacion(e.target.value)}
+            value={calleNumero}
+            onChange={(e) => setCalleNumero(e.target.value)}
+            className="mb-3 w-full rounded-2xl border px-4 py-3"
+            placeholder="Calle y número"
+          />
+
+          <input
+            value={colonia}
+            onChange={(e) => setColonia(e.target.value)}
+            className="mb-3 w-full rounded-2xl border px-4 py-3"
+            placeholder="Colonia"
+          />
+
+          <input
+            value={municipio}
+            onChange={(e) => setMunicipio(e.target.value)}
+            className="mb-3 w-full rounded-2xl border px-4 py-3"
+            placeholder="Municipio o alcaldía"
+          />
+
+          <input
+            value={estadoLugar}
+            onChange={(e) => setEstadoLugar(e.target.value)}
+            className="mb-3 w-full rounded-2xl border px-4 py-3"
+            placeholder="Estado"
+          />
+
+          <input
+            value={codigoPostal}
+            onChange={(e) => setCodigoPostal(e.target.value)}
+            className="mb-3 w-full rounded-2xl border px-4 py-3"
+            placeholder="Código postal"
+          />
+
+          <textarea
+            value={referencia}
+            onChange={(e) => setReferencia(e.target.value)}
             className="mb-6 w-full rounded-2xl border px-4 py-3"
-            placeholder="Ej. Calle Morelos esquina Juárez"
+            rows={3}
+            placeholder="Referencia opcional (ej. frente a la primaria, esquina con...)"
           />
 
           <label className="mb-2 block font-semibold">Evidencia (opcional)</label>
@@ -166,7 +228,7 @@ if (data?.ok && processId && archivo) {
 )}
 
     <a
-      href={`/seguimiento?processId=${resultado.result?.out_process_id}`}
+      href={`/seguimiento?process_id=${resultado.result?.out_process_id}`}
       className="inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
     >
       Ver seguimiento
