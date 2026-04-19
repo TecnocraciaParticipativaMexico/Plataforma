@@ -2,6 +2,56 @@
 
 import { useState } from "react";
 
+function textoSospechoso(texto: string) {
+  const t = texto.toLowerCase().trim();
+
+  const bloqueadas = [
+    "tu mama",
+    "tu mamá",
+    "ching",
+    "jaja",
+    "jajaja",
+    "asdf",
+    "xxxxx",
+    "qwerty",
+    "prueba",
+    "test",
+    "nsfw",
+    "fake",
+    "falso",
+    "inventado",
+  ];
+
+  if (!t) return false;
+
+  if (bloqueadas.some((palabra) => t.includes(palabra))) return true;
+
+  // Solo símbolos o ruido
+  if (/^[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]+$/.test(t)) return true;
+
+  // Muy corto para ser dirección real
+  if (t.length < 5) return true;
+
+  return false;
+}
+
+function esLinkGoogleMapsValido(link: string) {
+  if (!link.trim()) return true; // opcional, si viene vacío no falla
+
+  try {
+    const url = new URL(link);
+    const host = url.hostname.toLowerCase();
+
+    return (
+      host.includes("google.com") ||
+      host.includes("maps.app.goo.gl") ||
+      host.includes("goo.gl")
+    );
+  } catch {
+    return false;
+  }
+}
+
 export default function ReportarPage() {
   const [categoria, setCategoria] = useState("Baches");
   const [titulo, setTitulo] = useState("");
@@ -13,6 +63,7 @@ export default function ReportarPage() {
   const [codigoPostal, setCodigoPostal] = useState("");
   const [referencia, setReferencia] = useState("");
   const [mapsLink, setMapsLink] = useState("");
+  const [errorUbicacion, setErrorUbicacion] = useState("");
   const [resultado, setResultado] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [archivo, setArchivo] = useState<File | null>(null);
@@ -21,6 +72,35 @@ export default function ReportarPage() {
     try {
       setLoading(true);
       setResultado(null);
+
+            setErrorUbicacion("");
+
+      const textoUbicacionParaValidar = [
+        calleNumero,
+        colonia,
+        municipio,
+        estadoLugar,
+        codigoPostal,
+        referencia,
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      if (textoSospechoso(textoUbicacionParaValidar)) {
+        setErrorUbicacion(
+          "La ubicación parece inválida o poco seria. Revisa la dirección del hecho."
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (!esLinkGoogleMapsValido(mapsLink)) {
+        setErrorUbicacion(
+          "El enlace proporcionado no parece ser un link válido de Google Maps."
+        );
+        setLoading(false);
+        return;
+      }
 
       if (!calleNumero.trim() || !municipio.trim() || !estadoLugar.trim()) {
         setResultado({
@@ -142,7 +222,10 @@ export default function ReportarPage() {
 
           <input
             value={calleNumero}
-            onChange={(e) => setCalleNumero(e.target.value)}
+            onChange={(e) => {
+  setCalleNumero(e.target.value);
+  setErrorUbicacion("");
+}}
             className="mb-3 w-full rounded-2xl border px-4 py-3"
             placeholder="Calle y número"
           />
@@ -182,16 +265,31 @@ export default function ReportarPage() {
             rows={3}
             placeholder="Referencia opcional (ej. frente a la primaria, esquina con...)"
           />
-          <input
-            value={mapsLink}
-            onChange={(e) => setMapsLink(e.target.value)}
-            className="mb-3 w-full rounded-2xl border px-4 py-3"
-            placeholder="Link de Google Maps (opcional)"
-          />
+<input
+  value={mapsLink}
+onChange={(e) => {
+  setMapsLink(e.target.value);
+  setErrorUbicacion("");
+}}
+  className="mb-2 w-full rounded-2xl border px-4 py-3"
+  placeholder="Link de Google Maps (opcional)"
+/>
 
-          <p className="mb-6 text-xs text-slate-500">
-            Puedes pegar aquí el enlace del lugar en Google Maps para ubicar mejor el hecho.
-          </p>
+<p className="mb-2 text-xs text-slate-500">
+  Puedes pegar aquí el enlace del lugar en Google Maps para ubicar mejor el hecho.
+</p>
+
+{errorUbicacion && (
+  <div className="mb-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+    {errorUbicacion}
+  </div>
+)}
+
+{!errorUbicacion && mapsLink.trim() && esLinkGoogleMapsValido(mapsLink) && (
+  <div className="mb-6 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
+    Link de Google Maps válido.
+  </div>
+)}
 
           <label className="mb-2 block font-semibold">Evidencia (opcional)</label>
 <input
