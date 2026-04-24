@@ -3,6 +3,33 @@
 import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 
+function clasificarRiesgo(texto: string) {
+  const t = (texto || "").toLowerCase();
+
+  if (
+    t.includes("cuerpo") ||
+    t.includes("muerto") ||
+    t.includes("narco") ||
+    t.includes("asesinato")
+  ) {
+    return "ALTO";
+  }
+
+  if (t.includes("robo") || t.includes("corrupcion")) {
+    return "MEDIO";
+  }
+
+  return "BAJO";
+}
+
+function colorRiesgo(texto: string) {
+  const riesgo = clasificarRiesgo(texto);
+
+  if (riesgo === "ALTO") return "#dc2626";
+  if (riesgo === "MEDIO") return "#f59e0b";
+  return "#16a34a";
+}
+
 type Reporte = {
   process_id: string;
   titulo: string;
@@ -80,7 +107,7 @@ export default function MapaReportes({ reportes, selected, onSelect }: Props) {
           <Marker
             key={reporte.process_id}
             position={[reporte.lat, reporte.lng]}
-            icon={crearIcono(colorRiesgo(reporte.descripcion))}
+            icon={crearIcono(colorRiesgo(reporte.descripcion || ""))}
             eventHandlers={{
               click: () => onSelect(reporte),
             }}
@@ -95,7 +122,7 @@ export default function MapaReportes({ reportes, selected, onSelect }: Props) {
                   </a>
                   <div style={{ marginTop: 6 }}>
   Riesgo IA:{" "}
-  <b>{clasificarRiesgo(reporte.descripcion)}</b>
+  <b>{clasificarRiesgo(reporte.descripcion || "")}</b>
 </div>
                 </div>
               </div>
