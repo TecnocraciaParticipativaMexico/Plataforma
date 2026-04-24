@@ -39,9 +39,9 @@ function clasificarRiesgo(texto: string) {
 }
 
 function colorEstado(estado: string) {
-  if (estado === "Published") return "#16a34a";
-  if (estado === "Review") return "#2563eb";
-  return "#eab308";
+  if (estado === "Published") return "#E62E8A"; // rosa mexicano
+  if (estado === "Review") return "#7C3AED"; // morado
+  return "#38BDF8"; // azul cielo
 }
 
 export default function MapaPage() {
@@ -101,21 +101,28 @@ export default function MapaPage() {
               onSelect={setSelected}
             />
 
-            <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-yellow-400" />
-                Riesgo bajo
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-orange-500" />
-                Riesgo medio
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-red-600" />
-                Riesgo alto
-              </div>
-            </div>
-          </div>
+           <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
+  <div className="flex items-center gap-2">
+    <span className="h-3 w-3 rounded-full bg-yellow-400" />
+    Riesgo bajo
+  </div>
+  <div className="flex items-center gap-2">
+    <span className="h-3 w-3 bg-orange-500" />
+    Riesgo medio
+  </div>
+  <div className="flex items-center gap-2">
+    <span
+      style={{
+        width: 0,
+        height: 0,
+        borderLeft: "7px solid transparent",
+        borderRight: "7px solid transparent",
+        borderBottom: "13px solid #dc2626",
+      }}
+    />
+    Riesgo alto
+  </div>
+</div>
 
           <div className="rounded-[28px] bg-white p-6 shadow-sm">
             <h2 className="text-xl font-bold text-[#0A4E84]">
