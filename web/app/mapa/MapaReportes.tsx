@@ -42,9 +42,9 @@ function clasificarRiesgoMapa(texto: string) {
 function colorRiesgo(texto: string) {
   const riesgo = clasificarRiesgoMapa(texto);
 
-  if (riesgo === "ALTO") return "#dc2626";
-  if (riesgo === "MEDIO") return "#f59e0b";
-  return "#16a34a";
+  if (riesgo === "ALTO") return "#ef0000";   // rojo vivo
+  if (riesgo === "MEDIO") return "#ff7a00"; // naranja vivo
+  return "#facc15"; // amarillo
 }
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
