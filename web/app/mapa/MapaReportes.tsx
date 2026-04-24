@@ -39,12 +39,43 @@ function clasificarRiesgoMapa(texto: string) {
   return "BAJO";
 }
 
-function colorRiesgo(texto: string) {
-  const riesgo = clasificarRiesgoMapa(texto);
+function crearIcono(riesgo: string) {
+  let html = "";
 
-  if (riesgo === "ALTO") return "#ef0000";   // rojo vivo
-  if (riesgo === "MEDIO") return "#ff7a00"; // naranja vivo
-  return "#facc15"; // amarillo
+  if (riesgo === "ALTO") {
+    html = `<div style="
+      width: 0;
+      height: 0;
+      border-left: 13px solid transparent;
+      border-right: 13px solid transparent;
+      border-bottom: 24px solid #ef0000;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
+    "></div>`;
+  } else if (riesgo === "MEDIO") {
+    html = `<div style="
+      width: 24px;
+      height: 24px;
+      background: #ff7a00;
+      border: 3px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    "></div>`;
+  } else {
+    html = `<div style="
+      width: 24px;
+      height: 24px;
+      background: #facc15;
+      border: 3px solid white;
+      border-radius: 999px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    "></div>`;
+  }
+
+  return L.divIcon({
+    className: "",
+    html,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  });
 }
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -95,7 +126,7 @@ export default function MapaReportes({ reportes, selected, onSelect }: Props) {
             <Marker
               key={reporte.process_id}
               position={[reporte.lat, reporte.lng]}
-              icon={crearIcono(colorRiesgo(reporte.descripcion || ""))}
+              icon={crearIcono(riesgo)}
               eventHandlers={{
                 click: () => onSelect(reporte),
               }}
