@@ -4,6 +4,25 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
+function clasificarRiesgo(texto: string) {
+  const t = texto.toLowerCase();
+
+  if (
+    t.includes("cuerpo") ||
+    t.includes("muerto") ||
+    t.includes("narco") ||
+    t.includes("asesinato")
+  ) {
+    return "ALTO";
+  }
+
+  if (t.includes("robo") || t.includes("corrupcion")) {
+    return "MEDIO";
+  }
+
+  return "BAJO";
+}
+
 const MapaReportes = dynamic(() => import("./MapaReportes"), {
   ssr: false,
 });
