@@ -210,6 +210,28 @@ async function enviarReporte() {
       .filter(Boolean)
       .join(", ");
 
+    // 🧠 Analizar denuncia antes de enviarla
+const analisis = await fetch("/api/analizar", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    texto: `${titulo} ${descripcion} ${calleNumero} ${colonia} ${municipio} ${estadoLugar} ${referencia}`,
+  }),
+});
+
+const resultadoIA = await analisis.json();
+
+if (resultadoIA.credibilidad === "BAJA") {
+  setResultado({
+    ok: false,
+    error: "La denuncia parece poco clara o poco creíble. Revísala antes de enviarla.",
+  });
+  setLoading(false);
+  return;
+}
+
     const res = await fetch("/api/process/create", {
       method: "POST",
       headers: {
