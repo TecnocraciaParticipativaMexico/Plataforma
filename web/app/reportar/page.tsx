@@ -1,6 +1,11 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState } from "react";
+
+const ReporteMap = dynamic(() => import("./ReporteMap"), {
+  ssr: false,
+});
 
 function textoSospechoso(texto: string) {
   const t = texto.toLowerCase().trim();
@@ -88,160 +93,166 @@ export default function ReportarPage() {
   const [resultado, setResultado] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [coordsValidadas, setCoordsValidadas] = useState<{ lat: number; lng: number } | null>(null);
+  const [coordsConfirmadas, setCoordsConfirmadas] = useState<{ lat: number; lng: number } | null>(null);
+  const [mostrarMapaConfirmacion, setMostrarMapaConfirmacion] = useState(false);
+  const [mensajeMapa, setMensajeMapa] = useState("");
 
-  async function enviarReporte() {
-    try {
-      setLoading(true);
-      setResultado(null);
+async function enviarReporte() {
+  try {
+    setLoading(true);
+    setResultado(null);
+    setErrorUbicacion("");
 
-            setErrorUbicacion("");
+    const textoUbicacionParaValidar = [
+      calleNumero,
+      colonia,
+      municipio,
+      estadoLugar,
+      codigoPostal,
+      referencia,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-      const textoUbicacionParaValidar = [
-        calleNumero,
-        colonia,
-        municipio,
-        estadoLugar,
-        codigoPostal,
-        referencia,
-      ]
-        .filter(Boolean)
-        .join(" ");
+    if (textoSospechoso(textoUbicacionParaValidar)) {
+      setErrorUbicacion(
+        "La ubicación parece inválida o poco seria. Revisa la dirección del hecho."
+      );
+      setLoading(false);
+      return;
+    }
 
-// Validación REAL contra mapa
-const direccionCompleta = `${calleNumero}, ${colonia}, ${municipio}, ${estadoLugar}, ${codigoPostal}`;
+    if (!esLinkGoogleMapsValido(mapsLink)) {
+      setErrorUbicacion(
+        "El enlace proporcionado no parece ser un link válido de Google Maps."
+      );
+      setLoading(false);
+      return;
+    }
 
-const validacion = await fetch("/api/validar-direccion", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    direccion: direccionCompleta,
-    mapsLink: mapsLink || null,
-  }),
-});
-
-const dataValidacion = await validacion.json();
-
-if (!dataValidacion.ok) {
-  setErrorUbicacion(
-    "La dirección no parece existir en el mapa. Revísala."
-  );
-  setLoading(false);
-  return;
-}
-
-let mensajeUbicacion = "Ubicación validada";
-
-if (dataValidacion.result.comparacion) {
-  const comp = dataValidacion.result.comparacion;
-
-  if (comp.estado === "coincide") {
-    mensajeUbicacion = "Ubicación confirmada con Google Maps";
-  } else if (comp.estado === "aproximado") {
-    mensajeUbicacion = "Ubicación cercana al punto de Google Maps";
-  } else {
-    mensajeUbicacion = "⚠️ El punto de Google Maps no coincide con la dirección";
-  }
-}      
-      
-      if (textoSospechoso(textoUbicacionParaValidar)) {
-        setErrorUbicacion(
-          "La ubicación parece inválida o poco seria. Revisa la dirección del hecho."
-        );
-        setLoading(false);
-        return;
-      }
-
-      if (!esLinkGoogleMapsValido(mapsLink)) {
-        setErrorUbicacion(
-          "El enlace proporcionado no parece ser un link válido de Google Maps."
-        );
-        setLoading(false);
-        return;
-      }
-
-    const coords = extraerCoordenadasDeLink(mapsLink);
-
-      if (mapsLink && !coords) {
-        console.warn("No se pudieron extraer coordenadas del link de Maps");
-      }
-
-      if (!calleNumero.trim() || !municipio.trim() || !estadoLugar.trim()) {
-        setResultado({
-          ok: false,
-          error: "Completa al menos calle y número, municipio y estado.",
-        });
-        setLoading(false);
-        return;
-      }
-
-      let actorHash = localStorage.getItem("actor_hash");
-      if (!actorHash) {
-        actorHash = crypto.randomUUID();
-        localStorage.setItem("actor_hash", actorHash);
-      }
-
-      const tipoProceso = `${categoria}: ${titulo || "Sin título"}`;
-
-const ubicacionFinal = [
-  calleNumero,
-  colonia,
-  municipio,
-  estadoLugar,
-  codigoPostal ? `CP ${codigoPostal}` : "",
-  referencia ? `Referencia: ${referencia}` : "",
-  mapsLink ? `Google Maps: ${mapsLink}` : "",
-  `Coords dirección: ${dataValidacion.result.direccionCoords.lat}, ${dataValidacion.result.direccionCoords.lon}`,
-  mensajeUbicacion,
-]
-  .filter(Boolean)
-  .join(", ");
-
-      const res = await fetch("/api/process/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tipo_proceso: tipoProceso,
-          actor_hash: actorHash,
-          note: `${descripcion} (Ubicación: ${ubicacionFinal || "No especificada"})`,
-        }),
-      });
-
-      const data = await res.json();
-      const processId = data?.result?.out_process_id;
-
-      if (data?.ok && processId && archivo) {
-        const formData = new FormData();
-        formData.append("file", archivo);
-        formData.append("actor_hash", actorHash);
-
-        const uploadRes = await fetch(`/api/process/${processId}/evidence/upload`, {
-          method: "POST",
-          body: formData,
-        });
-
-        const uploadData = await uploadRes.json();
-
-        setResultado({
-          ...data,
-          upload: uploadData,
-        });
-      } else {
-        setResultado(data);
-      }
-
-    } catch (err: any) {
+    if (!calleNumero.trim() || !municipio.trim() || !estadoLugar.trim()) {
       setResultado({
         ok: false,
-        error: err?.message || "Error creando reporte",
+        error: "Completa al menos calle y número, municipio y estado.",
       });
-    } finally {
       setLoading(false);
+      return;
     }
+
+    const direccionCompleta = `${calleNumero}, ${colonia}, ${municipio}, ${estadoLugar}, ${codigoPostal}`;
+
+    const validacion = await fetch("/api/validar-direccion", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        direccion: direccionCompleta,
+        mapsLink: mapsLink || null,
+      }),
+    });
+
+    const dataValidacion = await validacion.json();
+
+    if (!dataValidacion.ok) {
+      setErrorUbicacion("La dirección no parece existir en el mapa. Revísala.");
+      setLoading(false);
+      return;
+    }
+
+    const latDir = Number(dataValidacion.result.direccionCoords.lat);
+    const lngDir = Number(dataValidacion.result.direccionCoords.lon);
+
+    setCoordsValidadas({ lat: latDir, lng: lngDir });
+
+    const puntoConfirmado = coordsConfirmadas || { lat: latDir, lng: lngDir };
+    setCoordsConfirmadas(puntoConfirmado);
+    setMostrarMapaConfirmacion(true);
+
+    let mensajeUbicacion = "Ubicación validada";
+
+    if (dataValidacion.result.comparacion) {
+      const comp = dataValidacion.result.comparacion;
+
+      if (comp.estado === "coincide") {
+        mensajeUbicacion = "Ubicación confirmada con Google Maps";
+      } else if (comp.estado === "aproximado") {
+        mensajeUbicacion = "Ubicación cercana al punto de Google Maps";
+      } else {
+        mensajeUbicacion = "⚠️ El punto de Google Maps no coincide con la dirección";
+      }
+    }
+
+    let actorHash = localStorage.getItem("actor_hash");
+    if (!actorHash) {
+      actorHash = crypto.randomUUID();
+      localStorage.setItem("actor_hash", actorHash);
+    }
+
+    const tipoProceso = `${categoria}: ${titulo || "Sin título"}`;
+
+    const ubicacionFinal = [
+      calleNumero,
+      colonia,
+      municipio,
+      estadoLugar,
+      codigoPostal ? `CP ${codigoPostal}` : "",
+      referencia ? `Referencia: ${referencia}` : "",
+      mapsLink ? `Google Maps: ${mapsLink}` : "",
+      `Coords dirección: ${latDir}, ${lngDir}`,
+      puntoConfirmado
+        ? `Coords confirmadas: ${puntoConfirmado.lat}, ${puntoConfirmado.lng}`
+        : "",
+      mensajeUbicacion,
+      mensajeMapa,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    const res = await fetch("/api/process/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tipo_proceso: tipoProceso,
+        actor_hash: actorHash,
+        note: `${descripcion} (Ubicación: ${ubicacionFinal || "No especificada"})`,
+      }),
+    });
+
+    const data = await res.json();
+    const processId = data?.result?.out_process_id;
+
+    if (data?.ok && processId && archivo) {
+      const formData = new FormData();
+      formData.append("file", archivo);
+      formData.append("actor_hash", actorHash);
+
+      const uploadRes = await fetch(`/api/process/${processId}/evidence/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+
+      setResultado({
+        ...data,
+        upload: uploadData,
+      });
+    } else {
+      setResultado(data);
+    }
+  } catch (err: any) {
+    setResultado({
+      ok: false,
+      error: err?.message || "Error creando reporte",
+    });
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
@@ -357,6 +368,33 @@ onChange={(e) => {
     Link de Google Maps válido.
   </div>
 )}
+
+{mostrarMapaConfirmacion && coordsConfirmadas && (
+  <div className="mb-6">
+    <div className="mb-2 text-sm font-semibold text-[#0A4E84]">
+      Confirma la ubicación del hecho
+    </div>
+
+    <p className="mb-3 text-sm text-slate-600">
+      Si el punto no es correcto, toca el mapa o arrastra el marcador al lugar real.
+    </p>
+
+    <ReporteMap
+      lat={coordsConfirmadas.lat}
+      lng={coordsConfirmadas.lng}
+      onChange={(lat, lng) => {
+        setCoordsConfirmadas({ lat, lng });
+        setMensajeMapa("Ubicación confirmada manualmente por la persona denunciante.");
+      }}
+    />
+
+    <div className="mt-3 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+      <div className="font-semibold">Ubicación seleccionada</div>
+      <div className="mt-1">Lat: {coordsConfirmadas.lat}</div>
+      <div>Lng: {coordsConfirmadas.lng}</div>
+    </div>
+  </div>
+)}          
 
           <label className="mb-2 block font-semibold">Evidencia (opcional)</label>
 <input
