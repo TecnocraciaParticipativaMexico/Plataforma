@@ -3,7 +3,24 @@
 import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 
-function clasificarRiesgo(texto: string) {
+type Reporte = {
+  process_id: string;
+  titulo: string;
+  descripcion: string;
+  estado_raw: string;
+  estado_label: string;
+  lat: number;
+  lng: number;
+  created_at: string | null;
+};
+
+type Props = {
+  reportes: Reporte[];
+  selected: Reporte | null;
+  onSelect: (reporte: Reporte) => void;
+};
+
+function clasificarRiesgoMapa(texto: string) {
   const t = (texto || "").toLowerCase();
 
   if (
@@ -23,29 +40,12 @@ function clasificarRiesgo(texto: string) {
 }
 
 function colorRiesgo(texto: string) {
-  const riesgo = clasificarRiesgo(texto);
+  const riesgo = clasificarRiesgoMapa(texto);
 
   if (riesgo === "ALTO") return "#dc2626";
   if (riesgo === "MEDIO") return "#f59e0b";
   return "#16a34a";
 }
-
-type Reporte = {
-  process_id: string;
-  titulo: string;
-  descripcion: string;
-  estado_raw: string;
-  estado_label: string;
-  lat: number;
-  lng: number;
-  created_at: string | null;
-};
-
-type Props = {
-  reportes: Reporte[];
-  selected: Reporte | null;
-  onSelect: (reporte: Reporte) => void;
-};
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
@@ -55,20 +55,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
-
-function colorEstado(estado: string) {
-  if (estado === "Published") return "#16a34a";
-  if (estado === "Review") return "#2563eb";
-  return "#eab308";
-}
-
-function colorRiesgo(texto: string) {
-  const riesgo = clasificarRiesgo(texto);
-
-  if (riesgo === "ALTO") return "#dc2626";   // rojo
-  if (riesgo === "MEDIO") return "#f59e0b"; // naranja
-  return "#16a34a"; // verde
-}
 
 function crearIcono(color: string) {
   return L.divIcon({
@@ -87,8 +73,7 @@ function crearIcono(color: string) {
 }
 
 export default function MapaReportes({ reportes, selected, onSelect }: Props) {
-  const centro =
-    selected || reportes[0] || { lat: 23.6345, lng: -102.5528 };
+  const centro = selected || reportes[0] || { lat: 23.6345, lng: -102.5528 };
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200">
@@ -103,32 +88,35 @@ export default function MapaReportes({ reportes, selected, onSelect }: Props) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {reportes.map((reporte) => (
-          <Marker
-            key={reporte.process_id}
-            position={[reporte.lat, reporte.lng]}
-            icon={crearIcono(colorRiesgo(reporte.descripcion || ""))}
-            eventHandlers={{
-              click: () => onSelect(reporte),
-            }}
-          >
-            <Popup>
-              <div>
-                <div style={{ fontWeight: 700 }}>{reporte.titulo}</div>
-                <div>Estado: {reporte.estado_label}</div>
-                <div style={{ marginTop: 8 }}>
-                  <a href={`/seguimiento?processId=${reporte.process_id}`}>
-                    Ver seguimiento
-                  </a>
+        {reportes.map((reporte) => {
+          const riesgo = clasificarRiesgoMapa(reporte.descripcion || "");
+
+          return (
+            <Marker
+              key={reporte.process_id}
+              position={[reporte.lat, reporte.lng]}
+              icon={crearIcono(colorRiesgo(reporte.descripcion || ""))}
+              eventHandlers={{
+                click: () => onSelect(reporte),
+              }}
+            >
+              <Popup>
+                <div>
+                  <div style={{ fontWeight: 700 }}>{reporte.titulo}</div>
+                  <div>Estado: {reporte.estado_label}</div>
                   <div style={{ marginTop: 6 }}>
-  Riesgo IA:{" "}
-  <b>{clasificarRiesgo(reporte.descripcion || "")}</b>
-</div>
+                    Riesgo IA: <b>{riesgo}</b>
+                  </div>
+                  <div style={{ marginTop: 8 }}>
+                    <a href={`/seguimiento?processId=${reporte.process_id}`}>
+                      Ver seguimiento
+                    </a>
+                  </div>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
     </div>
   );
