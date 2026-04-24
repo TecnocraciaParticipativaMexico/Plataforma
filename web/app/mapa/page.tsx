@@ -102,20 +102,19 @@ export default function MapaPage() {
             />
 
             <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-yellow-500" />
-                Recibido
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-blue-600" />
-                En revisión
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-green-600" />
-                Resuelto
-              </div>
-            </div>
-          </div>
+  <div className="flex items-center gap-2">
+    <span className="h-3 w-3 rounded-full bg-yellow-400" />
+    Riesgo bajo
+  </div>
+  <div className="flex items-center gap-2">
+    <span className="h-3 w-3 rounded-full bg-orange-500" />
+    Riesgo medio
+  </div>
+  <div className="flex items-center gap-2">
+    <span className="h-3 w-3 rounded-full bg-red-600" />
+    Riesgo alto
+  </div>
+</div>
 
           <div className="rounded-[28px] bg-white p-6 shadow-sm">
             <h2 className="text-xl font-bold text-[#0A4E84]">
