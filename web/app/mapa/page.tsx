@@ -4,8 +4,23 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
+const MapaReportes = dynamic(() => import("./MapaReportes"), {
+  ssr: false,
+});
+
+type Reporte = {
+  process_id: string;
+  titulo: string;
+  descripcion: string;
+  estado_raw: string;
+  estado_label: string;
+  lat: number;
+  lng: number;
+  created_at: string | null;
+};
+
 function clasificarRiesgo(texto: string) {
-  const t = texto.toLowerCase();
+  const t = (texto || "").toLowerCase();
 
   if (
     t.includes("cuerpo") ||
@@ -22,21 +37,6 @@ function clasificarRiesgo(texto: string) {
 
   return "BAJO";
 }
-
-const MapaReportes = dynamic(() => import("./MapaReportes"), {
-  ssr: false,
-});
-
-type Reporte = {
-  process_id: string;
-  titulo: string;
-  descripcion: string;
-  estado_raw: string;
-  estado_label: string;
-  lat: number;
-  lng: number;
-  created_at: string | null;
-};
 
 function colorEstado(estado: string) {
   if (estado === "Published") return "#16a34a";
@@ -102,19 +102,20 @@ export default function MapaPage() {
             />
 
             <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
-  <div className="flex items-center gap-2">
-    <span className="h-3 w-3 rounded-full bg-yellow-400" />
-    Riesgo bajo
-  </div>
-  <div className="flex items-center gap-2">
-    <span className="h-3 w-3 rounded-full bg-orange-500" />
-    Riesgo medio
-  </div>
-  <div className="flex items-center gap-2">
-    <span className="h-3 w-3 rounded-full bg-red-600" />
-    Riesgo alto
-  </div>
-</div>
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-yellow-400" />
+                Riesgo bajo
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-orange-500" />
+                Riesgo medio
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="h-3 w-3 rounded-full bg-red-600" />
+                Riesgo alto
+              </div>
+            </div>
+          </div>
 
           <div className="rounded-[28px] bg-white p-6 shadow-sm">
             <h2 className="text-xl font-bold text-[#0A4E84]">
