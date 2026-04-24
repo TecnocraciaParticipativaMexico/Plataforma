@@ -3,6 +3,25 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
+function clasificarRiesgo(texto: string) {
+  const t = texto.toLowerCase();
+
+  if (
+    t.includes("cuerpo") ||
+    t.includes("muerto") ||
+    t.includes("narco") ||
+    t.includes("asesinato")
+  ) {
+    return "ALTO";
+  }
+
+  if (t.includes("robo") || t.includes("corrupcion")) {
+    return "MEDIO";
+  }
+
+  return "BAJO";
+}
+
 type Reporte = {
   process_id: string;
   titulo: string;
@@ -101,12 +120,19 @@ export default function MapaPage() {
               )}
 
               {!!reportes.length &&
-                reportes.map((reporte) => {
-                  const pos = project(reporte.lat, reporte.lng);
-                  const active = selected?.process_id === reporte.process_id;
+  reportes.map((reporte) => {
+    if (!reporte.lat || !reporte.lng) return null;
 
-                  return (
-                    <button
+    const riesgo = clasificarRiesgo(reporte.descripcion);
+
+    // 🔒 NO mostrar denuncias peligrosas
+    if (riesgo === "ALTO") return null;
+
+    const pos = project(reporte.lat, reporte.lng);
+    const active = selected?.process_id === reporte.process_id;
+
+    return (
+      <button
                       key={reporte.process_id}
                       onClick={() => setSelected(reporte)}
                       className="absolute -translate-x-1/2 -translate-y-1/2"
@@ -121,7 +147,10 @@ export default function MapaPage() {
                           active ? "scale-125" : ""
                         }`}
                         style={{
-                          backgroundColor: colorEstado(reporte.estado_raw),
+                         backgroundColor:
+  riesgo === "MEDIO"
+    ? "#f59e0b" // naranja alerta
+    : colorEstado(reporte.estado_raw),
                         }}
                       />
                     </button>
