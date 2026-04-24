@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
   --background: #ffffff;
@@ -30,6 +31,7 @@ body {
   height: 320px;
   border-radius: 20px;
   z-index: 0;
+  overflow: hidden;
 }
 
 .leaflet-control-container .leaflet-top,
