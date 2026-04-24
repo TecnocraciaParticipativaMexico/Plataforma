@@ -44,23 +44,6 @@ function colorEstado(estado: string) {
   return "#eab308";
 }
 
-function clasificarRiesgo(texto: string) {
-  const t = texto.toLowerCase();
-
-  if (
-    t.includes("cuerpo") ||
-    t.includes("muerto") ||
-    t.includes("narco") ||
-    t.includes("asesinato")
-  ) {
-    return "ALTO";
-  }
-
-  if (t.includes("robo") || t.includes("corrupcion")) return "MEDIO";
-
-  return "BAJO";
-}
-
 export default function MapaPage() {
   const [reportes, setReportes] = useState<Reporte[]>([]);
   const [selected, setSelected] = useState<Reporte | null>(null);
