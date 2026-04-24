@@ -87,22 +87,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-function crearIcono(color: string) {
-  return L.divIcon({
-    className: "",
-    html: `<div style="
-      width: 22px;
-      height: 22px;
-      background: ${color};
-      border: 3px solid white;
-      border-radius: 999px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.35);
-    "></div>`,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
-  });
-}
-
 export default function MapaReportes({ reportes, selected, onSelect }: Props) {
   const centro = selected || reportes[0] || { lat: 23.6345, lng: -102.5528 };
 
