@@ -40,7 +40,12 @@ function Recenter({ lat, lng }: { lat: number; lng: number }) {
 
 export default function ReporteMap({ lat, lng, onChange }: Props) {
   return (
-    <MapContainer center={[lat, lng]} zoom={15} scrollWheelZoom={true}>
+<MapContainer
+  center={[lat, lng]}
+  zoom={15}
+  scrollWheelZoom={true}
+  style={{ height: "320px", width: "100%", borderRadius: "20px" }}
+>
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
