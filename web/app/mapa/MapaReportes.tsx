@@ -35,6 +35,14 @@ function colorEstado(estado: string) {
   return "#eab308";
 }
 
+function colorRiesgo(texto: string) {
+  const riesgo = clasificarRiesgo(texto);
+
+  if (riesgo === "ALTO") return "#dc2626";   // rojo
+  if (riesgo === "MEDIO") return "#f59e0b"; // naranja
+  return "#16a34a"; // verde
+}
+
 function crearIcono(color: string) {
   return L.divIcon({
     className: "",
@@ -72,7 +80,7 @@ export default function MapaReportes({ reportes, selected, onSelect }: Props) {
           <Marker
             key={reporte.process_id}
             position={[reporte.lat, reporte.lng]}
-            icon={crearIcono(colorEstado(reporte.estado_raw))}
+            icon={crearIcono(colorRiesgo(reporte.descripcion))}
             eventHandlers={{
               click: () => onSelect(reporte),
             }}
@@ -85,6 +93,10 @@ export default function MapaReportes({ reportes, selected, onSelect }: Props) {
                   <a href={`/seguimiento?processId=${reporte.process_id}`}>
                     Ver seguimiento
                   </a>
+                  <div style={{ marginTop: 6 }}>
+  Riesgo IA:{" "}
+  <b>{clasificarRiesgo(reporte.descripcion)}</b>
+</div>
                 </div>
               </div>
             </Popup>
