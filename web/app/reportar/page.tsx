@@ -210,7 +210,7 @@ async function enviarReporte() {
       .filter(Boolean)
       .join(", ");
 
-    // 🧠 Analizar denuncia antes de enviarla
+// 🧠 Analizar denuncia con IA antes de enviar
 const analisis = await fetch("/api/analizar", {
   method: "POST",
   headers: {
@@ -223,10 +223,13 @@ const analisis = await fetch("/api/analizar", {
 
 const resultadoIA = await analisis.json();
 
+console.log("IA:", resultadoIA);
+
+// 🚫 Bloquear si parece broma o basura
 if (resultadoIA.credibilidad === "BAJA") {
   setResultado({
     ok: false,
-    error: "La denuncia parece poco clara o poco creíble. Revísala antes de enviarla.",
+    error: "La denuncia parece poco clara o no válida. Revísala antes de enviarla.",
   });
   setLoading(false);
   return;
