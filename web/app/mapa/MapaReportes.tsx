@@ -14,7 +14,6 @@ type Reporte = {
   created_at: string | null;
   riesgo?: string;
 };
-
   process_id: string;
   titulo: string;
   descripcion: string;
