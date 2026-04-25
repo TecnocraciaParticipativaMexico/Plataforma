@@ -56,18 +56,16 @@ export default function MapaPage() {
       const res = await fetch("/api/mapa/reportes");
       const data = await res.json();
 
-      if (data?.ok) {
-        const seguros = (data.reportes || []).filter(
-          (r: Reporte) => clasificarRiesgo(r.descripcion) !== "ALTO"
-        );
+if (data?.ok) {
+  const reportesTodos = (data.reportes || []) as Reporte[];
 
-const ordenados = seguros.sort(
-  (a: Reporte, b: Reporte) => calcularPrioridad(b) - calcularPrioridad(a)
-);
+  const ordenados = reportesTodos.sort(
+    (a: Reporte, b: Reporte) => calcularPrioridad(b) - calcularPrioridad(a)
+  );
 
-setReportes(ordenados);
-if (ordenados.length) setSelected(ordenados[0]);
-      }
+  setReportes(ordenados);
+  if (ordenados.length) setSelected(ordenados[0]);
+}
     } finally {
       setLoading(false);
     }
