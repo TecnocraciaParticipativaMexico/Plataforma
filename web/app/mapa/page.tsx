@@ -62,7 +62,7 @@ export default function MapaPage() {
         );
 
 const ordenados = seguros.sort(
-  (a, b) => calcularPrioridad(b) - calcularPrioridad(a)
+  (a: Reporte, b: Reporte) => calcularPrioridad(b) - calcularPrioridad(a)
 );
 
 setReportes(ordenados);
