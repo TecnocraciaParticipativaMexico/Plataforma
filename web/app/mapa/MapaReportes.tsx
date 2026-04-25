@@ -12,6 +12,16 @@ type Reporte = {
   lat: number;
   lng: number;
   created_at: string | null;
+  riesgo?: string;
+};
+  process_id: string;
+  titulo: string;
+  descripcion: string;
+  estado_raw: string;
+  estado_label: string;
+  lat: number;
+  lng: number;
+  created_at: string | null;
 };
 
 type Props = {
@@ -104,7 +114,7 @@ export default function MapaReportes({ reportes, selected, onSelect }: Props) {
         />
 
         {reportes.map((reporte) => {
-          const riesgo = clasificarRiesgoMapa(reporte.descripcion || "");
+          const riesgo = reporte.riesgo || clasificarRiesgoMapa(reporte.descripcion || "");
 
           return (
             <Marker
