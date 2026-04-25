@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { calcularPrioridad } from "@/lib/prioridad";
 
 const MapaReportes = dynamic(() => import("./MapaReportes"), {
   ssr: false,
@@ -60,8 +61,12 @@ export default function MapaPage() {
           (r: Reporte) => clasificarRiesgo(r.descripcion) !== "ALTO"
         );
 
-        setReportes(seguros);
-        if (seguros.length) setSelected(seguros[0]);
+const ordenados = seguros.sort(
+  (a, b) => calcularPrioridad(b) - calcularPrioridad(a)
+);
+
+setReportes(ordenados);
+if (ordenados.length) setSelected(ordenados[0]);
       }
     } finally {
       setLoading(false);
