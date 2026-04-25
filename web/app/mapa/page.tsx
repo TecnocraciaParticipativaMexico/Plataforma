@@ -9,6 +9,8 @@ const MapaReportes = dynamic(() => import("./MapaReportes"), {
   ssr: false,
 });
 
+type Riesgo = "ALTO" | "MEDIO" | "BAJO";
+
 type Reporte = {
   process_id: string;
   titulo: string;
@@ -20,23 +22,56 @@ type Reporte = {
   created_at: string | null;
 };
 
-function clasificarRiesgo(texto: string) {
+const categorias = [
+  "Baches",
+  "Alumbrado Público",
+  "Basura",
+  "Agua",
+  "Seguridad",
+  "Corrupción",
+  "Otro",
+];
+
+function clasificarRiesgo(texto: string): Riesgo {
   const t = (texto || "").toLowerCase();
 
   if (
     t.includes("cuerpo") ||
     t.includes("muerto") ||
     t.includes("narco") ||
-    t.includes("asesinato")
+    t.includes("asesinato") ||
+    t.includes("balazo") ||
+    t.includes("balazos")
   ) {
     return "ALTO";
   }
 
-  if (t.includes("robo") || t.includes("corrupcion")) {
+  if (
+    t.includes("robo") ||
+    t.includes("corrupcion") ||
+    t.includes("corrupción") ||
+    t.includes("amenaza")
+  ) {
     return "MEDIO";
   }
 
   return "BAJO";
+}
+
+function pesoRiesgo(riesgo: Riesgo) {
+  if (riesgo === "ALTO") return 3;
+  if (riesgo === "MEDIO") return 2;
+  return 1;
+}
+
+function obtenerCategoria(reporte: Reporte) {
+  const titulo = reporte.titulo || "";
+
+  const encontrada = categorias.find((cat) =>
+    titulo.toLowerCase().startsWith(cat.toLowerCase())
+  );
+
+  return encontrada || "Otro";
 }
 
 function colorEstado(estado: string) {
@@ -46,9 +81,76 @@ function colorEstado(estado: string) {
 }
 
 export default function MapaPage() {
+  const [todosReportes, setTodosReportes] = useState<Reporte[]>([]);
   const [reportes, setReportes] = useState<Reporte[]>([]);
   const [selected, setSelected] = useState<Reporte | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [filtrosRiesgo, setFiltrosRiesgo] = useState<Riesgo[]>([
+    "ALTO",
+    "MEDIO",
+    "BAJO",
+  ]);
+
+  const [filtrosCategoria, setFiltrosCategoria] = useState<string[]>([
+    ...categorias,
+  ]);
+
+  function ordenarReportes(lista: Reporte[]) {
+    return [...lista].sort((a, b) => {
+      const riesgoA = clasificarRiesgo(a.descripcion);
+      const riesgoB = clasificarRiesgo(b.descripcion);
+
+      const diferenciaRiesgo = pesoRiesgo(riesgoB) - pesoRiesgo(riesgoA);
+      if (diferenciaRiesgo !== 0) return diferenciaRiesgo;
+
+      return calcularPrioridad(b) - calcularPrioridad(a);
+    });
+  }
+
+  function aplicarFiltros(
+    lista: Reporte[],
+    riesgos: Riesgo[],
+    categoriasActivas: string[]
+  ) {
+    const filtrados = lista.filter((reporte) => {
+      const riesgo = clasificarRiesgo(reporte.descripcion);
+      const categoria = obtenerCategoria(reporte);
+
+      return (
+        riesgos.includes(riesgo) && categoriasActivas.includes(categoria)
+      );
+    });
+
+    const ordenados = ordenarReportes(filtrados);
+
+    setReportes(ordenados);
+    setSelected(ordenados[0] || null);
+  }
+
+  function toggleRiesgo(riesgo: Riesgo) {
+    const nuevos = filtrosRiesgo.includes(riesgo)
+      ? filtrosRiesgo.filter((r) => r !== riesgo)
+      : [...filtrosRiesgo, riesgo];
+
+    setFiltrosRiesgo(nuevos);
+    aplicarFiltros(todosReportes, nuevos, filtrosCategoria);
+  }
+
+  function toggleCategoria(categoria: string) {
+    const nuevos = filtrosCategoria.includes(categoria)
+      ? filtrosCategoria.filter((c) => c !== categoria)
+      : [...filtrosCategoria, categoria];
+
+    setFiltrosCategoria(nuevos);
+    aplicarFiltros(todosReportes, filtrosRiesgo, nuevos);
+  }
+
+  function seleccionarTodos() {
+    setFiltrosRiesgo(["ALTO", "MEDIO", "BAJO"]);
+    setFiltrosCategoria([...categorias]);
+    aplicarFiltros(todosReportes, ["ALTO", "MEDIO", "BAJO"], [...categorias]);
+  }
 
   async function cargarReportes() {
     try {
@@ -56,16 +158,12 @@ export default function MapaPage() {
       const res = await fetch("/api/mapa/reportes");
       const data = await res.json();
 
-if (data?.ok) {
-  const reportesTodos = (data.reportes || []) as Reporte[];
+      if (data?.ok) {
+        const lista = (data.reportes || []) as Reporte[];
 
-  const ordenados = reportesTodos.sort(
-    (a: Reporte, b: Reporte) => calcularPrioridad(b) - calcularPrioridad(a)
-  );
-
-  setReportes(ordenados);
-  if (ordenados.length) setSelected(ordenados[0]);
-}
+        setTodosReportes(lista);
+        aplicarFiltros(lista, filtrosRiesgo, filtrosCategoria);
+      }
     } finally {
       setLoading(false);
     }
@@ -80,7 +178,7 @@ if (data?.ok) {
       <div className="mx-auto max-w-6xl">
         <h1 className="text-4xl font-bold text-[#0A4E84]">Mapa ciudadano</h1>
         <p className="mt-2 text-slate-600">
-          Visualiza reportes ciudadanos por ubicación del hecho.
+          Visualiza reportes ciudadanos por ubicación, riesgo y categoría.
         </p>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
@@ -96,6 +194,59 @@ if (data?.ok) {
               >
                 {loading ? "Cargando..." : "Actualizar"}
               </button>
+            </div>
+
+            <div className="mb-4 rounded-2xl bg-slate-50 p-4">
+              <div className="mb-2 font-bold text-[#0A4E84]">
+                Filtrar por riesgo
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {(["ALTO", "MEDIO", "BAJO"] as Riesgo[]).map((riesgo) => (
+                  <button
+                    key={riesgo}
+                    onClick={() => toggleRiesgo(riesgo)}
+                    className={`rounded-xl px-3 py-2 text-sm font-semibold ${
+                      filtrosRiesgo.includes(riesgo)
+                        ? "bg-[#0A4E84] text-white"
+                        : "bg-white text-slate-600"
+                    }`}
+                  >
+                    {riesgo === "ALTO"
+                      ? "Riesgo alto"
+                      : riesgo === "MEDIO"
+                      ? "Riesgo medio"
+                      : "Riesgo bajo"}
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-4 mb-2 font-bold text-[#0A4E84]">
+                Filtrar por categoría
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {categorias.map((categoria) => (
+                  <button
+                    key={categoria}
+                    onClick={() => toggleCategoria(categoria)}
+                    className={`rounded-xl px-3 py-2 text-sm font-semibold ${
+                      filtrosCategoria.includes(categoria)
+                        ? "bg-[#E62E8A] text-white"
+                        : "bg-white text-slate-600"
+                    }`}
+                  >
+                    {categoria}
+                  </button>
+                ))}
+
+                <button
+                  onClick={seleccionarTodos}
+                  className="rounded-xl bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700"
+                >
+                  Ver todo
+                </button>
+              </div>
             </div>
 
             <MapaReportes
@@ -137,12 +288,19 @@ if (data?.ok) {
 
             {!selected && (
               <div className="mt-4 text-slate-500">
-                Selecciona un marcador para ver el detalle.
+                No hay reportes visibles con los filtros seleccionados.
               </div>
             )}
 
             {selected && (
               <div className="mt-4 space-y-4">
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <div className="text-sm text-slate-500">Riesgo IA</div>
+                  <div className="text-2xl font-bold text-slate-800">
+                    {clasificarRiesgo(selected.descripcion)}
+                  </div>
+                </div>
+
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <div className="text-sm text-slate-500">Estado</div>
                   <div
@@ -150,6 +308,13 @@ if (data?.ok) {
                     style={{ color: colorEstado(selected.estado_raw) }}
                   >
                     {selected.estado_label}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <div className="text-sm text-slate-500">Categoría</div>
+                  <div className="font-semibold text-slate-800">
+                    {obtenerCategoria(selected)}
                   </div>
                 </div>
 
