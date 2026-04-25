@@ -12,7 +12,7 @@ type Reporte = {
   lat: number;
   lng: number;
   created_at: string | null;
-  riesgo?: string;
+  riesgo?: "ALTO" | "MEDIO" | "BAJO";
 };
 
 type Props = {
