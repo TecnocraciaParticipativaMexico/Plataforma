@@ -20,6 +20,7 @@ type Reporte = {
   lat: number;
   lng: number;
   created_at: string | null;
+  riesgo?: Riesgo;
 };
 
 const categorias = [
@@ -114,7 +115,7 @@ export default function MapaPage() {
     categoriasActivas: string[]
   ) {
     const filtrados = lista.filter((reporte) => {
-      const riesgo = clasificarRiesgo(reporte.descripcion);
+      const riesgo = reporte.riesgo || clasificarRiesgo(reporte.descripcion);
       const categoria = obtenerCategoria(reporte);
 
       return (
@@ -159,10 +160,13 @@ export default function MapaPage() {
       const data = await res.json();
 
       if (data?.ok) {
-        const lista = (data.reportes || []) as Reporte[];
+const lista = ((data.reportes || []) as Reporte[]).map((reporte) => ({
+  ...reporte,
+  riesgo: clasificarRiesgo(reporte.descripcion),
+}));
 
-        setTodosReportes(lista);
-        aplicarFiltros(lista, filtrosRiesgo, filtrosCategoria);
+setTodosReportes(lista);
+aplicarFiltros(lista, filtrosRiesgo, filtrosCategoria);
       }
     } finally {
       setLoading(false);
