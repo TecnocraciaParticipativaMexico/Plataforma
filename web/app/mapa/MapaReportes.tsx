@@ -14,15 +14,6 @@ type Reporte = {
   created_at: string | null;
   riesgo?: string;
 };
-  process_id: string;
-  titulo: string;
-  descripcion: string;
-  estado_raw: string;
-  estado_label: string;
-  lat: number;
-  lng: number;
-  created_at: string | null;
-};
 
 type Props = {
   reportes: Reporte[];
