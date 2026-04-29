@@ -414,12 +414,36 @@ function limpiarTextoReporte(texto: string) {
       <div>Tipo: {evento.payload_json?.mime_type}</div>
     </div>
 
-    {evento.payload_json?.storage_path && (
+{evento.payload_json?.storage_path && (
+  <>
+    {evento.payload_json?.mime_type?.startsWith("image/") && (
       <img
         src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/evidence/${evento.payload_json.storage_path}`}
         className="mt-3 rounded-xl"
+        alt="Evidencia ciudadana"
       />
     )}
+
+    {evento.payload_json?.mime_type?.startsWith("audio/") && (
+      <audio
+        controls
+        className="mt-3 w-full"
+        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/evidence/${evento.payload_json.storage_path}`}
+      />
+    )}
+
+    {evento.payload_json?.mime_type === "application/pdf" && (
+      <a
+        href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/evidence/${evento.payload_json.storage_path}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
+      >
+        Ver PDF
+      </a>
+    )}
+  </>
+)}
 
     {evento.payload_json?.evidence_id && (
       <div className="mt-2 text-xs text-slate-500 break-all">
