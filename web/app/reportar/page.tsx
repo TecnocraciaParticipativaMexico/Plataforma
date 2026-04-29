@@ -155,10 +155,18 @@ const audioFile = new File([audioBlob], `nota-voz-${Date.now()}.${extension}`, {
 }
 
 function detenerGrabacion() {
-  if (mediaRecorderRef.current && grabando) {
-    mediaRecorderRef.current.stop();
+  const recorder = mediaRecorderRef.current;
+
+  if (!recorder) {
     setGrabando(false);
+    return;
   }
+
+  if (recorder.state === "recording" || recorder.state === "paused") {
+    recorder.stop();
+  }
+
+  setGrabando(false);
 }
 
 async function enviarReporte() {
