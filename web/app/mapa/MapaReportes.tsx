@@ -40,34 +40,34 @@ function clasificarRiesgoMapa(texto: string) {
   return "BAJO";
 }
 
-function crearIcono(riesgo: string) {
+function crearIcono(riesgo: "ALTO" | "MEDIO" | "BAJO") {
   let html = "";
 
   if (riesgo === "ALTO") {
-    html = `<div style="
-      width: 0;
-      height: 0;
-      border-left: 13px solid transparent;
-      border-right: 13px solid transparent;
-      border-bottom: 24px solid #ef0000;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,.35));
-    "></div>`;
+html = `<div style="
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-bottom: 34px solid #ef0000;
+  filter: drop-shadow(0 0 14px rgba(239,0,0,1));
+  animation: pulse 1.2s infinite;
+"></div>`;
   } else if (riesgo === "MEDIO") {
     html = `<div style="
       width: 24px;
       height: 24px;
       background: #ff7a00;
       border: 3px solid white;
-      box-shadow: 0 2px 8px rgba(0,0,0,.35);
+      box-shadow: 0 0 10px rgba(255,122,0,0.6);
     "></div>`;
   } else {
     html = `<div style="
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       background: #facc15;
       border: 3px solid white;
       border-radius: 999px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.35);
     "></div>`;
   }
 
