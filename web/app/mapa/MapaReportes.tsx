@@ -47,10 +47,10 @@ function crearIcono(riesgo: "ALTO" | "MEDIO" | "BAJO") {
 html = `<div style="
   width: 0;
   height: 0;
-  border-left: 18px solid transparent;
-  border-right: 18px solid transparent;
-  border-bottom: 34px solid #ef0000;
-  filter: drop-shadow(0 0 14px rgba(239,0,0,1));
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-bottom: 26px solid #ef0000;
+  filter: drop-shadow(0 0 10px rgba(239,0,0,0.9));
   animation: pulse 1.2s infinite;
 "></div>`;
   } else if (riesgo === "MEDIO") {
