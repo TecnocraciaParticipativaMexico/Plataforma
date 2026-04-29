@@ -407,7 +407,13 @@ function limpiarTextoReporte(texto: string) {
 
   {evento.event_type === "EvidenceSubmitted" && (
   <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-    <div className="font-semibold mb-1">📸 Evidencia subida</div>
+<div className="font-semibold mb-1">
+  {evento.payload_json?.mime_type?.startsWith("audio/")
+    ? "🎙️ Audio subido"
+    : evento.payload_json?.mime_type === "application/pdf"
+    ? "📄 PDF subido"
+    : "📸 Evidencia subida"}
+</div>
 
     <div className="mt-2">
       <div>Archivo: {evento.payload_json?.file_name}</div>
