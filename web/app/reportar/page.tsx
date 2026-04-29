@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const ReporteMap = dynamic(() => import("./ReporteMap"), {
   ssr: false,
@@ -97,6 +97,58 @@ export default function ReportarPage() {
   const [coordsConfirmadas, setCoordsConfirmadas] = useState<{ lat: number; lng: number } | null>(null);
   const [mostrarMapaConfirmacion, setMostrarMapaConfirmacion] = useState(false);
   const [mensajeMapa, setMensajeMapa] = useState("");
+  const [grabando, setGrabando] = useState(false);
+  const [audioUrl, setAudioUrl] = useState("");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  async function iniciarGrabacion() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    audioChunksRef.current = [];
+
+    const recorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = recorder;
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunksRef.current.push(event.data);
+      }
+    };
+
+    recorder.onstop = () => {
+      const audioBlob = new Blob(audioChunksRef.current, {
+        type: "audio/webm",
+      });
+
+      const audioFile = new File([audioBlob], `nota-voz-${Date.now()}.webm`, {
+        type: "audio/webm",
+      });
+
+      setArchivo(audioFile);
+      setAudioUrl(URL.createObjectURL(audioBlob));
+
+      stream.getTracks().forEach((track) => track.stop());
+    };
+
+    recorder.start();
+    setGrabando(true);
+  } catch (error) {
+    setResultado({
+      ok: false,
+      error:
+        "No se pudo acceder al micrófono. Revisa los permisos del navegador.",
+    });
+  }
+}
+
+function detenerGrabacion() {
+  if (mediaRecorderRef.current && grabando) {
+    mediaRecorderRef.current.stop();
+    setGrabando(false);
+  }
+}
 
 async function enviarReporte() {
   try {
@@ -432,6 +484,43 @@ onChange={(e) => {
 <p className="mt-2 text-sm text-slate-500">
   Puedes subir imagen, PDF o audio como evidencia. La voz ayuda cuando la persona no puede escribir fácilmente.
 </p>
+
+<div className="mt-4 rounded-2xl bg-slate-50 p-4">
+  <div className="mb-2 font-semibold text-[#0A4E84]">
+    Nota de voz
+  </div>
+
+  <p className="mb-3 text-sm text-slate-600">
+    Puedes grabar tu denuncia hablando, como en WhatsApp.
+  </p>
+
+  {!grabando ? (
+    <button
+      type="button"
+      onClick={iniciarGrabacion}
+      className="rounded-xl bg-[#0A4E84] px-4 py-3 font-semibold text-white"
+    >
+      🎙️ Grabar nota de voz
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={detenerGrabacion}
+      className="rounded-xl bg-red-600 px-4 py-3 font-semibold text-white"
+    >
+      ⏹️ Detener grabación
+    </button>
+  )}
+
+  {audioUrl && (
+    <div className="mt-4">
+      <div className="mb-2 text-sm font-semibold text-slate-700">
+        Audio grabado:
+      </div>
+      <audio controls src={audioUrl} className="w-full" />
+    </div>
+  )}
+</div>
 
           <button
             onClick={enviarReporte}
