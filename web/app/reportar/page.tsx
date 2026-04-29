@@ -424,9 +424,14 @@ onChange={(e) => {
           <label className="mb-2 block font-semibold">Evidencia (opcional)</label>
 <input
   type="file"
+  accept="image/*,application/pdf,audio/*,.mp3,.m4a,.wav,.webm"
   onChange={(e) => setArchivo(e.target.files?.[0] || null)}
-  className="mb-6 w-full rounded-2xl border px-4 py-3"
+  className="w-full rounded-2xl border border-[#0A4E84] px-5 py-4 text-lg"
 />
+
+<p className="mt-2 text-sm text-slate-500">
+  Puedes subir imagen, PDF o audio como evidencia. La voz ayuda cuando la persona no puede escribir fácilmente.
+</p>
 
           <button
             onClick={enviarReporte}
