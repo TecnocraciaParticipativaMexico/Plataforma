@@ -101,6 +101,8 @@ export default function ReportarPage() {
   const [audioUrl, setAudioUrl] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const [dictando, setDictando] = useState(false);
+const recognitionRef = useRef<any>(null);
 
   async function iniciarGrabacion() {
   try {
@@ -169,6 +171,52 @@ function detenerGrabacion() {
   setGrabando(false);
 }
 
+function iniciarDictado() {
+  const SpeechRecognition =
+    (window as any).SpeechRecognition ||
+    (window as any).webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Tu navegador no soporta dictado por voz");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "es-MX"; // luego lo haremos dinámico
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognitionRef.current = recognition;
+
+  recognition.onresult = (event: any) => {
+    let textoFinal = "";
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      textoFinal += event.results[i][0].transcript;
+    }
+
+    setDescripcion((prev) => prev + " " + textoFinal);
+  };
+
+  recognition.onerror = () => {
+    setDictando(false);
+  };
+
+  recognition.onend = () => {
+    setDictando(false);
+  };
+
+  recognition.start();
+  setDictando(true);
+}
+
+function detenerDictado() {
+  if (recognitionRef.current) {
+    recognitionRef.current.stop();
+  }
+  setDictando(false);
+}
+  
 async function enviarReporte() {
   try {
     setLoading(true);
@@ -379,14 +427,41 @@ if (resultadoIA.credibilidad === "BAJA") {
             placeholder="Ej. Bache enorme frente a primaria"
           />
 
-          <label className="mb-2 block font-semibold">Descripción</label>
-          <textarea
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            className="mb-4 w-full rounded-2xl border px-4 py-3"
-            rows={4}
-            placeholder="Describe el problema..."
-          />
+<label className="mb-2 block font-semibold">Descripción</label>
+
+<textarea
+  value={descripcion}
+  onChange={(e) => setDescripcion(e.target.value)}
+  className="mb-3 w-full rounded-2xl border px-4 py-3"
+  rows={4}
+  placeholder="Describe el problema..."
+/>
+
+<div className="mb-4">
+  {!dictando ? (
+    <button
+      type="button"
+      onClick={iniciarDictado}
+      className="rounded-xl bg-[#0A4E84] px-4 py-2 text-white font-semibold"
+    >
+      🎤 Dictar denuncia
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={detenerDictado}
+      className="rounded-xl bg-red-600 px-4 py-2 text-white font-semibold"
+    >
+      ⏹️ Detener dictado
+    </button>
+  )}
+
+  {dictando && (
+    <div className="mt-2 text-sm text-red-600 font-semibold">
+      🎙️ Escuchando... habla ahora
+    </div>
+  )}
+</div>
 
                     <label className="mb-2 block font-semibold">Ubicación del hecho</label>
           <p className="mb-3 text-sm text-slate-500">
