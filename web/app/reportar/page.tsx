@@ -108,8 +108,16 @@ export default function ReportarPage() {
 
     audioChunksRef.current = [];
 
-    const recorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = recorder;
+const mimeType = MediaRecorder.isTypeSupported("audio/mp4")
+  ? "audio/mp4"
+  : MediaRecorder.isTypeSupported("audio/webm")
+  ? "audio/webm"
+  : "";
+
+const recorder = new MediaRecorder(
+  stream,
+  mimeType ? { mimeType } : undefined
+);
 
     recorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
@@ -118,13 +126,16 @@ export default function ReportarPage() {
     };
 
     recorder.onstop = () => {
-      const audioBlob = new Blob(audioChunksRef.current, {
-        type: "audio/webm",
-      });
+const finalMimeType = recorder.mimeType || mimeType || "audio/mp4";
+const extension = finalMimeType.includes("mp4") ? "m4a" : "webm";
 
-      const audioFile = new File([audioBlob], `nota-voz-${Date.now()}.webm`, {
-        type: "audio/webm",
-      });
+const audioBlob = new Blob(audioChunksRef.current, {
+  type: finalMimeType,
+});
+
+const audioFile = new File([audioBlob], `nota-voz-${Date.now()}.${extension}`, {
+  type: finalMimeType,
+});
 
       setArchivo(audioFile);
       setAudioUrl(URL.createObjectURL(audioBlob));
