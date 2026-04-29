@@ -104,8 +104,18 @@ export default function MapaReportes({ reportes, selected, onSelect }: Props) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {reportes.map((reporte) => {
-          const riesgo = reporte.riesgo || clasificarRiesgoMapa(reporte.descripcion || "");
+{[...reportes]
+  .sort((a, b) => {
+    const orden = { ALTO: 3, MEDIO: 2, BAJO: 1 };
+
+    const ra = a.riesgo || clasificarRiesgoMapa(a.descripcion || "");
+    const rb = b.riesgo || clasificarRiesgoMapa(b.descripcion || "");
+
+    return orden[rb] - orden[ra];
+  })
+  .map((reporte) => {
+  const riesgo =
+  reporte.riesgo || clasificarRiesgoMapa(reporte.descripcion || "");
 
           return (
             <Marker
