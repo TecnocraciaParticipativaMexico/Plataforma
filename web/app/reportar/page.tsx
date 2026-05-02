@@ -102,7 +102,7 @@ export default function ReportarPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const [dictando, setDictando] = useState(false);
-const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<any>(null);
 
   async function iniciarGrabacion() {
   try {
