@@ -177,45 +177,6 @@ function iniciarDictado() {
     (window as any).webkitSpeechRecognition;
 
   if (!SpeechRecognition) {
-    alert("Tu navegador no soporta reconocimiento de voz");
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "es-MX";
-  recognition.continuous = true;
-
-  recognitionRef.current = recognition;
-
-  recognition.onstart = () => setDictando(true);
-
-  recognition.onend = () => setDictando(false);
-
-  recognition.onresult = (event: any) => {
-    let texto = "";
-
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      texto += event.results[i][0].transcript;
-    }
-
-    setDescripcion((prev) => prev + " " + texto);
-  };
-
-  recognition.start();
-}
-
-function detenerDictado() {
-  if (recognitionRef.current) {
-    recognitionRef.current.stop();
-  }
-}
-
-function iniciarDictado() {
-  const SpeechRecognition =
-    (window as any).SpeechRecognition ||
-    (window as any).webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
     alert("Tu navegador no soporta dictado por voz");
     return;
   }
@@ -475,30 +436,6 @@ if (resultadoIA.credibilidad === "BAJA") {
   rows={4}
   placeholder="Describe el problema..."
 />
-
-<div className="mb-4 flex gap-2">
-  <button
-    type="button"
-    onClick={iniciarDictado}
-    className="rounded-xl bg-[#0A4E84] px-4 py-2 text-white"
-  >
-    🎤 Dictar
-  </button>
-
-  <button
-    type="button"
-    onClick={detenerDictado}
-    className="rounded-xl bg-red-500 px-4 py-2 text-white"
-  >
-    ⛔ Detener
-  </button>
-
-  {dictando && (
-    <span className="self-center text-sm text-green-600">
-      Escuchando...
-    </span>
-  )}
-</div>
 
 <div className="mb-4">
   {!dictando ? (
