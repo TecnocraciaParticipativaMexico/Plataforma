@@ -99,6 +99,7 @@ export default function ReportarPage() {
   const [mensajeMapa, setMensajeMapa] = useState("");
   const [grabando, setGrabando] = useState(false);
   const [audioUrl, setAudioUrl] = useState("");
+  const [idiomaAudio, setIdiomaAudio] = useState("No sé");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const [dictando, setDictando] = useState(false);
