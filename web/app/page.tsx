@@ -74,12 +74,19 @@ export default function Home() {
           </p>
 
           <div className="flex gap-3">
-  <button className="rounded-xl bg-[#F97316] px-4 py-2 text-sm font-semibold text-white shadow">
-    Perfil Ciudadano
-  </button>
-  <button className="rounded-xl bg-[#3B82F6] px-4 py-2 text-sm font-semibold text-white shadow">
-    Miembro de Comité
-  </button>
+<Link
+  href="/mis-denuncias"
+  className="rounded-xl bg-[#F97316] px-4 py-2 text-sm font-semibold text-white shadow"
+>
+  Perfil Ciudadano
+</Link>
+
+<Link
+  href="/comites"
+  className="rounded-xl bg-[#3B82F6] px-4 py-2 text-sm font-semibold text-white shadow"
+>
+  Miembro de Comité
+</Link>
 </div>
         </section>
 
