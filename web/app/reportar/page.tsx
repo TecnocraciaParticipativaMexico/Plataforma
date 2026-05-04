@@ -392,6 +392,12 @@ if (resultadoIA.credibilidad === "BAJA") {
   return;
 }
 
+const tipoEntrada = archivo
+  ? "voz o archivo adjunto"
+  : descripcion
+  ? "texto"
+  : "sin contenido";
+
     const res = await fetch("/api/process/create", {
       method: "POST",
       headers: {
@@ -400,7 +406,13 @@ if (resultadoIA.credibilidad === "BAJA") {
       body: JSON.stringify({
         tipo_proceso: tipoProceso,
         actor_hash: actorHash,
-        note: `${descripcion}
+        note: `Tipo de entrada: ${tipoEntrada}
+
+${descripcion || "[Sin descripción escrita]"}
+
+Idioma de nota de voz: ${archivo ? idiomaAudio : "No aplica"}
+
+(Ubicación: ${ubicacionFinal || "No especificada"})`,
 Idioma de nota de voz: ${idiomaAudio}
 (Ubicación: ${ubicacionFinal || "No especificada"})`,
       }),
