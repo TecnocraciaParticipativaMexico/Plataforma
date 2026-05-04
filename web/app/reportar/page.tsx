@@ -406,14 +406,12 @@ const tipoEntrada = archivo
       body: JSON.stringify({
         tipo_proceso: tipoProceso,
         actor_hash: actorHash,
-        note: `Tipo de entrada: ${tipoEntrada}
+note: `Tipo de entrada: ${tipoEntrada}
 
 ${descripcion || "[Sin descripción escrita]"}
 
 Idioma de nota de voz: ${archivo ? idiomaAudio : "No aplica"}
 
-(Ubicación: ${ubicacionFinal || "No especificada"})`,
-Idioma de nota de voz: ${idiomaAudio}
 (Ubicación: ${ubicacionFinal || "No especificada"})`,
       }),
     });
