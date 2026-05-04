@@ -13,8 +13,13 @@ type DenunciaGuardada = {
 export default function MisDenunciasPage() {
   const [actorHash, setActorHash] = useState("");
   const [denuncias, setDenuncias] = useState<DenunciaGuardada[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    cargarPerfil();
+  }, []);
+
+  async function cargarPerfil() {
     let hash = localStorage.getItem("actor_hash");
 
     if (!hash) {
@@ -24,22 +29,39 @@ export default function MisDenunciasPage() {
 
     setActorHash(hash);
 
-    const guardadas = JSON.parse(
+    const locales: DenunciaGuardada[] = JSON.parse(
       localStorage.getItem("mis_denuncias") || "[]"
     );
 
-    setDenuncias(guardadas);
-  }, []);
+    try {
+      const res = await fetch(`/api/citizen/reports?actor_hash=${hash}`);
+      const data = await res.json();
 
-  function borrarHistorialLocal() {
-    const confirmar = confirm(
-      "Esto solo borra el historial de este dispositivo. No borra eventos ni evidencia del sistema."
-    );
+      const remotas: DenunciaGuardada[] = data?.ok
+        ? data.reports.map((r: any) => ({
+            process_id: r.process_id,
+            titulo: r.title,
+            categoria: r.category || "Otro",
+            fecha: r.created_at,
+          }))
+        : [];
 
-    if (!confirmar) return;
+      const unidas = [...remotas, ...locales];
+      const sinDuplicados = Array.from(
+        new Map(unidas.map((d) => [d.process_id, d])).values()
+      );
 
-    localStorage.removeItem("mis_denuncias");
-    setDenuncias([]);
+      sinDuplicados.sort(
+        (a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+      );
+
+      setDenuncias(sinDuplicados);
+      localStorage.setItem("mis_denuncias", JSON.stringify(sinDuplicados));
+    } catch {
+      setDenuncias(locales);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -52,8 +74,8 @@ export default function MisDenunciasPage() {
         <h1 className="mb-2 text-3xl font-bold">Mis denuncias</h1>
 
         <p className="mb-6 text-sm leading-6 text-slate-600">
-          Este perfil ciudadano es anónimo. Solo usa el identificador guardado
-          en este dispositivo para ayudarte a encontrar tus reportes.
+          Este perfil ciudadano es anónimo y recupera tus denuncias vinculadas a
+          este dispositivo.
         </p>
 
         <section className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
@@ -70,30 +92,18 @@ export default function MisDenunciasPage() {
               {actorHash || "Cargando..."}
             </div>
           </div>
-
-          <p className="mt-4 text-xs leading-5 text-slate-500">
-            No es CURP, INE, teléfono, correo ni identidad civil. Si cambias de
-            navegador o dispositivo, este historial local puede no aparecer.
-          </p>
         </section>
 
         <section className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold">Historial propio</h2>
+          <h2 className="mb-4 text-xl font-bold">Historial propio</h2>
 
-            {denuncias.length > 0 && (
-              <button
-                onClick={borrarHistorialLocal}
-                className="rounded-xl border border-red-200 px-3 py-2 text-xs font-semibold text-red-600"
-              >
-                Borrar local
-              </button>
-            )}
-          </div>
-
-          {denuncias.length === 0 ? (
+          {loading ? (
             <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-              Todavía no hay denuncias guardadas en este dispositivo.
+              Cargando denuncias...
+            </div>
+          ) : denuncias.length === 0 ? (
+            <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+              Todavía no hay denuncias guardadas para este perfil.
             </div>
           ) : (
             <div className="space-y-3">
@@ -112,10 +122,6 @@ export default function MisDenunciasPage() {
 
                   <div className="mb-3 text-xs text-slate-500">
                     Creada: {new Date(denuncia.fecha).toLocaleString()}
-                  </div>
-
-                  <div className="mb-3 break-all rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
-                    ID: {denuncia.process_id}
                   </div>
 
                   <Link
