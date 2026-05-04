@@ -73,20 +73,20 @@ export default function Home() {
             crea procesos verificables y consulta el avance con transparencia total.
           </p>
 
-          <div className="flex gap-3">
-<Link
-  href="/mis-denuncias"
-  className="rounded-xl bg-[#F97316] px-4 py-2 text-sm font-semibold text-white shadow"
->
-  Perfil Ciudadano
-</Link>
+<div className="flex gap-3">
+  <a
+    href="/mis-denuncias"
+    className="rounded-xl bg-[#F97316] px-4 py-2 text-sm font-semibold text-white shadow"
+  >
+    Perfil Ciudadano
+  </a>
 
-<Link
-  href="/comites"
-  className="rounded-xl bg-[#3B82F6] px-4 py-2 text-sm font-semibold text-white shadow"
->
-  Miembro de Comité
-</Link>
+  <a
+    href="/comites"
+    className="rounded-xl bg-[#3B82F6] px-4 py-2 text-sm font-semibold text-white shadow"
+  >
+    Miembro de Comité
+  </a>
 </div>
         </section>
 
@@ -227,14 +227,14 @@ export default function Home() {
             <span className="text-lg">🏠</span>
             <span>Inicio</span>
           </div>
-          <div className="flex flex-col items-center text-slate-500">
-            <span className="text-lg">🧩</span>
-            <span>Módulos</span>
-          </div>
-          <div className="flex flex-col items-center text-slate-500">
-            <span className="text-lg">👤</span>
-            <span>Perfil</span>
-          </div>
+<a href="/comites" className="flex flex-col items-center text-slate-500">
+  <span className="text-lg">🧩</span>
+  <span>Módulos</span>
+</a>
+         <a href="/mis-denuncias" className="flex flex-col items-center text-slate-500">
+  <span className="text-lg">👤</span>
+  <span>Perfil</span>
+</a>
         </div>
       </nav>
     </main>
