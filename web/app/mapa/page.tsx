@@ -81,6 +81,22 @@ function colorEstado(estado: string) {
   return "#38BDF8";
 }
 
+function generarHoras() {
+  const horas: string[] = [];
+
+  for (let h = 0; h < 24; h++) {
+    for (let m of [0, 30]) {
+      const hh = h.toString().padStart(2, "0");
+      const mm = m.toString().padStart(2, "0");
+      horas.push(`${hh}:${mm}`);
+    }
+  }
+
+  return horas;
+}
+
+const opcionesHora = generarHoras();
+
 export default function MapaPage() {
   const [todosReportes, setTodosReportes] = useState<Reporte[]>([]);
   const [reportes, setReportes] = useState<Reporte[]>([]);
@@ -97,6 +113,10 @@ export default function MapaPage() {
     ...categorias,
   ]);
 
+const [fechaFiltro, setFechaFiltro] = useState<string>("");
+const [horaDesde, setHoraDesde] = useState<string>("");
+const [horaHasta, setHoraHasta] = useState<string>("");
+
   function ordenarReportes(lista: Reporte[]) {
     return [...lista].sort((a, b) => {
       const riesgoA = clasificarRiesgo(a.descripcion);
@@ -109,25 +129,37 @@ export default function MapaPage() {
     });
   }
 
-  function aplicarFiltros(
-    lista: Reporte[],
-    riesgos: Riesgo[],
-    categoriasActivas: string[]
-  ) {
-    const filtrados = lista.filter((reporte) => {
-      const riesgo = reporte.riesgo || clasificarRiesgo(reporte.descripcion);
-      const categoria = obtenerCategoria(reporte);
+function aplicarFiltros(
+  lista: Reporte[],
+  riesgos: Riesgo[],
+  categoriasActivas: string[],
+  fecha = fechaFiltro,
+  desde = horaDesde,
+  hasta = horaHasta
+) {
+  const filtrados = lista.filter((reporte) => {
+    const riesgo = reporte.riesgo || clasificarRiesgo(reporte.descripcion);
+    const categoria = obtenerCategoria(reporte);
 
-      return (
-        riesgos.includes(riesgo) && categoriasActivas.includes(categoria)
-      );
-    });
+    if (fecha && reporte.created_at) {
+      const fechaReporte = new Date(reporte.created_at).toISOString().slice(0, 10);
+      if (fechaReporte !== fecha) return false;
+    }
 
-    const ordenados = ordenarReportes(filtrados);
+    if ((desde || hasta) && reporte.created_at) {
+      const horaReporte = new Date(reporte.created_at).toTimeString().slice(0, 5);
+      if (desde && horaReporte < desde) return false;
+      if (hasta && horaReporte > hasta) return false;
+    }
 
-    setReportes(ordenados);
-    setSelected(ordenados[0] || null);
-  }
+    return riesgos.includes(riesgo) && categoriasActivas.includes(categoria);
+  });
+
+  const ordenados = ordenarReportes(filtrados);
+
+  setReportes(ordenados);
+  setSelected(ordenados[0] || null);
+}
 
   function toggleRiesgo(riesgo: Riesgo) {
     const nuevos = filtrosRiesgo.includes(riesgo)
@@ -151,6 +183,9 @@ export default function MapaPage() {
     setFiltrosRiesgo(["ALTO", "MEDIO", "BAJO"]);
     setFiltrosCategoria([...categorias]);
     aplicarFiltros(todosReportes, ["ALTO", "MEDIO", "BAJO"], [...categorias]);
+    setFechaFiltro("");
+    setHoraDesde("");
+    setHoraHasta("");
   }
 
   async function cargarReportes() {
@@ -228,6 +263,61 @@ aplicarFiltros(lista, filtrosRiesgo, filtrosCategoria);
               <div className="mt-4 mb-2 font-bold text-[#0A4E84]">
                 Filtrar por categoría
               </div>
+
+      <div className="mt-4 mb-2 font-bold text-[#0A4E84]">
+  Filtrar por fecha
+</div>
+
+<input
+  type="date"
+  value={fechaFiltro}
+onChange={(e) => {
+  const nuevaFecha = e.target.value;
+  setFechaFiltro(nuevaFecha);
+  aplicarFiltros(todosReportes, filtrosRiesgo, filtrosCategoria, nuevaFecha, horaDesde, horaHasta);
+}}
+  className="mb-3 w-full rounded-xl border px-3 py-2"
+/>
+
+<div className="mt-4 mb-2 font-bold text-[#0A4E84]">
+  Filtrar por hora
+</div>
+
+<div className="flex gap-2">
+  <select
+    value={horaDesde}
+onChange={(e) => {
+  const nuevaHora = e.target.value;
+  setHoraDesde(nuevaHora);
+  aplicarFiltros(todosReportes, filtrosRiesgo, filtrosCategoria, fechaFiltro, nuevaHora, horaHasta);
+}}
+    className="w-1/2 rounded-xl border px-3 py-2"
+  >
+    <option value="">Desde</option>
+    {opcionesHora.map((h) => (
+      <option key={h} value={h}>
+        {h}
+      </option>
+    ))}
+  </select>
+
+  <select
+    value={horaHasta}
+onChange={(e) => {
+  const nuevaHora = e.target.value;
+  setHoraHasta(nuevaHora);
+  aplicarFiltros(todosReportes, filtrosRiesgo, filtrosCategoria, fechaFiltro, horaDesde, nuevaHora);
+}}
+    className="w-1/2 rounded-xl border px-3 py-2"
+  >
+    <option value="">Hasta</option>
+    {opcionesHora.map((h) => (
+      <option key={h} value={h}>
+        {h}
+      </option>
+    ))}
+  </select>
+</div>
 
               <div className="flex flex-wrap gap-2">
                 {categorias.map((categoria) => (
