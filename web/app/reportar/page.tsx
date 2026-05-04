@@ -416,8 +416,26 @@ Idioma de nota de voz: ${archivo ? idiomaAudio : "No aplica"}
       }),
     });
 
-    const data = await res.json();
-    const processId = data?.result?.out_process_id;
+const data = await res.json();
+const processId = data?.result?.out_process_id;
+
+if (data?.ok && processId) {
+  const denunciasGuardadas = JSON.parse(
+    localStorage.getItem("mis_denuncias") || "[]"
+  );
+
+  const nuevaDenuncia = {
+    process_id: processId,
+    titulo: tipoProceso,
+    categoria,
+    fecha: new Date().toISOString(),
+  };
+
+  localStorage.setItem(
+    "mis_denuncias",
+    JSON.stringify([nuevaDenuncia, ...denunciasGuardadas])
+  );
+}
 
     if (data?.ok && processId && archivo) {
       const formData = new FormData();
