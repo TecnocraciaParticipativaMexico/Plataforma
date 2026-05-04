@@ -102,6 +102,7 @@ export default function ReportarPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const [dictando, setDictando] = useState(false);
+  const [textoInterino, setTextoInterino] = useState("");
   const recognitionRef = useRef<any>(null);
 
   async function iniciarGrabacion() {
@@ -121,29 +122,35 @@ const recorder = new MediaRecorder(
   mimeType ? { mimeType } : undefined
 );
 
-    recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunksRef.current.push(event.data);
-      }
-    };
+mediaRecorderRef.current = recorder;
+audioChunksRef.current = [];
 
-    recorder.onstop = () => {
-const finalMimeType = recorder.mimeType || mimeType || "audio/mp4";
-const extension = finalMimeType.includes("mp4") ? "m4a" : "webm";
+recorder.ondataavailable = (event) => {
+  if (event.data.size > 0) {
+    audioChunksRef.current.push(event.data);
+  }
+};
 
-const audioBlob = new Blob(audioChunksRef.current, {
-  type: finalMimeType,
-});
+recorder.onstop = () => {
+  const finalMimeType = recorder.mimeType || mimeType || "audio/mp4";
+  const extension = finalMimeType.includes("mp4") ? "m4a" : "webm";
 
-const audioFile = new File([audioBlob], `nota-voz-${Date.now()}.${extension}`, {
-  type: finalMimeType,
-});
+  const audioBlob = new Blob(audioChunksRef.current, {
+    type: finalMimeType,
+  });
 
-      setArchivo(audioFile);
-      setAudioUrl(URL.createObjectURL(audioBlob));
+  const audioFile = new File(
+    [audioBlob],
+    `nota-voz-${Date.now()}.${extension}`,
+    { type: finalMimeType }
+  );
 
-      stream.getTracks().forEach((track) => track.stop());
-    };
+  setArchivo(audioFile);
+  setAudioUrl(URL.createObjectURL(audioBlob));
+  setGrabando(false);
+
+  stream.getTracks().forEach((track) => track.stop());
+};
 
     recorder.start();
     setGrabando(true);
@@ -182,28 +189,44 @@ function iniciarDictado() {
   }
 
   const recognition = new SpeechRecognition();
-  recognition.lang = "es-MX"; // luego lo haremos dinámico
-  recognition.continuous = true;
+  recognition.lang = "es-MX";
+  recognition.continuous = false;
   recognition.interimResults = true;
 
   recognitionRef.current = recognition;
 
   recognition.onresult = (event: any) => {
-    let textoFinal = "";
+    let final = "";
+    let interino = "";
 
     for (let i = event.resultIndex; i < event.results.length; i++) {
-      textoFinal += event.results[i][0].transcript;
+      const texto = event.results[i][0].transcript;
+
+      if (event.results[i].isFinal) {
+        final += texto;
+      } else {
+        interino += texto;
+      }
     }
 
-    setDescripcion((prev) => prev + " " + textoFinal);
+    if (final.trim()) {
+      setDescripcion((prev) =>
+        prev.trim() ? `${prev.trim()} ${final.trim()}` : final.trim()
+      );
+      setTextoInterino("");
+    } else {
+      setTextoInterino(interino);
+    }
   };
 
   recognition.onerror = () => {
     setDictando(false);
+    setTextoInterino("");
   };
 
   recognition.onend = () => {
     setDictando(false);
+    setTextoInterino("");
   };
 
   recognition.start();
@@ -456,14 +479,20 @@ if (resultadoIA.credibilidad === "BAJA") {
     </button>
   )}
 
-  {dictando && (
-    <div className="mt-2 text-sm text-red-600 font-semibold">
-      🎙️ Escuchando... habla ahora
-    </div>
-  )}
+{dictando && (
+  <div className="mt-2 text-sm font-semibold text-red-600">
+    🎙️ Escuchando... habla ahora
+  </div>
+)}
+
+{textoInterino && (
+  <div className="mt-2 rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-600">
+    Texto detectado: {textoInterino}
+  </div>
+)}
 </div>
 
-                    <label className="mb-2 block font-semibold">Ubicación del hecho</label>
+<label className="mb-2 block font-semibold">Ubicación del hecho</label>
           <p className="mb-3 text-sm text-slate-500">
             Escribe la ubicación del hecho. No pedimos tu ubicación en vivo.
             También puedes pegar un link de Google Maps del lugar.
@@ -606,16 +635,28 @@ onChange={(e) => {
     </button>
   )}
 
-  {audioUrl && (
-    <div className="mt-4">
-      <div className="mb-2 text-sm font-semibold text-slate-700">
-        Audio grabado:
-      </div>
-      <audio controls src={audioUrl} className="w-full" />
+{audioUrl && (
+  <div className="mt-4">
+    <div className="mb-2 text-sm font-semibold text-slate-700">
+      Audio grabado:
     </div>
-  )}
-</div>
 
+    <audio controls src={audioUrl} className="w-full" />
+
+    <button
+      type="button"
+      onClick={() => {
+        setArchivo(null);
+        setAudioUrl("");
+      }}
+      className="mt-3 rounded-xl bg-red-600 px-4 py-2 font-semibold text-white"
+    >
+      Eliminar audio
+    </button>
+  </div>
+)}
+</div>
+  
           <button
             onClick={enviarReporte}
             disabled={loading}
