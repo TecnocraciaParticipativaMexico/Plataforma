@@ -103,6 +103,7 @@ export default function ReportarPage() {
   const audioChunksRef = useRef<Blob[]>([]);
   const [dictando, setDictando] = useState(false);
   const [textoInterino, setTextoInterino] = useState("");
+  const textoInterinoRef = useRef("");
   const recognitionRef = useRef<any>(null);
 
   async function iniciarGrabacion() {
@@ -216,6 +217,7 @@ function iniciarDictado() {
       setTextoInterino("");
     } else {
       setTextoInterino(interino);
+textoInterinoRef.current = interino;
     }
   };
 
@@ -234,9 +236,21 @@ function iniciarDictado() {
 }
 
 function detenerDictado() {
+  const pendiente = textoInterinoRef.current.trim();
+
+  if (pendiente) {
+    setDescripcion((prev) =>
+      prev.trim() ? `${prev.trim()} ${pendiente}` : pendiente
+    );
+  }
+
+  setTextoInterino("");
+  textoInterinoRef.current = "";
+
   if (recognitionRef.current) {
     recognitionRef.current.stop();
   }
+
   setDictando(false);
 }
   
@@ -426,6 +440,7 @@ if (resultadoIA.credibilidad === "BAJA") {
       <div className="mx-auto max-w-md px-4 py-6">
         <h1 className="mb-6 text-3xl font-bold">Crear Denuncia Ciudadana</h1>
 
+        {!resultado?.ok && (
         <div className="rounded-[28px] bg-white p-6 shadow-sm">
           <label className="mb-2 block font-semibold">Categoría</label>
           <select
@@ -679,6 +694,7 @@ onChange={(e) => {
             {loading ? "Enviando..." : "Enviar Denuncia"}
           </button>
         </div>
+)}
 
 {resultado && resultado.ok && (
   <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm text-center">
