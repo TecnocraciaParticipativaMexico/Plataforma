@@ -435,6 +435,19 @@ if (data?.ok && processId) {
     "mis_denuncias",
     JSON.stringify([nuevaDenuncia, ...denunciasGuardadas])
   );
+
+  await fetch("/api/citizen/reports", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      actor_hash: actorHash,
+      process_id: processId,
+      title: tipoProceso,
+      category: categoria,
+    }),
+  });
 }
 
     if (data?.ok && processId && archivo) {
