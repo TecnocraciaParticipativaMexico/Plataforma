@@ -646,16 +646,29 @@ onChange={(e) => {
     <button
       type="button"
       onClick={() => {
+        setDescripcion((prev) =>
+          prev
+            ? prev + " [Nota de voz incluida como evidencia]"
+            : "[Denuncia enviada por nota de voz. Revisar audio adjunto]"
+        );
+      }}
+      className="mt-3 rounded-xl bg-green-600 px-4 py-2 font-semibold text-white"
+    >
+      Usar audio como descripción
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
         setArchivo(null);
         setAudioUrl("");
       }}
-      className="mt-3 rounded-xl bg-red-600 px-4 py-2 font-semibold text-white"
+      className="ml-2 mt-3 rounded-xl bg-red-600 px-4 py-2 font-semibold text-white"
     >
       Eliminar audio
     </button>
   </div>
 )}
-</div>
   
           <button
             onClick={enviarReporte}
