@@ -399,7 +399,9 @@ if (resultadoIA.credibilidad === "BAJA") {
       body: JSON.stringify({
         tipo_proceso: tipoProceso,
         actor_hash: actorHash,
-        note: `${descripcion} (Ubicación: ${ubicacionFinal || "No especificada"})`,
+        note: `${descripcion}
+Idioma de nota de voz: ${idiomaAudio}
+(Ubicación: ${ubicacionFinal || "No especificada"})`,
       }),
     });
 
@@ -631,6 +633,24 @@ onChange={(e) => {
   <p className="mb-3 text-sm text-slate-600">
     Puedes grabar tu denuncia hablando, como en WhatsApp.
   </p>
+
+  <label className="mb-2 block text-sm font-semibold text-[#0A4E84]">
+  Idioma de la nota de voz
+</label>
+
+<select
+  value={idiomaAudio}
+  onChange={(e) => setIdiomaAudio(e.target.value)}
+  className="mb-3 w-full rounded-xl border px-3 py-2 text-sm"
+>
+  <option>No sé</option>
+  <option>Español</option>
+  <option>Náhuatl</option>
+  <option>Maya</option>
+  <option>Mixteco</option>
+  <option>Zapoteco</option>
+  <option>Otro</option>
+</select>
 
   {!grabando ? (
     <button
