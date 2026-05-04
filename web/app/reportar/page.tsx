@@ -669,9 +669,10 @@ onChange={(e) => {
     </button>
   </div>
 )}
-  
-          <button
-            onClick={enviarReporte}
+</div>
+
+<button
+  onClick={enviarReporte}
             disabled={loading}
             className="w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-lg font-bold text-[#1F2937]"
           >
