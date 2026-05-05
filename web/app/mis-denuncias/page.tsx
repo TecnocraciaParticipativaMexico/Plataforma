@@ -12,8 +12,18 @@ type DenunciaGuardada = {
 
 export default function MisDenunciasPage() {
   const [actorHash, setActorHash] = useState("");
-  const [denuncias, setDenuncias] = useState<DenunciaGuardada[]>([]);
-  const [loading, setLoading] = useState(true);
+const [denuncias, setDenuncias] = useState<DenunciaGuardada[]>([]);
+const [loading, setLoading] = useState(true);
+
+const totalDenuncias = denuncias.length;
+const ultimaParticipacion =
+  denuncias.length > 0
+    ? new Date(denuncias[0].fecha).toLocaleString()
+    : "Sin participación todavía";
+
+const categoriasUnicas = Array.from(
+  new Set(denuncias.map((d) => d.categoria || "Otro"))
+);
 
   useEffect(() => {
     cargarPerfil();
@@ -78,21 +88,69 @@ export default function MisDenunciasPage() {
           este dispositivo.
         </p>
 
-        <section className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
-          <div className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-            Perfil ciudadano básico
-          </div>
+<section className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
+  <div className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+    Perfil ciudadano básico
+  </div>
 
-          <div className="rounded-2xl bg-slate-50 p-4">
-            <div className="text-sm font-semibold text-slate-500">
-              Actor hash local
-            </div>
+  <div className="mb-4 rounded-2xl bg-slate-50 p-4">
+    <div className="text-sm font-semibold text-slate-500">
+      Actor hash local
+    </div>
 
-            <div className="mt-2 break-all text-xs text-slate-700">
-              {actorHash || "Cargando..."}
-            </div>
-          </div>
-        </section>
+    <div className="mt-2 break-all text-xs text-slate-700">
+      {actorHash || "Cargando..."}
+    </div>
+  </div>
+
+  <div className="grid grid-cols-1 gap-3">
+    <div className="rounded-2xl border border-slate-200 p-4">
+      <div className="text-sm font-semibold text-slate-500">
+        Denuncias creadas
+      </div>
+      <div className="mt-1 text-3xl font-extrabold text-[#0A4E84]">
+        {totalDenuncias}
+      </div>
+    </div>
+
+    <div className="rounded-2xl border border-slate-200 p-4">
+      <div className="text-sm font-semibold text-slate-500">
+        Última participación
+      </div>
+      <div className="mt-1 text-sm font-bold text-[#0A4E84]">
+        {ultimaParticipacion}
+      </div>
+    </div>
+
+    <div className="rounded-2xl border border-slate-200 p-4">
+      <div className="text-sm font-semibold text-slate-500">
+        Categorías reportadas
+      </div>
+
+      {categoriasUnicas.length === 0 ? (
+        <div className="mt-1 text-sm text-slate-500">
+          Ninguna todavía
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {categoriasUnicas.map((categoria) => (
+            <span
+              key={categoria}
+              className="rounded-full bg-[#F2C300] px-3 py-1 text-xs font-bold text-[#1F2937]"
+            >
+              {categoria}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+
+  <div className="mt-4 rounded-2xl bg-blue-50 p-4 text-sm leading-6 text-blue-900">
+    Próxima fase: recuperación con frase secreta para poder abrir este perfil
+    desde otro dispositivo sin usar correo, teléfono, INE ni CURP.
+  </div>
+</section>
 
         <section className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-xl font-bold">Historial propio</h2>
