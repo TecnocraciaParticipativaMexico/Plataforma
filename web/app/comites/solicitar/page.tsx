@@ -50,9 +50,10 @@ function textoInvalido(texto: string) {
   const t = texto.toLowerCase().trim();
 
   const bloqueadas = [
-    "ching", "pendej", "puto", "puta", "mierda", "jaja", "jajaja",
-    "asdf", "qwerty", "xxxxx", "prueba", "test", "fake", "falso",
-    "inventado", "no se", "no sé", "nada",
+  "ching", "pendej", "puto", "puta", "mierda", "verga", "mamar", "mama", "papa",
+  "tu mama", "tu mamá", "tu papa", "tu papá", "me la pellizcan", "madre", "padre",
+  "jaja", "jajaja", "asdf", "qwerty", "xxxxx", "prueba", "test", "morena", "prian",
+  "fake", "falso", "inventado", "no se", "no sé", "nada",
   ];
 
   if (t.length < 15) return true;
@@ -69,7 +70,7 @@ export default function SolicitarComitePage() {
   const [state, setState] = useState("");
   const [participationType, setParticipationType] = useState("Protegida");
   const [publicName, setPublicName] = useState("");
-  const [expertiseArea, setExpertiseArea] = useState("Seguridad Ciudadana");
+  const [expertiseArea, setExpertiseArea] = useState("");
   const [experienceSummary, setExperienceSummary] = useState("");
   const [motivation, setMotivation] = useState("");
   const [result, setResult] = useState<any>(null);
@@ -95,13 +96,13 @@ export default function SolicitarComitePage() {
         return;
       }
 
-      if (textoInvalido(experienceSummary)) {
-        setResult({
-          ok: false,
-          error: "El resumen de experiencia parece muy corto, poco claro o inválido.",
-        });
-        return;
-      }
+if (textoInvalido(expertiseArea)) {
+  setResult({
+    ok: false,
+    error: "El área de experiencia parece poco clara o inválida.",
+  });
+  return;
+}
 
       if (textoInvalido(motivation)) {
         setResult({
@@ -172,7 +173,7 @@ export default function SolicitarComitePage() {
             onChange={(e) => {
               const id = Number(e.target.value);
               setModuleId(id);
-              setExpertiseArea(modulos[id - 1]);
+              setExpertiseArea("");
             }}
             className="mb-4 w-full rounded-2xl border px-4 py-3"
           >
@@ -246,16 +247,13 @@ export default function SolicitarComitePage() {
             </>
           )}
 
-          <label className="mb-2 block font-semibold">Área de experiencia</label>
-          <select
-            value={expertiseArea}
-            onChange={(e) => setExpertiseArea(e.target.value)}
-            className="mb-4 w-full rounded-2xl border px-4 py-3"
-          >
-            {modulos.map((modulo) => (
-              <option key={modulo}>{modulo}</option>
-            ))}
-          </select>
+<label className="mb-2 block font-semibold">Área de experiencia específica</label>
+<input
+  value={expertiseArea}
+  onChange={(e) => setExpertiseArea(e.target.value)}
+  className="mb-4 w-full rounded-2xl border px-4 py-3"
+  placeholder="Ej. derecho ambiental, finanzas públicas, seguridad comunitaria"
+/>
 
           <label className="mb-2 block font-semibold">Resumen de experiencia</label>
           <textarea
