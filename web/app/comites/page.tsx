@@ -50,6 +50,20 @@ export default function ComitesPage() {
   Abrir panel de comité
 </Link>
 
+<Link
+  href="/comites/crear"
+  className="mb-4 mt-6 block rounded-2xl bg-[#F2C300] px-5 py-4 text-center text-lg font-bold text-[#1F2937]"
+>
+  Crear comité ciudadano local
+</Link>
+
+<Link
+  href="/comites/panel"
+  className="mb-8 block rounded-2xl bg-[#E6007E] px-5 py-5 text-center text-lg font-extrabold text-white shadow-[0_6px_0_0_#8A0050]"
+>
+  Abrir panel de comité activo
+</Link>
+
         <section className="space-y-4">
           {modulos.map((modulo) => (
             <div
