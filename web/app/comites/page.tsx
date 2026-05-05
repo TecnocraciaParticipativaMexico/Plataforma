@@ -44,8 +44,9 @@ export default function ComitesPage() {
         </section>
 
         <Link
+<Link
   href="/comites/panel"
-  className="mt-4 block rounded-xl bg-[#0A4E84] px-4 py-3 text-center text-sm font-semibold text-white"
+  className="mb-8 mt-6 block rounded-2xl bg-[#E6007E] px-5 py-5 text-center text-lg font-extrabold text-white shadow-[0_6px_0_0_#8A0050]"
 >
   Abrir panel de comité
 </Link>
