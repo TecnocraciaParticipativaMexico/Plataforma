@@ -44,17 +44,26 @@ const categoriasUnicas = Array.from(
     );
 
     try {
-      const res = await fetch(`/api/citizen/reports?actor_hash=${hash}`);
-      const data = await res.json();
+const res = await fetch("/api/process/mine", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    actor_hash: hash,
+  }),
+});
+
+const data = await res.json();
 
       const remotas: DenunciaGuardada[] = data?.ok
-        ? data.reports.map((r: any) => ({
-            process_id: r.process_id,
-            titulo: r.title,
-            categoria: r.category || "Otro",
-            fecha: r.created_at,
-          }))
-        : [];
+  ? data.denuncias.map((r: any) => ({
+      process_id: r.process_id,
+      titulo: r.titulo,
+      categoria: r.titulo || "Otro",
+      fecha: r.created_at,
+    }))
+  : [];
 
       const unidas = [...remotas, ...locales];
       const sinDuplicados = Array.from(
