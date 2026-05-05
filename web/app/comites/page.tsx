@@ -43,6 +43,13 @@ export default function ComitesPage() {
           </p>
         </section>
 
+        <Link
+  href="/comites/panel"
+  className="mt-4 block rounded-xl bg-[#0A4E84] px-4 py-3 text-center text-sm font-semibold text-white"
+>
+  Abrir panel de comité
+</Link>
+
         <section className="space-y-4">
           {modulos.map((modulo) => (
             <div
