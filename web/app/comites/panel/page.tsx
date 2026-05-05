@@ -66,6 +66,36 @@ export default function PanelComitePage() {
 
         <h1 className="mb-2 text-3xl font-bold">Panel de comité</h1>
 
+        <section className="mb-6 rounded-[28px] bg-white p-5 shadow-sm">
+  <div className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+    Comité territorial
+  </div>
+
+  <h2 className="text-xl font-bold">
+    Denuncias por zona
+  </h2>
+
+  <p className="mt-2 text-sm text-slate-600">
+    Consulta reportes ciudadanos en el mapa para identificar riesgos en tiempo real en tu zona.
+  </p>
+
+  <div className="mt-4 grid gap-3">
+    <Link
+      href="/mapa"
+      className="rounded-xl bg-[#0A4E84] px-4 py-3 text-center font-semibold text-white"
+    >
+      Ver mapa ciudadano en tiempo real
+    </Link>
+
+    <Link
+      href="/reportar"
+      className="rounded-xl bg-[#F2C300] px-4 py-3 text-center font-bold text-[#1F2937]"
+    >
+      Crear denuncia en la zona
+    </Link>
+  </div>
+</section>
+
         <p className="mb-6 text-sm leading-6 text-slate-600">
           Revisión inicial de solicitudes ciudadanas. Este panel no aprueba,
           rechaza ni sanciona; solo organiza información para revisión futura.
