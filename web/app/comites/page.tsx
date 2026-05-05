@@ -43,7 +43,6 @@ export default function ComitesPage() {
           </p>
         </section>
 
-        <Link
 <Link
   href="/comites/panel"
   className="mb-8 mt-6 block rounded-2xl bg-[#E6007E] px-5 py-5 text-center text-lg font-extrabold text-white shadow-[0_6px_0_0_#8A0050]"
