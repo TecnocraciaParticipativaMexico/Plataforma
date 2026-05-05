@@ -15,6 +15,8 @@ export async function POST(req: NextRequest) {
   const level = body?.level;
   const participation_type = body?.participation_type;
   const expertise_area = body?.expertise_area;
+  const municipality = body?.municipality || null;
+  const state = body?.state || null;
   const public_name = body?.public_name || null;
   const experience_summary = body?.experience_summary;
   const motivation = body?.motivation;
@@ -45,6 +47,8 @@ export async function POST(req: NextRequest) {
     public_name,
     experience_summary,
     motivation,
+    municipality,
+    state,
   });
 
   if (error) {
