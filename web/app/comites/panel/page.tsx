@@ -8,6 +8,20 @@ const MAX_MIEMBROS_COMITE = 15;
 const MIN_APROBACION_EXAMEN = 7;
 const DIAS_HABILES_INACTIVIDAD = 7;
 
+const ESTADOS_REVISION = [
+  "Pendiente",
+  "Revisión ética",
+  "Revisión ética avanzada",
+  "Revisión documental",
+  "Observación comunitaria",
+  "Apta",
+  "Integrada",
+  "Lista de espera",
+  "Suspendida",
+  "Rechazada",
+  "Spam",
+];
+
 type Solicitud = {
   id: string;
   module_id: number;
@@ -21,6 +35,7 @@ type Solicitud = {
   experience_summary: string;
   motivation: string;
   created_at: string;
+  review_status?: string | null;
 };
 
 export default function PanelComitePage() {
@@ -61,6 +76,32 @@ export default function PanelComitePage() {
   const estados = Array.from(
     new Set(solicitudes.map((s) => s.state).filter(Boolean))
   );
+
+  async function cambiarEstadoSolicitud(id: string, nuevoEstado: string) {
+  const res = await fetch("/api/comites/solicitudes", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id,
+      review_status: nuevoEstado,
+    }),
+  });
+
+  const data = await res.json();
+
+  if (!data.ok) {
+    alert(data.error || "No se pudo actualizar el estado.");
+    return;
+  }
+
+  setSolicitudes((actuales) =>
+    actuales.map((s) =>
+      s.id === id ? { ...s, review_status: nuevoEstado } : s
+    )
+  );
+}
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
@@ -254,11 +295,31 @@ export default function PanelComitePage() {
                 </div>
 
     <div className="mt-4 rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-900">
-  <div className="font-bold">Revisión ética pendiente</div>
+  <div className="font-bold">
+    Estado de revisión: {s.review_status || "Revisión ética"}
+  </div>
+
   <div className="mt-1">
     Antes de integrarse al comité, esta persona debe revisar conflictos de
     interés, nivel de visibilidad pública y reglas de conducta.
   </div>
+
+  <label className="mt-3 block font-semibold">
+    Cambiar estado
+  </label>
+
+  <select
+    value={s.review_status || "Revisión ética"}
+    onChange={(e) => cambiarEstadoSolicitud(s.id, e.target.value)}
+    className="mt-2 w-full rounded-xl border px-3 py-2"
+  >
+    {ESTADOS_REVISION.map((estado) => (
+      <option key={estado} value={estado}>
+        {estado}
+      </option>
+    ))}
+  </select>
+</div>
 </div>
 
                 <div className="mt-4 text-xs text-slate-400">
