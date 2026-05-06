@@ -78,3 +78,52 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ ok: true, review_status });
 }
+
+export async function PATCH(req: NextRequest) {
+  const body = await req.json();
+
+  const id = body?.id;
+  const review_status = body?.review_status;
+
+  const estadosPermitidos = [
+    "Pendiente",
+    "Revisión ética",
+    "Revisión ética avanzada",
+    "Revisión documental",
+    "Observación comunitaria",
+    "Apta",
+    "Integrada",
+    "Lista de espera",
+    "Suspendida",
+    "Rechazada",
+    "Spam",
+  ];
+
+  if (!id || !review_status) {
+    return NextResponse.json(
+      { ok: false, error: "Faltan datos obligatorios" },
+      { status: 400 }
+    );
+  }
+
+  if (!estadosPermitidos.includes(review_status)) {
+    return NextResponse.json(
+      { ok: false, error: "Estado no permitido" },
+      { status: 400 }
+    );
+  }
+
+  const { error } = await supabase
+    .from("committee_applications")
+    .update({ review_status })
+    .eq("id", id);
+
+  if (error) {
+    return NextResponse.json(
+      { ok: false, error: error.message },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ ok: true });
+}
