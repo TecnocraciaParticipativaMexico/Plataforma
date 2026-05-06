@@ -24,8 +24,9 @@ export default function ComitesPage() {
         <h1 className="mb-2 text-3xl font-bold">Comités ciudadanos</h1>
 
         <p className="mb-6 text-sm leading-6 text-slate-600">
-          Los comités son espacios ciudadanos de revisión técnica. No sustituyen
-          autoridades, no sancionan y no exponen identidad civil.
+Los comités están integrados por ciudadanos expertos con experiencia verificable.
+No sustituyen autoridades, no sancionan y pueden participar con identidad pública,
+protegida o colectiva según el nivel de riesgo y revisión ética.
         </p>
 
         <section className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
@@ -120,8 +121,8 @@ export default function ComitesPage() {
         </section>
 
         <div className="mt-6 rounded-2xl bg-blue-50 p-4 text-sm leading-6 text-blue-900">
-          Próximo bloque: formulario para solicitar participación en un comité,
-          sin pedir INE, CURP, teléfono ni datos sensibles.
+Próximo bloque: fortalecer la solicitud de expertos con revisión ética,
+conflictos de interés, nivel de visibilidad y límites máximos por comité.
         </div>
       </div>
     </main>
