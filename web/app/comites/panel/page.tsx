@@ -146,19 +146,20 @@ export default function PanelComitePage() {
           </select>
         </section>
 
-<div className="text-sm font-semibold text-slate-500">
-  Solicitudes de expertos encontradas
-</div>
+<section className="mb-6 rounded-[28px] bg-white p-5 shadow-sm">
+  <div className="text-sm font-semibold text-slate-500">
+    Solicitudes de expertos encontradas
+  </div>
 
-<div className="mt-1 text-4xl font-extrabold text-[#0A4E84]">
-  {filtradas.length}
-</div>
+  <div className="mt-1 text-4xl font-extrabold text-[#0A4E84]">
+    {filtradas.length}
+  </div>
 
-<div className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
-  Límite recomendado por comité: {MIN_MIEMBROS_RECOMENDADO} a{" "}
-  {MAX_MIEMBROS_COMITE} integrantes expertos.
-</div>
-        </section>
+  <div className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+    Límite recomendado por comité: {MIN_MIEMBROS_RECOMENDADO} a{" "}
+    {MAX_MIEMBROS_COMITE} integrantes expertos.
+  </div>
+</section>
 
         {loading ? (
           <div className="rounded-2xl bg-white p-5 text-sm shadow-sm">
