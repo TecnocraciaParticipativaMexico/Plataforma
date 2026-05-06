@@ -2,10 +2,6 @@
 
 import Link from "next/link";
 
-import { modulosTecnocracia } from "../lib/modulosTecnocracia";
-
-const modulos = modulosTecnocracia;
-
 export default function ComitesPage() {
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
@@ -14,109 +10,97 @@ export default function ComitesPage() {
           ← Volver al inicio
         </Link>
 
-        <h1 className="mb-2 text-3xl font-bold">Comités ciudadanos</h1>
+        <h1 className="mb-2 text-3xl font-bold">
+          Comités ciudadanos expertos
+        </h1>
 
         <p className="mb-6 text-sm leading-6 text-slate-600">
-Los comités están integrados por ciudadanos expertos con experiencia verificable.
-No sustituyen autoridades, no sancionan y pueden participar con identidad pública,
-protegida o colectiva según el nivel de riesgo y revisión ética.
+          Los comités están integrados por ciudadanos expertos con experiencia
+          verificable. No sustituyen autoridades, no sancionan y pueden
+          participar con identidad pública, protegida o colectiva según el nivel
+          de riesgo y revisión ética.
         </p>
 
         <section className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
           <div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-            Fase inicial
+            Modelo de participación
           </div>
 
           <h2 className="mb-3 text-2xl font-bold">
-            Participación experta protegida
+            Expertos legitimados y auditables
           </h2>
 
           <p className="text-sm leading-6 text-slate-600">
-            En esta primera versión mostramos la estructura de comités. Después
-            se agregará revisión ciudadana y panel de comité.
+            Cada comité se basa en uno de los 30 módulos de Tecnocracia
+            Participativa. Para ingresar se requiere examen técnico, revisión
+            ética, declaración de conflictos de interés y trazabilidad.
           </p>
         </section>
 
-<Link
-  href="/comites/panel"
-  className="mb-8 mt-6 block rounded-2xl bg-[#E6007E] px-5 py-5 text-center text-lg font-extrabold text-white shadow-[0_6px_0_0_#8A0050]"
->
-  Abrir panel de comité
-</Link>
+        <section className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
+          <div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+            Reglas principales
+          </div>
 
-<Link
-  href="/comites/crear"
-  className="mb-4 mt-6 block rounded-2xl bg-[#F2C300] px-5 py-4 text-center text-lg font-bold text-[#1F2937]"
->
-  Crear comité ciudadano local
-</Link>
+          <div className="space-y-3 text-sm leading-6 text-slate-700">
+            <p>
+              <strong>Mínimo operativo:</strong> 3 integrantes expertos.
+            </p>
 
-<Link
-  href="/comites/panel"
-  className="mb-8 block rounded-2xl bg-[#E6007E] px-5 py-5 text-center text-lg font-extrabold text-white shadow-[0_6px_0_0_#8A0050]"
->
-  Abrir panel de comité activo
-</Link>
+            <p>
+              <strong>Máximo por comité:</strong> 15 integrantes expertos.
+            </p>
 
-        <section className="space-y-4">
-          {modulos.map((modulo) => (
-            <div
-              key={modulo.id}
-              className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm"
-            >
-              <div className="mb-2 text-sm font-bold text-[#C2187A]">
-                Módulo {modulo.id}
-              </div>
+            <p>
+              <strong>Máximo por persona:</strong> 3 comités activos en
+              diferentes módulos o niveles.
+            </p>
 
-              <h3 className="mb-2 text-xl font-bold text-[#0A4E84]">
-                {modulo.nombre}
-              </h3>
+            <p>
+              <strong>Entrada:</strong> examen técnico mínimo 7/10 y revisión
+              ética.
+            </p>
 
-              <p className="mb-4 text-sm leading-6 text-slate-600">
-  Comité ciudadano experto basado en el Módulo {modulo.id}. Su función es revisar evidencia,
-  metodología y dictámenes sin sustituir autoridades.
-</p>
-
-              <div className="mb-4 flex flex-wrap gap-2">
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">Municipal</span>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">Estatal</span>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">Federal</span>
-              </div>
-
-              <div className="mb-4 space-y-2">
-                <div className="text-xs font-bold text-slate-500 uppercase">
-                  Integrantes verificados
-                </div>
-                <div className="text-sm text-slate-400">Próximamente</div>
-
-                <div className="mt-3 text-xs font-bold text-slate-500 uppercase">
-                  Integrantes protegidos
-                </div>
-                <div className="text-sm text-slate-400">
-                  Participación anónima disponible
-                </div>
-
-                <div className="mt-3 text-xs font-bold text-slate-500 uppercase">
-                  Invitaciones sugeridas
-                </div>
-                <div className="text-sm text-slate-400">
-                  Figuras públicas propuestas por la ciudadanía
-                </div>
-              </div>
-
-              <Link
-                href="/comites/solicitar"
-                className="block w-full rounded-xl bg-[#0A4E84] px-4 py-3 text-center text-sm font-semibold text-white"
-              >
-                Solicitar participación
-              </Link>
-            </div>
-          ))}
+            <p>
+              <strong>Permanencia:</strong> participación activa, votaciones
+              atendidas y cumplimiento ético.
+            </p>
+          </div>
         </section>
 
+        <div className="grid gap-4">
+          <Link
+            href="/comites/examen"
+            className="block rounded-2xl bg-[#F2C300] px-5 py-4 text-center text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00]"
+          >
+            Hacer examen técnico
+          </Link>
+
+          <Link
+            href="/comites/solicitar"
+            className="block rounded-2xl bg-[#0A4E84] px-5 py-4 text-center text-lg font-bold text-white"
+          >
+            Solicitar participación
+          </Link>
+
+          <Link
+            href="/comites/panel"
+            className="block rounded-2xl bg-[#E6007E] px-5 py-4 text-center text-lg font-extrabold text-white shadow-[0_6px_0_0_#8A0050]"
+          >
+            Entrar al panel de miembro
+          </Link>
+
+          <Link
+            href="/comites/modulos"
+            className="block rounded-2xl border border-[#0A4E84] bg-white px-5 py-4 text-center text-lg font-bold text-[#0A4E84]"
+          >
+            Ver comités por módulo
+          </Link>
+        </div>
+
         <div className="mt-6 rounded-2xl bg-blue-50 p-4 text-sm leading-6 text-blue-900">
-Próximo bloque: fortalecer la solicitud de expertos con revisión ética,
-conflictos de interés, nivel de visibilidad y límites máximos por comité.
+          Este espacio organiza participación experta ciudadana con límites,
+          revisión ética, trazabilidad y reglas anti-captura.
         </div>
       </div>
     </main>
