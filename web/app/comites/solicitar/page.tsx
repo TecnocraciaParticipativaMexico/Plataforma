@@ -20,8 +20,11 @@ function textoInvalido(texto: string) {
   const t = texto.toLowerCase().trim();
 
   const bloqueadas = [
-    ...
-  ];
+  "ching", "pendej", "puto", "puta", "mierda", "verga", "mamar", "mama", "papa",
+  "tu mama", "tu mamá", "tu papa", "tu papá", "me la pellizcan", "madre", "padre",
+  "jaja", "jajaja", "asdf", "qwerty", "xxxxx", "prueba", "test", "morena", "prian",
+  "fake", "falso", "inventado", "no se", "no sé", "nada",
+];
 
   if (t.length < 15) return true;
   if (bloqueadas.some((p) => t.includes(p))) return true;
