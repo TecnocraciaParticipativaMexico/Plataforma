@@ -88,6 +88,20 @@ function SolicitarComiteContent() {
   }
 }, []);
 
+function datosMinimosCompletos() {
+  if (level === "Municipal" && !municipality.trim()) return false;
+  if ((level === "Municipal" || level === "Estatal") && !state.trim()) return false;
+  if (participationType === "Pública verificada" && !publicName.trim()) return false;
+
+  return (
+    expertiseArea.trim().length >= 15 &&
+    experienceSummary.trim().length >= 15 &&
+    motivation.trim().length >= 15 &&
+    conflictInterest.trim().length >= 15 &&
+    ethicsAccepted
+  );
+}  
+
   async function enviarSolicitud() {
     try {
       setLoading(true);
@@ -378,22 +392,30 @@ if (!ethicsAccepted) {
   className={`mb-4 rounded-2xl p-4 text-sm ${
     examen?.aprobado && examen.module_id === moduleId
       ? "bg-green-50 text-green-800"
-      : "bg-yellow-50 text-yellow-900"
+      : datosMinimosCompletos()
+      ? "bg-yellow-50 text-yellow-900"
+      : "bg-slate-50 text-slate-600"
   }`}
 >
   {examen?.aprobado && examen.module_id === moduleId ? (
     <div>
       ✅ Examen técnico aprobado: {examen.correctas}/{examen.total}
     </div>
-  ) : (
+  ) : datosMinimosCompletos() ? (
     <div>
-      ⚠️ Debes aprobar el examen técnico de este módulo antes de enviar la solicitud.
+      ⚠️ Ya puedes hacer el examen técnico de este módulo. Necesitas aprobar
+      mínimo 7/10 para enviar tu solicitud.
       <Link
         href={`/comites/examen?modulo=${moduleId}`}
         className="mt-2 block font-bold text-[#0A4E84]"
       >
         Ir al examen técnico
       </Link>
+    </div>
+  ) : (
+    <div>
+      Completa primero tu perfil, experiencia, motivación, conflicto de interés
+      y aceptación ética para desbloquear el examen técnico.
     </div>
   )}
 </div>
