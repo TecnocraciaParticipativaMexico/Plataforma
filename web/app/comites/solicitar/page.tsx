@@ -2,39 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { modulosTecnocracia } from "../../lib/modulosTecnocracia";
 
-const modulos = [
-  "Seguridad Ciudadana",
-  "Fiscalía Forense Ciudadana",
-  "Congreso Cívico",
-  "Derechos Humanos",
-  "Madres Buscadoras",
-  "Sistema Judicial",
-  "Tribunales de Alta Integridad",
-  "Auditoría Cívica Local",
-  "Ética Pública",
-  "Salud y Bienestar",
-  "Educación",
-  "Infraestructura y Vivienda",
-  "Movilidad",
-  "DIF Cívico",
-  "Juventud y Deporte",
-  "Cultura y Turismo",
-  "Economía Regional",
-  "Energía",
-  "Licitaciones Éticas",
-  "Ciencia y Tecnología",
-  "INE Cívico",
-  "Anticorrupción",
-  "Auditoría de Sistemas",
-  "Prensa Libre",
-  "Verdad Histórica",
-  "Campo y Soberanía Alimentaria",
-  "Agua y Territorio",
-  "Medio Ambiente",
-  "Protección Civil",
-  "Relaciones Internacionales",
-];
+const modulos = modulosTecnocracia;
 
 const estados = [
   "Aguascalientes", "Baja California", "Baja California Sur", "Campeche",
@@ -73,6 +43,11 @@ export default function SolicitarComitePage() {
   const [expertiseArea, setExpertiseArea] = useState("");
   const [experienceSummary, setExperienceSummary] = useState("");
   const [motivation, setMotivation] = useState("");
+  const [visibilityLevel, setVisibilityLevel] = useState("Protegida");
+  const [conflictInterest, setConflictInterest] = useState("");
+  const [curriculumEvidence, setCurriculumEvidence] = useState("");
+  const [ethicsAccepted, setEthicsAccepted] = useState(false);
+  const [isPublicFigure, setIsPublicFigure] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -112,6 +87,22 @@ if (textoInvalido(expertiseArea)) {
         return;
       }
 
+    if (!conflictInterest.trim()) {
+  setResult({
+    ok: false,
+    error: "Declara si tienes o no conflictos de interés.",
+  });
+  return;
+}
+
+if (!ethicsAccepted) {
+  setResult({
+    ok: false,
+    error: "Debes aceptar el código ético para enviar la solicitud.",
+  });
+  return;
+}
+
       let actorHash = localStorage.getItem("actor_hash");
 
       if (!actorHash) {
@@ -127,7 +118,7 @@ if (textoInvalido(expertiseArea)) {
         body: JSON.stringify({
           actor_hash: actorHash,
           module_id: moduleId,
-          module_name: modulos[moduleId - 1],
+          module_name: modulos[moduleId - 1]?.nombre,
           level,
           municipality: level === "Municipal" ? municipality : null,
           state: level === "Municipal" || level === "Estatal" ? state : null,
@@ -137,6 +128,11 @@ if (textoInvalido(expertiseArea)) {
           expertise_area: expertiseArea,
           experience_summary: experienceSummary,
           motivation,
+          visibility_level: visibilityLevel,
+          conflict_interest: conflictInterest,
+          curriculum_evidence: curriculumEvidence,
+          ethics_accepted: ethicsAccepted,
+          is_public_figure: isPublicFigure,
         }),
       });
 
@@ -177,11 +173,11 @@ if (textoInvalido(expertiseArea)) {
             }}
             className="mb-4 w-full rounded-2xl border px-4 py-3"
           >
-            {modulos.map((modulo, index) => (
-              <option key={modulo} value={index + 1}>
-                Módulo {index + 1}: {modulo}
-              </option>
-            ))}
+            {modulos.map((modulo) => (
+  <option key={modulo.id} value={modulo.id}>
+    Módulo {modulo.id}: {modulo.nombre}
+  </option>
+))}
           </select>
 
           <label className="mb-2 block font-semibold">Nivel territorial</label>
@@ -273,6 +269,65 @@ if (textoInvalido(expertiseArea)) {
             placeholder="Explica por qué quieres participar. Mínimo 15 caracteres."
           />
 
+<label className="mb-2 block font-semibold">
+  Nivel de visibilidad
+</label>
+<select
+  value={visibilityLevel}
+  onChange={(e) => setVisibilityLevel(e.target.value)}
+  className="mb-4 w-full rounded-2xl border px-4 py-3"
+>
+  <option>Protegida</option>
+  <option>Pública verificada</option>
+  <option>Colectiva / institucional</option>
+</select>
+
+<label className="mb-2 flex items-center gap-2 font-semibold">
+  <input
+    type="checkbox"
+    checked={isPublicFigure}
+    onChange={(e) => setIsPublicFigure(e.target.checked)}
+  />
+  Soy figura pública, servidora/servidor público, exfuncionario, periodista,
+  activista reconocido o persona con exposición pública.
+</label>
+
+<label className="mb-2 block font-semibold">
+  Conflictos de interés
+</label>
+<textarea
+  value={conflictInterest}
+  onChange={(e) => setConflictInterest(e.target.value)}
+  className="mb-4 w-full rounded-2xl border px-4 py-3"
+  rows={4}
+  placeholder="Declara vínculos políticos, económicos, laborales, familiares o institucionales relevantes. Si no tienes, escribe: No tengo conflictos de interés."
+/>
+
+<label className="mb-2 block font-semibold">
+  Evidencia curricular opcional
+</label>
+<textarea
+  value={curriculumEvidence}
+  onChange={(e) => setCurriculumEvidence(e.target.value)}
+  className="mb-4 w-full rounded-2xl border px-4 py-3"
+  rows={3}
+  placeholder="Puedes pegar links a CV, publicaciones, experiencia, redes profesionales o referencias públicas."
+/>
+
+<label className="mb-4 flex items-start gap-2 text-sm text-slate-700">
+  <input
+    type="checkbox"
+    checked={ethicsAccepted}
+    onChange={(e) => setEthicsAccepted(e.target.checked)}
+    className="mt-1"
+  />
+  <span>
+    Acepto que mi solicitud sea revisada éticamente, incluyendo posibles
+    conflictos de interés, historial público verificable y reglas de conducta
+    del comité.
+  </span>
+</label>
+          
           <button
             onClick={enviarSolicitud}
             disabled={loading}
