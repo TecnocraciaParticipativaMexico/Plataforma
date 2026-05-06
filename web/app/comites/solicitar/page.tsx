@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { modulosTecnocracia } from "../../lib/modulosTecnocracia";
 
 const modulos = modulosTecnocracia;
 
@@ -43,6 +43,8 @@ type ResultadoExamenComite = {
 };
 
 export default function SolicitarComitePage() {
+  const searchParams = useSearchParams();
+  
   const [moduleId, setModuleId] = useState(1);
   const [level, setLevel] = useState("Municipal");
   const [municipality, setMunicipality] = useState("");
@@ -60,6 +62,17 @@ export default function SolicitarComitePage() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [examen, setExamen] = useState<ResultadoExamenComite | null>(null);
+
+  useEffect(() => {
+  const moduloParam = Number(searchParams.get("modulo"));
+
+  if (
+    moduloParam &&
+    modulos.some((modulo) => modulo.id === moduloParam)
+  ) {
+    setModuleId(moduloParam);
+  }
+}, [searchParams]);
 
   useEffect(() => {
   const guardado = localStorage.getItem("ultimo_examen_comite");
@@ -375,7 +388,7 @@ if (!ethicsAccepted) {
     <div>
       ⚠️ Debes aprobar el examen técnico de este módulo antes de enviar la solicitud.
       <Link
-        href="/comites/examen"
+        href={`/comites/examen?modulo=${moduleId}`}
         className="mt-2 block font-bold text-[#0A4E84]"
       >
         Ir al examen técnico
