@@ -36,6 +36,11 @@ type Solicitud = {
   motivation: string;
   created_at: string;
   review_status?: string | null;
+  visibility_level?: string | null;
+  conflict_interest?: string | null;
+  curriculum_evidence?: string | null;
+  ethics_accepted?: boolean | null;
+  is_public_figure?: boolean | null;
 };
 
 export default function PanelComitePage() {
@@ -293,6 +298,41 @@ export default function PanelComitePage() {
                     {s.motivation}
                   </p>
                 </div>
+
+<div className="mt-4 rounded-2xl bg-slate-50 p-3 text-sm text-slate-700">
+  <div className="font-bold text-[#0A4E84]">Datos éticos</div>
+
+  <div className="mt-2">
+    <span className="font-semibold">Visibilidad:</span>{" "}
+    {s.visibility_level || s.participation_type || "No especificada"}
+  </div>
+
+  <div className="mt-2">
+    <span className="font-semibold">Figura pública:</span>{" "}
+    {s.is_public_figure ? "Sí" : "No"}
+  </div>
+
+  <div className="mt-2">
+    <span className="font-semibold">Código ético aceptado:</span>{" "}
+    {s.ethics_accepted ? "Sí" : "No registrado"}
+  </div>
+
+  <div className="mt-3">
+    <div className="font-semibold">Conflictos de interés</div>
+    <p className="mt-1 leading-6">
+      {s.conflict_interest || "No registrado"}
+    </p>
+  </div>
+
+  {s.curriculum_evidence && (
+    <div className="mt-3">
+      <div className="font-semibold">Evidencia curricular</div>
+      <p className="mt-1 whitespace-pre-wrap break-words leading-6">
+        {s.curriculum_evidence}
+      </p>
+    </div>
+  )}
+</div>
 
     <div className="mt-4 rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-900">
   <div className="font-bold">
