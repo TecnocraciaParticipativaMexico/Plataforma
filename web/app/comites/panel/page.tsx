@@ -318,8 +318,7 @@ export default function PanelComitePage() {
         {estado}
       </option>
     ))}
-  </select>
-</div>
+</select>
 </div>
 
                 <div className="mt-4 text-xs text-slate-400">
