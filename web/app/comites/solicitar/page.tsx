@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { modulosTecnocracia } from "../../lib/modulosTecnocracia";
 
 const modulos = modulosTecnocracia;
@@ -18,6 +18,15 @@ const estados = [
 
 function textoInvalido(texto: string) {
   const t = texto.toLowerCase().trim();
+
+  type ResultadoExamenComite = {
+  module_id: number;
+  module_name: string;
+  total: number;
+  correctas: number;
+  aprobado: boolean;
+  created_at: string;
+};
 
   const bloqueadas = [
   "ching", "pendej", "puto", "puta", "mierda", "verga", "mamar", "mama", "papa",
@@ -50,11 +59,34 @@ export default function SolicitarComitePage() {
   const [isPublicFigure, setIsPublicFigure] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [examen, setExamen] = useState<ResultadoExamenComite | null>(null);
+
+  useEffect(() => {
+  const guardado = localStorage.getItem("ultimo_examen_comite");
+
+  if (!guardado) return;
+
+  try {
+    const parsed = JSON.parse(guardado);
+    setExamen(parsed);
+  } catch {
+    setExamen(null);
+  }
+}, []);
 
   async function enviarSolicitud() {
     try {
       setLoading(true);
       setResult(null);
+
+      if (!examen || !examen.aprobado || examen.module_id !== moduleId) {
+  setResult({
+    ok: false,
+    error:
+      "Debes aprobar el examen técnico del módulo seleccionado antes de enviar la solicitud.",
+  });
+  return;
+}
 
       if (level === "Municipal" && !municipality.trim()) {
         setResult({ ok: false, error: "Escribe el municipio." });
@@ -327,11 +359,37 @@ if (!ethicsAccepted) {
     del comité.
   </span>
 </label>
+
+<div
+  className={`mb-4 rounded-2xl p-4 text-sm ${
+    examen?.aprobado && examen.module_id === moduleId
+      ? "bg-green-50 text-green-800"
+      : "bg-yellow-50 text-yellow-900"
+  }`}
+>
+  {examen?.aprobado && examen.module_id === moduleId ? (
+    <div>
+      ✅ Examen técnico aprobado: {examen.correctas}/{examen.total}
+    </div>
+  ) : (
+    <div>
+      ⚠️ Debes aprobar el examen técnico de este módulo antes de enviar la solicitud.
+      <Link
+        href="/comites/examen"
+        className="mt-2 block font-bold text-[#0A4E84]"
+      >
+        Ir al examen técnico
+      </Link>
+    </div>
+  )}
+</div>
           
           <button
             onClick={enviarSolicitud}
-            disabled={loading}
-            className="w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00]"
+            disabled={
+  loading || !examen?.aprobado || examen.module_id !== moduleId
+}
+            className="w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00] disabled:opacity-50"
           >
             {loading ? "Enviando..." : "Enviar solicitud"}
           </button>
