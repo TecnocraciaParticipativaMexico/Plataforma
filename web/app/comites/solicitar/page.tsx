@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { modulosTecnocracia } from "../../lib/modulosTecnocracia";
 
 const modulos = modulosTecnocracia;
@@ -43,7 +43,7 @@ type ResultadoExamenComite = {
   created_at: string;
 };
 
-export default function SolicitarComitePage() {
+function SolicitarComiteContent() {
   const searchParams = useSearchParams();
   
   const [moduleId, setModuleId] = useState(1);
@@ -418,5 +418,13 @@ if (!ethicsAccepted) {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function SolicitarComitePage() {
+  return (
+    <Suspense fallback={<div className="p-6">Cargando solicitud...</div>}>
+      <SolicitarComiteContent />
+    </Suspense>
   );
 }
