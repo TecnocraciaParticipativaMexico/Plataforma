@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+const MIN_MIEMBROS_OPERATIVO = 3;
 const MAX_MIEMBROS_COMITE = 15;
-const MIN_MIEMBROS_RECOMENDADO = 5;
+const MIN_APROBACION_EXAMEN = 7;
+const DIAS_HABILES_INACTIVIDAD = 7;
 
 type Solicitud = {
   id: string;
@@ -68,6 +70,34 @@ export default function PanelComitePage() {
         </Link>
 
         <h1 className="mb-2 text-3xl font-bold">Panel de comité</h1>
+
+        <section className="mb-6 rounded-[28px] bg-white p-5 shadow-sm">
+  <div className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+    Reglas operativas
+  </div>
+
+  <div className="space-y-3 text-sm leading-6 text-slate-700">
+    <p>
+      <strong>Mínimo operativo:</strong> {MIN_MIEMBROS_OPERATIVO} integrantes expertos.
+      Con este mínimo el comité puede iniciar funciones en fase temprana.
+    </p>
+
+    <p>
+      <strong>Máximo por comité:</strong> {MAX_MIEMBROS_COMITE} integrantes expertos.
+      Las nuevas solicitudes quedarán en lista de espera.
+    </p>
+
+    <p>
+      <strong>Examen técnico:</strong> mínimo {MIN_APROBACION_EXAMEN}/10 respuestas correctas
+      para ser considerado apto.
+    </p>
+
+    <p>
+      <strong>Remoción:</strong> una persona puede salir del comité por falta ética,
+      escándalo verificable o inactividad mayor a {DIAS_HABILES_INACTIVIDAD} días hábiles.
+    </p>
+  </div>
+</section>
 
         <section className="mb-6 rounded-[28px] bg-white p-5 shadow-sm">
   <div className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
@@ -156,8 +186,8 @@ export default function PanelComitePage() {
   </div>
 
   <div className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
-    Límite recomendado por comité: {MIN_MIEMBROS_RECOMENDADO} a{" "}
-    {MAX_MIEMBROS_COMITE} integrantes expertos.
+    Mínimo operativo: {MIN_MIEMBROS_OPERATIVO} expertos. Máximo:{" "}
+{MAX_MIEMBROS_COMITE}. Examen mínimo: {MIN_APROBACION_EXAMEN}/10.
   </div>
 </section>
 
