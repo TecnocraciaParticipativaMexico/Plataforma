@@ -19,20 +19,8 @@ const estados = [
 function textoInvalido(texto: string) {
   const t = texto.toLowerCase().trim();
 
-  type ResultadoExamenComite = {
-  module_id: number;
-  module_name: string;
-  total: number;
-  correctas: number;
-  aprobado: boolean;
-  created_at: string;
-};
-
   const bloqueadas = [
-  "ching", "pendej", "puto", "puta", "mierda", "verga", "mamar", "mama", "papa",
-  "tu mama", "tu mamá", "tu papa", "tu papá", "me la pellizcan", "madre", "padre",
-  "jaja", "jajaja", "asdf", "qwerty", "xxxxx", "prueba", "test", "morena", "prian",
-  "fake", "falso", "inventado", "no se", "no sé", "nada",
+    ...
   ];
 
   if (t.length < 15) return true;
@@ -41,6 +29,15 @@ function textoInvalido(texto: string) {
 
   return false;
 }
+
+type ResultadoExamenComite = {
+  module_id: number;
+  module_name: string;
+  total: number;
+  correctas: number;
+  aprobado: boolean;
+  created_at: string;
+};
 
 export default function SolicitarComitePage() {
   const [moduleId, setModuleId] = useState(1);
