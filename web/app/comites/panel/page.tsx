@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
+const MAX_MIEMBROS_COMITE = 15;
+const MIN_MIEMBROS_RECOMENDADO = 5;
+
 type Solicitud = {
   id: string;
   module_id: number;
@@ -143,13 +146,18 @@ export default function PanelComitePage() {
           </select>
         </section>
 
-        <section className="mb-6 rounded-[28px] bg-white p-5 shadow-sm">
-          <div className="text-sm font-semibold text-slate-500">
-            Solicitudes encontradas
-          </div>
-          <div className="mt-1 text-4xl font-extrabold text-[#0A4E84]">
-            {filtradas.length}
-          </div>
+<div className="text-sm font-semibold text-slate-500">
+  Solicitudes de expertos encontradas
+</div>
+
+<div className="mt-1 text-4xl font-extrabold text-[#0A4E84]">
+  {filtradas.length}
+</div>
+
+<div className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
+  Límite recomendado por comité: {MIN_MIEMBROS_RECOMENDADO} a{" "}
+  {MAX_MIEMBROS_COMITE} integrantes expertos.
+</div>
         </section>
 
         {loading ? (
@@ -213,6 +221,14 @@ export default function PanelComitePage() {
                     {s.motivation}
                   </p>
                 </div>
+
+    <div className="mt-4 rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-900">
+  <div className="font-bold">Revisión ética pendiente</div>
+  <div className="mt-1">
+    Antes de integrarse al comité, esta persona debe revisar conflictos de
+    interés, nivel de visibilidad pública y reglas de conducta.
+  </div>
+</div>
 
                 <div className="mt-4 text-xs text-slate-400">
                   Recibida: {new Date(s.created_at).toLocaleString()}
