@@ -21,6 +21,12 @@ export async function POST(req: NextRequest) {
   const experience_summary = body?.experience_summary;
   const motivation = body?.motivation;
 
+  const visibility_level = body?.visibility_level || participation_type;
+  const conflict_interest = body?.conflict_interest || "";
+  const curriculum_evidence = body?.curriculum_evidence || "";
+  const ethics_accepted = Boolean(body?.ethics_accepted);
+  const is_public_figure = Boolean(body?.is_public_figure);
+
   if (
     !actor_hash ||
     !module_id ||
@@ -29,13 +35,19 @@ export async function POST(req: NextRequest) {
     !participation_type ||
     !expertise_area ||
     !experience_summary ||
-    !motivation
+    !motivation ||
+    !conflict_interest ||
+    !ethics_accepted
   ) {
     return NextResponse.json(
-      { ok: false, error: "Faltan datos obligatorios" },
+      { ok: false, error: "Faltan datos obligatorios o aceptación ética" },
       { status: 400 }
     );
   }
+
+  const review_status = is_public_figure
+    ? "Revisión ética avanzada"
+    : "Revisión ética";
 
   const { error } = await supabase.from("committee_applications").insert({
     actor_hash,
@@ -43,12 +55,18 @@ export async function POST(req: NextRequest) {
     module_name,
     level,
     participation_type,
+    visibility_level,
     expertise_area,
     public_name,
     experience_summary,
     motivation,
     municipality,
     state,
+    conflict_interest,
+    curriculum_evidence,
+    ethics_accepted,
+    is_public_figure,
+    review_status,
   });
 
   if (error) {
@@ -58,5 +76,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, review_status });
 }
