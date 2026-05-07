@@ -69,13 +69,7 @@ export default function ComitesPage() {
         </section>
 
         <div className="grid gap-4">
-          <Link
-            href="/comites/examen"
-            className="block rounded-2xl bg-[#F2C300] px-5 py-4 text-center text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00]"
-          >
-            Hacer examen técnico
-          </Link>
-
+          
           <Link
             href="/comites/solicitar"
             className="block rounded-2xl bg-[#0A4E84] px-5 py-4 text-center text-lg font-bold text-white"
