@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import AuthGuard from "../../components/AuthGuard";
+import LogoutButton from "../../components/LogoutButton";
 
 const MIN_MIEMBROS_OPERATIVO = 3;
 const MAX_MIEMBROS_COMITE = 15;
@@ -16,6 +17,10 @@ export default function PanelComitePage() {
         <Link href="/comites" className="mb-4 inline-block text-sm font-semibold">
           ← Volver a comités
         </Link>
+
+<div className="mb-4">
+  <LogoutButton />
+</div>
 
         <h1 className="mb-2 text-3xl font-bold">Panel de miembro</h1>
 
