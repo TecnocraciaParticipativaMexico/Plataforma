@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import AuthGuard from "../../components/AuthGuard";
 
 const MIN_MIEMBROS_OPERATIVO = 3;
 const MAX_MIEMBROS_COMITE = 15;
@@ -9,6 +10,7 @@ const DIAS_HABILES_INACTIVIDAD = 7;
 
 export default function PanelComitePage() {
   return (
+  <AuthGuard>
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
       <div className="mx-auto max-w-md px-4 py-6">
         <Link href="/comites" className="mb-4 inline-block text-sm font-semibold">
@@ -125,5 +127,6 @@ export default function PanelComitePage() {
         </section>
       </div>
     </main>
+  </AuthGuard>
   );
 }
