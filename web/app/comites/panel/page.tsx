@@ -55,81 +55,92 @@ export default function PanelComitePage() {
         </section>
 
         <section className="space-y-4">
-          <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-              Mis comités activos
-            </div>
 
-            <div className="mt-3 text-sm text-slate-600">
-              Aún no participas en comités activos.
-            </div>
+  <div className="rounded-[28px] bg-white p-5 shadow-sm">
+    <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+      Mis comités activos
+    </div>
 
-            <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
-              Máximo permitido: 3 comités simultáneos en diferentes módulos o niveles.
-            </div>
-          </div>
+    <div className="mt-3 text-sm leading-6 text-slate-600">
+      Aún no participas en comités activos.
+    </div>
 
-          <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-              Solicitudes enviadas
-            </div>
+    <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+      Máximo permitido: 3 comités simultáneos en diferentes módulos o niveles.
+    </div>
+  </div>
 
-            <div className="mt-3 text-sm text-slate-600">
-              Aquí aparecerán tus solicitudes activas, estado ético, examen técnico
-              y revisión documental.
-            </div>
+  <div className="rounded-[28px] bg-white p-5 shadow-sm">
+    <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+      Solicitudes enviadas
+    </div>
 
-            <Link
-              href="/comites/solicitar"
-              className="mt-4 block rounded-xl bg-[#0A4E84] px-4 py-3 text-center font-semibold text-white"
-            >
-              Solicitar participación
-            </Link>
-          </div>
+    <div className="mt-3 text-sm leading-6 text-slate-600">
+      Aquí aparecerán tus solicitudes activas, estado ético,
+      examen técnico y revisión documental.
+    </div>
 
-          <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-              Votaciones pendientes
-            </div>
+    <Link
+      href="/comites/solicitar"
+      className="mt-4 block rounded-xl bg-[#0A4E84] px-4 py-3 text-center font-semibold text-white"
+    >
+      Solicitar participación
+    </Link>
+  </div>
 
-            <div className="mt-3 text-sm leading-6 text-slate-600">
-              Las votaciones técnicas pendientes aparecerán aquí. No participar durante
-              más de 7 días hábiles puede causar suspensión temporal.
-            </div>
-          </div>
+  <div className="rounded-[28px] bg-white p-5 shadow-sm">
+    <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+      Votaciones pendientes
+    </div>
 
-          <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-              Propuestas del comité
-            </div>
+    <div className="mt-3 text-sm leading-6 text-slate-600">
+      Las votaciones técnicas pendientes aparecerán aquí.
+      No participar durante más de 7 días hábiles puede causar
+      suspensión temporal.
+    </div>
+  </div>
 
-            <div className="mt-3 text-sm leading-6 text-slate-600">
-              Aquí se mostrarán propuestas para estudio, resumen técnico y voto ponderado.
-            </div>
-          </div>
+  <div className="rounded-[28px] bg-white p-5 shadow-sm">
+    <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+      Propuestas del comité
+    </div>
 
-          <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-              Reputación técnica
-            </div>
+    <div className="mt-3 text-sm leading-6 text-slate-600">
+      Aquí se mostrarán propuestas para estudio,
+      resumen técnico con IA y voto ponderado.
+    </div>
 
-            <ul className="mt-3 space-y-2 text-sm text-slate-700">
-              <li>• Exámenes aprobados</li>
-              <li>• Participación técnica</li>
-              <li>• Calidad de dictámenes</li>
-              <li>• Asistencia a votaciones</li>
-              <li>• Historial ético</li>
-              <li>• Peso ponderado de voto</li>
-            </ul>
-          </div>
+    <Link
+      href="/comites/propuestas"
+      className="mt-4 block rounded-xl bg-[#0A4E84] px-4 py-3 text-center font-semibold text-white"
+    >
+      Crear propuesta técnica
+    </Link>
+  </div>
 
-          <Link
-            href="/comites/revision"
-            className="block rounded-2xl border border-[#0A4E84] bg-white px-5 py-4 text-center font-bold text-[#0A4E84]"
-          >
-            Ir a revisión ética y administración
-          </Link>
-        </section>
+  <div className="rounded-[28px] bg-white p-5 shadow-sm">
+    <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+      Reputación técnica
+    </div>
+
+    <ul className="mt-3 space-y-2 text-sm text-slate-700">
+      <li>• Exámenes aprobados</li>
+      <li>• Participación técnica</li>
+      <li>• Calidad de dictámenes</li>
+      <li>• Asistencia a votaciones</li>
+      <li>• Historial ético</li>
+      <li>• Peso ponderado de voto</li>
+    </ul>
+  </div>
+
+  <Link
+    href="/comites/revision"
+    className="block rounded-2xl border border-[#0A4E84] bg-white px-5 py-4 text-center font-bold text-[#0A4E84]"
+  >
+    Ir a revisión ética y administración
+  </Link>
+
+</section>
       </div>
     </main>
   </AuthGuard>
