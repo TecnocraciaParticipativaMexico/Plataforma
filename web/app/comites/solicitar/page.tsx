@@ -427,13 +427,17 @@ if (!ethicsAccepted) {
 }
             className="w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00] disabled:opacity-50"
           >
-            {loading ? "Enviando..." : "Enviar solicitud"}
+            {loading
+  ? "Enviando..."
+  : !examen?.aprobado || examen.module_id !== moduleId
+  ? "Aprueba el examen para enviar"
+  : "Enviar solicitud"}
           </button>
 
           {result && (
             <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm">
               {result.ok
-                ? "✅ Solicitud recibida. Será revisada en una fase futura del panel de comité."
+                ? "✅ Solicitud enviada correctamente. Ya aparece en el panel de comité para revisión ética."
                 : `❌ Error: ${result.error}`}
             </div>
           )}
