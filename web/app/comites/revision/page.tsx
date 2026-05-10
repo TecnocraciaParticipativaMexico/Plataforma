@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AuthGuard from "../../components/AuthGuard";
+import LogoutButton from "../../components/LogoutButton";
 
 const ESTADOS_REVISION = [
   "Pendiente",
@@ -102,6 +103,10 @@ export default function RevisionComitesPage() {
         <Link href="/comites/panel" className="mb-4 inline-block text-sm font-semibold">
           ← Volver al panel de miembro
         </Link>
+
+  <div className="mb-4">
+  <LogoutButton />
+</div>
 
         <h1 className="mb-2 text-3xl font-bold">Revisión ética y técnica</h1>
 
