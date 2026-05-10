@@ -1,113 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
 
 const MIN_MIEMBROS_OPERATIVO = 3;
 const MAX_MIEMBROS_COMITE = 15;
 const MIN_APROBACION_EXAMEN = 7;
 const DIAS_HABILES_INACTIVIDAD = 7;
 
-const ESTADOS_REVISION = [
-  "Pendiente",
-  "Revisión ética",
-  "Revisión ética avanzada",
-  "Revisión documental",
-  "Observación comunitaria",
-  "Apta",
-  "Integrada",
-  "Lista de espera",
-  "Suspendida",
-  "Rechazada",
-  "Spam",
-];
-
-type Solicitud = {
-  id: string;
-  module_id: number;
-  module_name: string;
-  level: string;
-  municipality: string | null;
-  state: string | null;
-  participation_type: string;
-  public_name: string | null;
-  expertise_area: string;
-  experience_summary: string;
-  motivation: string;
-  created_at: string;
-  review_status?: string | null;
-  visibility_level?: string | null;
-  conflict_interest?: string | null;
-  curriculum_evidence?: string | null;
-  ethics_accepted?: boolean | null;
-  is_public_figure?: boolean | null;
-};
-
 export default function PanelComitePage() {
-  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [modulo, setModulo] = useState("Todos");
-  const [nivel, setNivel] = useState("Todos");
-  const [estado, setEstado] = useState("Todos");
-
-  useEffect(() => {
-    cargarSolicitudes();
-  }, []);
-
-  async function cargarSolicitudes() {
-    try {
-      const res = await fetch("/api/comites/solicitudes");
-      const data = await res.json();
-
-      if (data.ok) {
-        setSolicitudes(data.applications);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const filtradas = useMemo(() => {
-    return solicitudes.filter((s) => {
-      const matchModulo = modulo === "Todos" || s.module_name === modulo;
-      const matchNivel = nivel === "Todos" || s.level === nivel;
-      const matchEstado = estado === "Todos" || s.state === estado;
-
-      return matchModulo && matchNivel && matchEstado;
-    });
-  }, [solicitudes, modulo, nivel, estado]);
-
-  const modulos = Array.from(new Set(solicitudes.map((s) => s.module_name)));
-  const estados = Array.from(
-    new Set(solicitudes.map((s) => s.state).filter(Boolean))
-  );
-
-  async function cambiarEstadoSolicitud(id: string, nuevoEstado: string) {
-  const res = await fetch("/api/comites/solicitudes", {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id,
-      review_status: nuevoEstado,
-    }),
-  });
-
-  const data = await res.json();
-
-  if (!data.ok) {
-    alert(data.error || "No se pudo actualizar el estado.");
-    return;
-  }
-
-  setSolicitudes((actuales) =>
-    actuales.map((s) =>
-      s.id === id ? { ...s, review_status: nuevoEstado } : s
-    )
-  );
-}
-
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
       <div className="mx-auto max-w-md px-4 py-6">
@@ -115,259 +15,114 @@ export default function PanelComitePage() {
           ← Volver a comités
         </Link>
 
-        <h1 className="mb-2 text-3xl font-bold">Panel de comité</h1>
-
-        <section className="mb-6 rounded-[28px] bg-white p-5 shadow-sm">
-  <div className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-    Reglas operativas
-  </div>
-
-  <div className="space-y-3 text-sm leading-6 text-slate-700">
-    <p>
-      <strong>Mínimo operativo:</strong> {MIN_MIEMBROS_OPERATIVO} integrantes expertos.
-      Con este mínimo el comité puede iniciar funciones en fase temprana.
-    </p>
-
-    <p>
-      <strong>Máximo por comité:</strong> {MAX_MIEMBROS_COMITE} integrantes expertos.
-      Las nuevas solicitudes quedarán en lista de espera.
-    </p>
-
-    <p>
-      <strong>Examen técnico:</strong> mínimo {MIN_APROBACION_EXAMEN}/10 respuestas correctas
-      para ser considerado apto.
-    </p>
-
-    <p>
-      <strong>Remoción:</strong> una persona puede salir del comité por falta ética,
-      escándalo verificable o inactividad mayor a {DIAS_HABILES_INACTIVIDAD} días hábiles.
-    </p>
-  </div>
-</section>
-
-        <section className="mb-6 rounded-[28px] bg-white p-5 shadow-sm">
-  <div className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-    Comité territorial
-  </div>
-
-  <h2 className="text-xl font-bold">
-    Denuncias por zona
-  </h2>
-
-  <p className="mt-2 text-sm text-slate-600">
-    Consulta reportes ciudadanos en el mapa para identificar riesgos en tiempo real en tu zona.
-  </p>
-
-  <div className="mt-4 grid gap-3">
-    <Link
-      href="/mapa"
-      className="rounded-xl bg-[#0A4E84] px-4 py-3 text-center font-semibold text-white"
-    >
-      Ver mapa ciudadano en tiempo real
-    </Link>
-
-    <Link
-      href="/reportar"
-      className="rounded-xl bg-[#F2C300] px-4 py-3 text-center font-bold text-[#1F2937]"
-    >
-      Crear denuncia en la zona
-    </Link>
-  </div>
-</section>
+        <h1 className="mb-2 text-3xl font-bold">Panel de miembro</h1>
 
         <p className="mb-6 text-sm leading-6 text-slate-600">
-          Revisión inicial de solicitudes ciudadanas. Este panel no aprueba,
-          rechaza ni sanciona; solo organiza información para revisión futura.
+          Este espacio organizará tu participación como integrante o aspirante de
+          comités ciudadanos expertos.
         </p>
 
         <section className="mb-6 rounded-[28px] bg-white p-5 shadow-sm">
-          <div className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-            Filtros
+          <div className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+            Reglas operativas
           </div>
 
-          <label className="mb-2 block font-semibold">Módulo</label>
-          <select
-            value={modulo}
-            onChange={(e) => setModulo(e.target.value)}
-            className="mb-4 w-full rounded-2xl border px-4 py-3"
-          >
-            <option>Todos</option>
-            {modulos.map((m) => (
-              <option key={m}>{m}</option>
-            ))}
-          </select>
+          <div className="space-y-3 text-sm leading-6 text-slate-700">
+            <p>
+              <strong>Mínimo operativo:</strong> {MIN_MIEMBROS_OPERATIVO} integrantes expertos.
+            </p>
 
-          <label className="mb-2 block font-semibold">Nivel</label>
-          <select
-            value={nivel}
-            onChange={(e) => setNivel(e.target.value)}
-            className="mb-4 w-full rounded-2xl border px-4 py-3"
-          >
-            <option>Todos</option>
-            <option>Municipal</option>
-            <option>Estatal</option>
-            <option>Federal</option>
-          </select>
+            <p>
+              <strong>Máximo por comité:</strong> {MAX_MIEMBROS_COMITE} integrantes expertos.
+            </p>
 
-          <label className="mb-2 block font-semibold">Estado</label>
-          <select
-            value={estado}
-            onChange={(e) => setEstado(e.target.value)}
-            className="w-full rounded-2xl border px-4 py-3"
-          >
-            <option>Todos</option>
-            {estados.map((e) => (
-              <option key={e}>{e}</option>
-            ))}
-          </select>
+            <p>
+              <strong>Examen técnico:</strong> mínimo {MIN_APROBACION_EXAMEN}/10 respuestas correctas.
+            </p>
+
+            <p>
+              <strong>Remoción:</strong> falta ética, escándalo verificable o inactividad mayor a{" "}
+              {DIAS_HABILES_INACTIVIDAD} días hábiles.
+            </p>
+          </div>
         </section>
 
-<section className="mb-6 rounded-[28px] bg-white p-5 shadow-sm">
-  <div className="text-sm font-semibold text-slate-500">
-    Solicitudes de expertos encontradas
-  </div>
+        <section className="space-y-4">
+          <div className="rounded-[28px] bg-white p-5 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+              Mis comités activos
+            </div>
 
-  <div className="mt-1 text-4xl font-extrabold text-[#0A4E84]">
-    {filtradas.length}
-  </div>
+            <div className="mt-3 text-sm text-slate-600">
+              Aún no participas en comités activos.
+            </div>
 
-  <div className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
-    Mínimo operativo: {MIN_MIEMBROS_OPERATIVO} expertos. Máximo:{" "}
-{MAX_MIEMBROS_COMITE}. Examen mínimo: {MIN_APROBACION_EXAMEN}/10.
-  </div>
-</section>
-
-        {loading ? (
-          <div className="rounded-2xl bg-white p-5 text-sm shadow-sm">
-            Cargando solicitudes...
+            <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+              Máximo permitido: 3 comités simultáneos en diferentes módulos o niveles.
+            </div>
           </div>
-        ) : filtradas.length === 0 ? (
-          <div className="rounded-2xl bg-white p-5 text-sm shadow-sm">
-            No hay solicitudes con estos filtros.
+
+          <div className="rounded-[28px] bg-white p-5 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+              Solicitudes enviadas
+            </div>
+
+            <div className="mt-3 text-sm text-slate-600">
+              Aquí aparecerán tus solicitudes activas, estado ético, examen técnico
+              y revisión documental.
+            </div>
+
+            <Link
+              href="/comites/solicitar"
+              className="mt-4 block rounded-xl bg-[#0A4E84] px-4 py-3 text-center font-semibold text-white"
+            >
+              Solicitar participación
+            </Link>
           </div>
-        ) : (
-          <section className="space-y-4">
-            {filtradas.map((s) => (
-              <div
-                key={s.id}
-                className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm"
-              >
-                <div className="mb-2 text-sm font-bold text-[#C2187A]">
-                  Módulo {s.module_id}: {s.module_name}
-                </div>
 
-                <h2 className="mb-2 text-xl font-bold text-[#0A4E84]">
-                  {s.expertise_area}
-                </h2>
+          <div className="rounded-[28px] bg-white p-5 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+              Votaciones pendientes
+            </div>
 
-                <div className="mb-3 flex flex-wrap gap-2 text-xs font-semibold">
-                  <span className="rounded-full bg-slate-100 px-3 py-1">
-                    {s.level}
-                  </span>
-                  {s.state && (
-                    <span className="rounded-full bg-slate-100 px-3 py-1">
-                      {s.state}
-                    </span>
-                  )}
-                  {s.municipality && (
-                    <span className="rounded-full bg-slate-100 px-3 py-1">
-                      {s.municipality}
-                    </span>
-                  )}
-                  <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-900">
-                    {s.participation_type}
-                  </span>
-                </div>
+            <div className="mt-3 text-sm leading-6 text-slate-600">
+              Las votaciones técnicas pendientes aparecerán aquí. No participar durante
+              más de 7 días hábiles puede causar suspensión temporal.
+            </div>
+          </div>
 
-                {s.public_name && (
-                  <div className="mb-3 rounded-2xl bg-green-50 p-3 text-sm text-green-800">
-                    Nombre público: {s.public_name}
-                  </div>
-                )}
+          <div className="rounded-[28px] bg-white p-5 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+              Propuestas del comité
+            </div>
 
-                <div className="mb-3 text-sm">
-                  <div className="font-bold">Experiencia</div>
-                  <p className="mt-1 leading-6 text-slate-600">
-                    {s.experience_summary}
-                  </p>
-                </div>
+            <div className="mt-3 text-sm leading-6 text-slate-600">
+              Aquí se mostrarán propuestas para estudio, resumen técnico y voto ponderado.
+            </div>
+          </div>
 
-                <div className="text-sm">
-                  <div className="font-bold">Motivación</div>
-                  <p className="mt-1 leading-6 text-slate-600">
-                    {s.motivation}
-                  </p>
-                </div>
+          <div className="rounded-[28px] bg-white p-5 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+              Reputación técnica
+            </div>
 
-<div className="mt-4 rounded-2xl bg-slate-50 p-3 text-sm text-slate-700">
-  <div className="font-bold text-[#0A4E84]">Datos éticos</div>
+            <ul className="mt-3 space-y-2 text-sm text-slate-700">
+              <li>• Exámenes aprobados</li>
+              <li>• Participación técnica</li>
+              <li>• Calidad de dictámenes</li>
+              <li>• Asistencia a votaciones</li>
+              <li>• Historial ético</li>
+              <li>• Peso ponderado de voto</li>
+            </ul>
+          </div>
 
-  <div className="mt-2">
-    <span className="font-semibold">Visibilidad:</span>{" "}
-    {s.visibility_level || s.participation_type || "No especificada"}
-  </div>
-
-  <div className="mt-2">
-    <span className="font-semibold">Figura pública:</span>{" "}
-    {s.is_public_figure ? "Sí" : "No"}
-  </div>
-
-  <div className="mt-2">
-    <span className="font-semibold">Código ético aceptado:</span>{" "}
-    {s.ethics_accepted ? "Sí" : "No registrado"}
-  </div>
-
-  <div className="mt-3">
-    <div className="font-semibold">Conflictos de interés</div>
-    <p className="mt-1 leading-6">
-      {s.conflict_interest || "No registrado"}
-    </p>
-  </div>
-
-  {s.curriculum_evidence && (
-    <div className="mt-3">
-      <div className="font-semibold">Evidencia curricular</div>
-      <p className="mt-1 whitespace-pre-wrap break-words leading-6">
-        {s.curriculum_evidence}
-      </p>
-    </div>
-  )}
-</div>
-
-    <div className="mt-4 rounded-2xl bg-yellow-50 p-3 text-sm text-yellow-900">
-  <div className="font-bold">
-    Estado de revisión: {s.review_status || "Revisión ética"}
-  </div>
-
-  <div className="mt-1">
-    Antes de integrarse al comité, esta persona debe revisar conflictos de
-    interés, nivel de visibilidad pública y reglas de conducta.
-  </div>
-
-  <label className="mt-3 block font-semibold">
-    Cambiar estado
-  </label>
-
-  <select
-    value={s.review_status || "Revisión ética"}
-    onChange={(e) => cambiarEstadoSolicitud(s.id, e.target.value)}
-    className="mt-2 w-full rounded-xl border px-3 py-2"
-  >
-    {ESTADOS_REVISION.map((estado) => (
-      <option key={estado} value={estado}>
-        {estado}
-      </option>
-    ))}
-</select>
-</div>
-
-                <div className="mt-4 text-xs text-slate-400">
-                  Recibida: {new Date(s.created_at).toLocaleString()}
-                </div>
-              </div>
-            ))}
-          </section>
-        )}
+          <Link
+            href="/comites/revision"
+            className="block rounded-2xl border border-[#0A4E84] bg-white px-5 py-4 text-center font-bold text-[#0A4E84]"
+          >
+            Ir a revisión ética y administración
+          </Link>
+        </section>
       </div>
     </main>
   );
