@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import AuthGuard from "../../components/AuthGuard";
 
 const ESTADOS_REVISION = [
   "Pendiente",
