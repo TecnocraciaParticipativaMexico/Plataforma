@@ -208,8 +208,8 @@ if (!ethicsAccepted) {
         }),
       });
 
-      const data = await res.json();
-      setResult(data);
+      const responseData = await res.json();
+setResult(responseData);
     } catch (err: any) {
       setResult({
         ok: false,
