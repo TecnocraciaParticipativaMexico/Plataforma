@@ -34,18 +34,49 @@ Puntos críticos:
 `.trim();
 }
 
-export async function GET() {
-  const { data, error } = await supabase
-    .from("committee_proposals")
-    .select("*")
-    .order("created_at", { ascending: false });
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
 
-  if (error) {
+  const id = searchParams.get("id");
+
+  try {
+    if (id) {
+      const { data, error } = await supabase
+        .from("committee_proposals")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        return NextResponse.json(
+          { ok: false, error: error.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({ ok: true, proposal: data });
+    }
+
+    const { data, error } = await supabase
+      .from("committee_proposals")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return NextResponse.json(
+        { ok: false, error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, proposals: data || [] });
+  } catch (err: any) {
     return NextResponse.json(
-      { ok: false, error: error.message },
+      { ok: false, error: err?.message || "Error interno" },
       { status: 500 }
     );
   }
+}
 
   return NextResponse.json({ ok: true, proposals: data || [] });
 }
