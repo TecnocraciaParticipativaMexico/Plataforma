@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import AuthGuard from "../../../../components/AuthGuard";
+import AuthGuard from "../../../components/AuthGuard";
 
 type Proposal = {
   id: string;
