@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { modulosTecnocracia } from "../../lib/modulosTecnocracia";
+import { supabaseBrowser } from "../../lib/supabaseBrowser";
 
 const modulos = modulosTecnocracia;
+const supabase = supabaseBrowser();
 
 const estados = [
   "Aguascalientes", "Baja California", "Baja California Sur", "Campeche",
@@ -102,29 +104,38 @@ function datosMinimosCompletos() {
   );
 }  
 
-  async function enviarSolicitud() {
-    try {
-      setLoading(true);
-      setResult(null);
+async function enviarSolicitud() {
+  try {
+    setLoading(true);
+    setResult(null);
 
-      if (!examen || !examen.aprobado || examen.module_id !== moduleId) {
-  setResult({
-    ok: false,
-    error:
-      "Debes aprobar el examen técnico del módulo seleccionado antes de enviar la solicitud.",
-  });
-  return;
-}
+    const { data } = await supabase.auth.getSession();
+    const userId = data.session?.user?.id;
 
-      if (level === "Municipal" && !municipality.trim()) {
-        setResult({ ok: false, error: "Escribe el municipio." });
-        return;
-      }
+    if (!userId) {
+      alert("Debes iniciar sesión.");
+      window.location.href = "/login";
+      return;
+    }
 
-      if ((level === "Municipal" || level === "Estatal") && !state.trim()) {
-        setResult({ ok: false, error: "Selecciona el estado." });
-        return;
-      }
+    if (!examen || !examen.aprobado || examen.module_id !== moduleId) {
+      setResult({
+        ok: false,
+        error:
+          "Debes aprobar el examen técnico del módulo seleccionado antes de enviar la solicitud.",
+      });
+      return;
+    }
+
+    if (level === "Municipal" && !municipality.trim()) {
+      setResult({ ok: false, error: "Escribe el municipio." });
+      return;
+    }
+
+    if ((level === "Municipal" || level === "Estatal") && !state.trim()) {
+      setResult({ ok: false, error: "Selecciona el estado." });
+      return;
+    }
 
       if (participationType === "Pública verificada" && !publicName.trim()) {
         setResult({ ok: false, error: "Escribe el nombre público visible." });
@@ -193,6 +204,7 @@ if (!ethicsAccepted) {
           curriculum_evidence: curriculumEvidence,
           ethics_accepted: ethicsAccepted,
           is_public_figure: isPublicFigure,
+          user_id: userId,
         }),
       });
 
