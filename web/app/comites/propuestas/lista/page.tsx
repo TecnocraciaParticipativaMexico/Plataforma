@@ -149,6 +149,13 @@ export default function ListaPropuestasPage() {
                     Estudiar propuesta y votar
                   </Link>
 
+                  <Link
+  href={`/propuestas/${p.id}`}
+  className="mt-3 block rounded-xl border border-[#0A4E84] bg-white px-4 py-3 text-center font-bold text-[#0A4E84]"
+>
+  Abrir versión ciudadana pública
+</Link>
+
                   <div className="mt-4 text-xs text-slate-400">
                     Creada: {new Date(p.created_at).toLocaleString()}
                   </div>
