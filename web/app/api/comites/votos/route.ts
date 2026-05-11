@@ -9,8 +9,50 @@ const supabase = createClient(
 function calcularPeso(score: number) {
   if (score <= 0) return 0;
   if (score > 10) return 1;
-
   return Number((score / 10).toFixed(2));
+}
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const proposal_id = searchParams.get("proposal_id");
+
+  if (!proposal_id) {
+    return NextResponse.json(
+      { ok: false, error: "Falta proposal_id" },
+      { status: 400 }
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("proposal_votes")
+    .select("*")
+    .eq("proposal_id", proposal_id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json(
+      { ok: false, error: error.message },
+      { status: 500 }
+    );
+  }
+
+  const votes = data || [];
+
+  const resumen = {
+    total: votes.length,
+    favor: votes.filter((v) => v.vote === "A favor").length,
+    contra: votes.filter((v) => v.vote === "En contra").length,
+    requiereCambios: votes.filter((v) => v.vote === "Requiere cambios").length,
+    abstencion: votes.filter((v) => v.vote === "Abstención").length,
+    pesoFavor: votes
+      .filter((v) => v.vote === "A favor")
+      .reduce((sum, v) => sum + Number(v.vote_weight || 0), 0),
+    pesoContra: votes
+      .filter((v) => v.vote === "En contra")
+      .reduce((sum, v) => sum + Number(v.vote_weight || 0), 0),
+  };
+
+  return NextResponse.json({ ok: true, votes, resumen });
 }
 
 export async function POST(req: NextRequest) {
@@ -26,16 +68,9 @@ export async function POST(req: NextRequest) {
       comprehension_score,
     } = body;
 
-    if (
-      !proposal_id ||
-      !vote ||
-      comprehension_score === undefined
-    ) {
+    if (!proposal_id || !vote || comprehension_score === undefined) {
       return NextResponse.json(
-        {
-          ok: false,
-          error: "Faltan datos obligatorios",
-        },
+        { ok: false, error: "Faltan datos obligatorios" },
         { status: 400 }
       );
     }
@@ -44,10 +79,7 @@ export async function POST(req: NextRequest) {
 
     if (score < 0 || score > 10) {
       return NextResponse.json(
-        {
-          ok: false,
-          error: "Score inválido",
-        },
+        { ok: false, error: "Score inválido" },
         { status: 400 }
       );
     }
@@ -70,24 +102,15 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       return NextResponse.json(
-        {
-          ok: false,
-          error: error.message,
-        },
+        { ok: false, error: error.message },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({
-      ok: true,
-      vote: data,
-    });
+    return NextResponse.json({ ok: true, vote: data });
   } catch (err: any) {
     return NextResponse.json(
-      {
-        ok: false,
-        error: err?.message || "Error interno",
-      },
+      { ok: false, error: err?.message || "Error interno" },
       { status: 500 }
     );
   }
