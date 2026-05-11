@@ -133,9 +133,21 @@ export default function PropuestaCiudadanaPage() {
       });
 
       const responseData = await res.json();
-      setResultadoVoto(responseData);
+setResultadoVoto(responseData);
 
-      if (responseData.ok) {
+if (responseData.ok) {
+  await fetch("/api/reputacion", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      actor_hash: actorHash,
+      respuestas: answers,
+      comprehension_score: score,
+    }),
+  });
+
         await cargarVotos();
       }
     } catch (err: any) {
