@@ -143,6 +143,17 @@ export default function ProposalDetailPage() {
       setResultadoVoto(responseData);
 
       if (responseData.ok) {
+      await fetch("/api/reputacion", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    actor_hash: actorHash,
+    respuestas: answers,
+    comprehension_score: score,
+  }),
+});
         await cargarVotos();
       }
     } catch (err: any) {
