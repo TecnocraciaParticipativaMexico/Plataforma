@@ -1,0 +1,349 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+
+type Proposal = {
+  id: string;
+  module_id: number;
+  module_name: string;
+  level: string;
+  municipality: string | null;
+  state: string | null;
+  title: string;
+  problem: string;
+  proposed_solution: string;
+  evidence: string | null;
+  expected_impact: string | null;
+  urgency: string | null;
+  estimated_cost: string | null;
+  risks: string | null;
+  ai_summary: string | null;
+  status: string | null;
+  created_at: string;
+};
+
+const preguntasBase = [
+  "¿Cuál es el problema principal que intenta resolver esta propuesta?",
+  "¿Qué territorio o comunidad sería la más impactada?",
+  "¿Qué solución se propone?",
+  "¿Qué beneficio público se espera?",
+  "¿Qué riesgo o efecto secundario debe considerarse?",
+  "¿Qué evidencia o información respalda la propuesta?",
+  "¿Qué costos o recursos podrían necesitarse?",
+  "¿Por qué esta propuesta debe revisarse antes de aprobarse?",
+  "¿Qué pasaría si se implementa mal?",
+  "¿Qué parte de la propuesta te parece más importante?",
+];
+
+export default function PropuestaCiudadanaPage() {
+  const params = useParams();
+  const proposalId = params?.id as string;
+
+  const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [answers, setAnswers] = useState<string[]>(Array(10).fill(""));
+  const [score, setScore] = useState<number | null>(null);
+  const [vote, setVote] = useState("");
+  const [resultadoVoto, setResultadoVoto] = useState<any>(null);
+  const [guardandoVoto, setGuardandoVoto] = useState(false);
+  const [resumenVotos, setResumenVotos] = useState<any>(null);
+
+  useEffect(() => {
+    cargarPropuesta();
+    cargarVotos();
+  }, []);
+
+  async function cargarPropuesta() {
+    try {
+      const res = await fetch(`/api/comites/propuestas?id=${proposalId}`);
+      const data = await res.json();
+
+      if (data.ok) {
+        setProposal(data.proposal);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function cargarVotos() {
+    const res = await fetch(`/api/comites/votos?proposal_id=${proposalId}`);
+    const data = await res.json();
+
+    if (data.ok) {
+      setResumenVotos(data.resumen);
+    }
+  }
+
+  function evaluarRespuestas() {
+    let correctas = 0;
+
+    answers.forEach((answer) => {
+      if (answer.trim().length >= 20) {
+        correctas += 1;
+      }
+    });
+
+    setScore(correctas);
+    setResultadoVoto(null);
+  }
+
+  async function guardarVoto() {
+    try {
+      setGuardandoVoto(true);
+      setResultadoVoto(null);
+
+      let actorHash = localStorage.getItem("actor_hash");
+
+      if (!actorHash) {
+        actorHash = crypto.randomUUID();
+        localStorage.setItem("actor_hash", actorHash);
+      }
+
+      if (score === null) {
+        setResultadoVoto({
+          ok: false,
+          error: "Primero debes evaluar tu comprensión.",
+        });
+        return;
+      }
+
+      if (!vote) {
+        setResultadoVoto({
+          ok: false,
+          error: "Selecciona tu voto.",
+        });
+        return;
+      }
+
+      const res = await fetch("/api/comites/votos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          proposal_id: proposalId,
+          actor_hash: actorHash,
+          voter_type: "ciudadano_publico",
+          vote,
+          comprehension_score: score,
+        }),
+      });
+
+      const responseData = await res.json();
+      setResultadoVoto(responseData);
+
+      if (responseData.ok) {
+        await cargarVotos();
+      }
+    } catch (err: any) {
+      setResultadoVoto({
+        ok: false,
+        error: err?.message || "Error guardando voto",
+      });
+    } finally {
+      setGuardandoVoto(false);
+    }
+  }
+
+  const porcentaje = score !== null ? score * 10 : 0;
+
+  return (
+    <main className="min-h-screen bg-[#F7F7F5] px-4 py-6 text-[#0A4E84]">
+      <div className="mx-auto max-w-md">
+        <Link href="/" className="mb-4 inline-block text-sm font-semibold">
+          ← Volver al inicio
+        </Link>
+
+        {loading ? (
+          <div className="rounded-2xl bg-white p-5 shadow-sm">
+            Cargando propuesta...
+          </div>
+        ) : !proposal ? (
+          <div className="rounded-2xl bg-white p-5 shadow-sm">
+            No se encontró la propuesta.
+          </div>
+        ) : (
+          <>
+            <section className="rounded-[28px] bg-white p-6 shadow-sm">
+              <div className="mb-2 text-sm font-bold text-[#C2187A]">
+                Propuesta ciudadana informada
+              </div>
+
+              <h1 className="text-3xl font-bold leading-tight">
+                {proposal.title}
+              </h1>
+
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                <span className="rounded-full bg-slate-100 px-3 py-1">
+                  Módulo {proposal.module_id}
+                </span>
+
+                <span className="rounded-full bg-slate-100 px-3 py-1">
+                  {proposal.level}
+                </span>
+
+                {proposal.state && (
+                  <span className="rounded-full bg-slate-100 px-3 py-1">
+                    {proposal.state}
+                  </span>
+                )}
+
+                {proposal.municipality && (
+                  <span className="rounded-full bg-slate-100 px-3 py-1">
+                    {proposal.municipality}
+                  </span>
+                )}
+
+                <span className="rounded-full bg-yellow-50 px-3 py-1 text-yellow-900">
+                  Urgencia: {proposal.urgency || "Media"}
+                </span>
+              </div>
+
+              <div className="mt-6 rounded-2xl bg-blue-50 p-4 text-sm leading-6 text-blue-900">
+                Tu voto cuenta, pero su peso depende de tu comprensión de la
+                propuesta. Puedes votar aunque no seas miembro del comité.
+              </div>
+
+              <div className="mt-6">
+                <div className="font-bold">Problema</div>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  {proposal.problem}
+                </p>
+              </div>
+
+              <div className="mt-6">
+                <div className="font-bold">Solución propuesta</div>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  {proposal.proposed_solution}
+                </p>
+              </div>
+
+              {proposal.ai_summary && (
+                <div className="mt-6 rounded-2xl bg-slate-50 p-4">
+                  <div className="font-bold">Resumen técnico automático</div>
+
+                  <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-6 text-slate-700">
+                    {proposal.ai_summary}
+                  </pre>
+                </div>
+              )}
+
+              {resumenVotos && (
+                <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                  <div className="font-bold text-[#0A4E84]">
+                    Votación ponderada acumulada
+                  </div>
+
+                  <div>Total de votos: {resumenVotos.total}</div>
+                  <div>A favor: {resumenVotos.favor}</div>
+                  <div>En contra: {resumenVotos.contra}</div>
+                  <div>Requiere cambios: {resumenVotos.requiereCambios}</div>
+                  <div>Abstención: {resumenVotos.abstencion}</div>
+                  <div className="mt-2 font-bold">
+                    Peso a favor: {Number(resumenVotos.pesoFavor || 0).toFixed(2)}
+                  </div>
+                  <div className="font-bold">
+                    Peso en contra: {Number(resumenVotos.pesoContra || 0).toFixed(2)}
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <section className="mt-6 space-y-4">
+              <div className="rounded-[28px] bg-yellow-50 p-5 text-sm leading-6 text-yellow-900">
+                Responde las 10 preguntas con tus propias palabras. Por ahora el
+                MVP pondera por respuesta suficientemente desarrollada; después
+                se calificará con IA.
+              </div>
+
+              {preguntasBase.map((pregunta, index) => (
+                <div
+                  key={index}
+                  className="rounded-[28px] bg-white p-5 shadow-sm"
+                >
+                  <div className="font-bold leading-6">
+                    {index + 1}. {pregunta}
+                  </div>
+
+                  <textarea
+                    value={answers[index]}
+                    onChange={(e) => {
+                      const copy = [...answers];
+                      copy[index] = e.target.value;
+                      setAnswers(copy);
+                    }}
+                    rows={3}
+                    className="mt-3 w-full rounded-2xl border px-4 py-3"
+                    placeholder="Responde con tus propias palabras..."
+                  />
+                </div>
+              ))}
+
+              <button
+                onClick={evaluarRespuestas}
+                className="w-full rounded-2xl bg-[#0A4E84] px-4 py-4 text-lg font-bold text-white"
+              >
+                Evaluar comprensión
+              </button>
+
+              {score !== null && (
+                <div className="rounded-[28px] bg-white p-6 shadow-sm">
+                  <div className="text-xl font-bold">
+                    Resultado de comprensión
+                  </div>
+
+                  <div className="mt-3 text-5xl font-extrabold text-[#E6007E]">
+                    {score}/10
+                  </div>
+
+                  <div className="mt-3 text-sm leading-6 text-slate-700">
+                    Tu voto tendrá este peso ponderado:
+                  </div>
+
+                  <div className="mt-2 text-3xl font-extrabold">
+                    {porcentaje}%
+                  </div>
+
+                  <label className="mb-2 mt-5 block font-bold">
+                    Emitir voto ciudadano
+                  </label>
+
+                  <select
+                    value={vote}
+                    onChange={(e) => setVote(e.target.value)}
+                    className="w-full rounded-2xl border px-4 py-3"
+                  >
+                    <option value="">Selecciona</option>
+                    <option>A favor</option>
+                    <option>En contra</option>
+                    <option>Requiere cambios</option>
+                    <option>Abstención</option>
+                  </select>
+
+                  <button
+                    onClick={guardarVoto}
+                    disabled={guardandoVoto || !vote}
+                    className="mt-4 w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-lg font-bold text-[#1F2937] disabled:opacity-50"
+                  >
+                    {guardandoVoto ? "Guardando..." : "Guardar voto ciudadano"}
+                  </button>
+
+                  {resultadoVoto && (
+                    <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm">
+                      {resultadoVoto.ok
+                        ? "✅ Voto ciudadano ponderado registrado."
+                        : `❌ Error: ${resultadoVoto.error}`}
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          </>
+        )}
+      </div>
+    </main>
+  );
+}
