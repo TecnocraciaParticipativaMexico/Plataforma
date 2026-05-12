@@ -129,12 +129,19 @@ export default function Home() {
   Seguimiento
 </div>
 
-<div className="mb-4">
+<div className="mb-4 grid gap-3">
   <Link
     href="/mapa"
-    className="inline-block rounded-xl border border-[#0A4E84] bg-white px-4 py-3 font-semibold text-[#0A4E84]"
+    className="block rounded-xl border border-[#0A4E84] bg-white px-4 py-3 text-center font-semibold text-[#0A4E84]"
   >
     Ver mapa ciudadano
+  </Link>
+
+  <Link
+    href="/propuestas"
+    className="block rounded-xl bg-[#0A4E84] px-4 py-3 text-center font-bold text-white"
+  >
+    Ver propuestas públicas
   </Link>
 </div>
 
