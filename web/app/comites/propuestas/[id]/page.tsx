@@ -93,100 +93,82 @@ export default function ProposalDetailPage() {
     setResultadoVoto(null);
   }
 
-  async function guardarVoto() {
-    try {
-      setGuardandoVoto(true);
-      setResultadoVoto(null);
+async function guardarVoto() {
+  try {
+    setGuardandoVoto(true);
+    setResultadoVoto(null);
 
-      const { data } = await supabase.auth.getSession();
-      const userId = data.session?.user?.id;
+    const { data } = await supabase.auth.getSession();
+    const userId = data.session?.user?.id;
 
-      let actorHash = localStorage.getItem("actor_hash");
+    let actorHash = localStorage.getItem("actor_hash");
 
-      if (!actorHash) {
-        actorHash = crypto.randomUUID();
-        localStorage.setItem("actor_hash", actorHash);
-      }
+    if (!actorHash) {
+      actorHash = crypto.randomUUID();
+      localStorage.setItem("actor_hash", actorHash);
+    }
 
-      if (score === null) {
-        setResultadoVoto({
-          ok: false,
-          error: "Primero debes evaluar tu comprensión.",
-        });
-        return;
-      }
+    if (score === null) {
+      setResultadoVoto({
+        ok: false,
+        error: "Primero debes evaluar tu comprensión.",
+      });
+      return;
+    }
 
-      if (!vote) {
-        setResultadoVoto({
-          ok: false,
-          error: "Selecciona tu voto.",
-        });
-        return;
-      }
+    if (!vote) {
+      setResultadoVoto({
+        ok: false,
+        error: "Selecciona tu voto.",
+      });
+      return;
+    }
 
-      const res = await fetch("/api/comites/votos", {
+    const res = await fetch("/api/comites/votos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        proposal_id: proposalId,
+        user_id: userId || null,
+        actor_hash: actorHash,
+        voter_type: userId ? "miembro_o_ciudadano_autenticado" : "ciudadano",
+        vote,
+        comprehension_score: score,
+        proposal_title: proposal?.title,
+        module_id: proposal?.module_id,
+        module_name: proposal?.module_name,
+      }),
+    });
+
+    const responseData = await res.json();
+    setResultadoVoto(responseData);
+
+    if (responseData.ok) {
+      await fetch("/api/reputacion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        
-          proposal_id: proposalId,
-          user_id: userId || null,
+        body: JSON.stringify({
           actor_hash: actorHash,
-          voter_type: userId ? "miembro_o_ciudadano_autenticado" : "ciudadano",
-          vote,
+          respuestas: answers,
           comprehension_score: score,
         }),
       });
 
-      const responseData = await res.json();
-      setResultadoVoto(responseData);
-
-      if (responseData.ok) {
-      await fetch("/api/reputacion", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-  proposal_id: proposalId,
-  user_id: userId || null,
-  actor_hash: actorHash,
-  voter_type: userId ? "miembro_o_ciudadano_autenticado" : "ciudadano",
-  vote,
-  comprehension_score: score,
-  proposal_title: proposal?.title,
-  module_id: proposal?.module_id,
-  module_name: proposal?.module_name,
-}),
-});
-        
-if (responseData.ok) {
-  await fetch("/api/reputacion", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      actor_hash: actorHash,
-      respuestas: answers,
-      comprehension_score: score,
-    }),
-  });
-
-  window.location.href = "/comites/mis-votos";
-}
-        
-    } catch (err: any) {
-      setResultadoVoto({
-        ok: false,
-        error: err?.message || "Error guardando voto",
-      });
-    } finally {
-      setGuardandoVoto(false);
+      window.location.href = "/comites/mis-votos";
     }
+  } catch (err: any) {
+    setResultadoVoto({
+      ok: false,
+      error: err?.message || "Error guardando voto",
+    });
+  } finally {
+    setGuardandoVoto(false);
   }
-
+}
   const porcentaje = score !== null ? score * 10 : 0;
 
   return (
