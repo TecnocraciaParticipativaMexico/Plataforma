@@ -124,12 +124,15 @@ export default function PropuestaCiudadanaPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          proposal_id: proposalId,
-          actor_hash: actorHash,
-          voter_type: "ciudadano_publico",
-          vote,
-          comprehension_score: score,
-        }),
+  proposal_id: proposalId,
+  actor_hash: actorHash,
+  voter_type: "ciudadano_publico",
+  vote,
+  comprehension_score: score,
+  proposal_title: proposal?.title,
+  module_id: proposal?.module_id,
+  module_name: proposal?.module_name,
+}),
       });
 
       const responseData = await res.json();
@@ -148,17 +151,21 @@ if (responseData.ok) {
     }),
   });
 
-        await cargarVotos();
-      }
-    } catch (err: any) {
-      setResultadoVoto({
-        ok: false,
-        error: err?.message || "Error guardando voto",
-      });
-    } finally {
-      setGuardandoVoto(false);
-    }
-  }
+if (responseData.ok) {
+  await fetch("/api/reputacion", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      actor_hash: actorHash,
+      respuestas: answers,
+      comprehension_score: score,
+    }),
+  });
+
+  window.location.href = "/comites/mis-votos";
+}
 
   const porcentaje = score !== null ? score * 10 : 0;
 
