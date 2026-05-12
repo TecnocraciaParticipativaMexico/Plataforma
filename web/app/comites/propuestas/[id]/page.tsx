@@ -52,11 +52,13 @@ export default function ProposalDetailPage() {
   const [resultadoVoto, setResultadoVoto] = useState<any>(null);
   const [guardandoVoto, setGuardandoVoto] = useState(false);
   const [resumenVotos, setResumenVotos] = useState<any>(null);
+  const [yaVoto, setYaVoto] = useState(false);
 
   useEffect(() => {
-    cargarPropuesta();
-    cargarVotos();
-  }, []);
+  cargarPropuesta();
+  cargarVotos();
+  verificarSiYaVoto();
+}, []);
 
   async function cargarPropuesta() {
     try {
@@ -92,6 +94,22 @@ export default function ProposalDetailPage() {
     setScore(correctas);
     setResultadoVoto(null);
   }
+
+  async function verificarSiYaVoto() {
+  let actorHash = localStorage.getItem("actor_hash");
+
+  if (!actorHash) return;
+
+  const res = await fetch(
+    `/api/comites/votos?proposal_id=${proposalId}&actor_hash=${actorHash}`
+  );
+
+  const data = await res.json();
+
+  if (data.ok && data.yaVoto) {
+    setYaVoto(true);
+  }
+}
 
 async function guardarVoto() {
   try {
@@ -301,6 +319,27 @@ async function guardarVoto() {
                   </div>
                 ))}
 
+                {yaVoto ? (
+  <div className="rounded-[28px] bg-green-50 p-6 text-green-900 shadow-sm">
+    <div className="text-xl font-bold">
+      ✅ Ya registraste tu voto
+    </div>
+
+    <div className="mt-2 text-sm leading-6">
+      Tu participación ya fue guardada y ponderada.
+      No puedes modificar tu voto para mantener integridad democrática.
+    </div>
+
+    <Link
+      href="/comites/mis-votos"
+      className="mt-4 block rounded-2xl bg-[#0A4E84] px-4 py-3 text-center font-bold text-white"
+    >
+      Ver mis votos
+    </Link>
+  </div>
+) : (
+<>
+
                 <button
                   onClick={evaluarRespuestas}
                   className="w-full rounded-2xl bg-[#0A4E84] px-4 py-4 text-lg font-bold text-white"
@@ -360,6 +399,8 @@ async function guardarVoto() {
                       </div>
                     )}
                   </div>
+                )}
+                </>
                 )}
               </section>
             </>
