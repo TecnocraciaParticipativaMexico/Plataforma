@@ -129,7 +129,7 @@ export default function ProposalDetailPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        
           proposal_id: proposalId,
           user_id: userId || null,
           actor_hash: actorHash,
@@ -149,13 +149,34 @@ export default function ProposalDetailPage() {
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    actor_hash: actorHash,
-    respuestas: answers,
-    comprehension_score: score,
-  }),
+  proposal_id: proposalId,
+  user_id: userId || null,
+  actor_hash: actorHash,
+  voter_type: userId ? "miembro_o_ciudadano_autenticado" : "ciudadano",
+  vote,
+  comprehension_score: score,
+  proposal_title: proposal?.title,
+  module_id: proposal?.module_id,
+  module_name: proposal?.module_name,
+}),
 });
-        await cargarVotos();
-      }
+        
+if (responseData.ok) {
+  await fetch("/api/reputacion", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      actor_hash: actorHash,
+      respuestas: answers,
+      comprehension_score: score,
+    }),
+  });
+
+  window.location.href = "/comites/mis-votos";
+}
+        
     } catch (err: any) {
       setResultadoVoto({
         ok: false,
