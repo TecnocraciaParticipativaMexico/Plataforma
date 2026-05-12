@@ -118,38 +118,25 @@ export default function PropuestaCiudadanaPage() {
         return;
       }
 
-      const res = await fetch("/api/comites/votos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-  proposal_id: proposalId,
-  actor_hash: actorHash,
-  voter_type: "ciudadano_publico",
-  vote,
-  comprehension_score: score,
-  proposal_title: proposal?.title,
-  module_id: proposal?.module_id,
-  module_name: proposal?.module_name,
-}),
-      });
+const res = await fetch("/api/comites/votos", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    proposal_id: proposalId,
+    actor_hash: actorHash,
+    voter_type: "ciudadano_publico",
+    vote,
+    comprehension_score: score,
+    proposal_title: proposal?.title,
+    module_id: proposal?.module_id,
+    module_name: proposal?.module_name,
+  }),
+});
 
-      const responseData = await res.json();
+const responseData = await res.json();
 setResultadoVoto(responseData);
-
-if (responseData.ok) {
-  await fetch("/api/reputacion", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      actor_hash: actorHash,
-      respuestas: answers,
-      comprehension_score: score,
-    }),
-  });
 
 if (responseData.ok) {
   await fetch("/api/reputacion", {
