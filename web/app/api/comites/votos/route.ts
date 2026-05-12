@@ -12,6 +12,35 @@ function calcularPeso(score: number) {
   return Number((score / 10).toFixed(2));
 }
 
+function detectarSpam(respuestas: string[]) {
+  const bloqueadas = [
+    "jajaja", "asdf", "qwerty", "xxxxx", "12345", "prueba", "test",
+    "tu mama", "tu mamá", "tu papa", "tu papá", "ching", "pendej",
+    "puta", "puto", "mierda", "verga", "no se", "no sé",
+  ];
+
+  return respuestas.some((r) => {
+    const texto = String(r || "").toLowerCase().trim();
+    if (texto.length < 20) return true;
+    return bloqueadas.some((p) => texto.includes(p));
+  });
+}
+
+function calcularRiesgo(params: {
+  score: number;
+  timeSpent: number;
+  spam: boolean;
+}) {
+  let risk = 0;
+
+  if (params.timeSpent < 60) risk += 50;
+  if (params.timeSpent < 30) risk += 30;
+  if (params.score < 4) risk += 25;
+  if (params.spam) risk += 50;
+
+  return Math.min(risk, 100);
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const proposal_id = searchParams.get("proposal_id");
@@ -34,23 +63,27 @@ export async function GET(req: NextRequest) {
   const votes = data || [];
 
   if (proposal_id && actor_hash) {
-  return NextResponse.json({
-    ok: true,
-    yaVoto: votes.length > 0,
-    votes,
-  });
-}
+    return NextResponse.json({
+      ok: true,
+      yaVoto: votes.length > 0,
+      votes,
+    });
+  }
+
+  const normales = votes.filter((v) => v.review_status !== "sospechoso");
 
   const resumen = {
     total: votes.length,
-    favor: votes.filter((v) => v.vote === "A favor").length,
-    contra: votes.filter((v) => v.vote === "En contra").length,
-    requiereCambios: votes.filter((v) => v.vote === "Requiere cambios").length,
-    abstencion: votes.filter((v) => v.vote === "Abstención").length,
-    pesoFavor: votes
+    normales: normales.length,
+    sospechosos: votes.filter((v) => v.review_status === "sospechoso").length,
+    favor: normales.filter((v) => v.vote === "A favor").length,
+    contra: normales.filter((v) => v.vote === "En contra").length,
+    requiereCambios: normales.filter((v) => v.vote === "Requiere cambios").length,
+    abstencion: normales.filter((v) => v.vote === "Abstención").length,
+    pesoFavor: normales
       .filter((v) => v.vote === "A favor")
       .reduce((sum, v) => sum + Number(v.vote_weight || 0), 0),
-    pesoContra: votes
+    pesoContra: normales
       .filter((v) => v.vote === "En contra")
       .reduce((sum, v) => sum + Number(v.vote_weight || 0), 0),
   };
@@ -72,6 +105,8 @@ export async function POST(req: NextRequest) {
       proposal_title,
       module_id,
       module_name,
+      respuestas,
+      time_spent_seconds,
     } = body;
 
     if (!proposal_id || !actor_hash || !vote || comprehension_score === undefined) {
@@ -82,6 +117,8 @@ export async function POST(req: NextRequest) {
     }
 
     const score = Number(comprehension_score);
+    const timeSpent = Number(time_spent_seconds || 0);
+    const respuestasArray = Array.isArray(respuestas) ? respuestas : [];
 
     if (score < 0 || score > 10) {
       return NextResponse.json(
@@ -90,7 +127,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const vote_weight = calcularPeso(score);
+    const spam = detectarSpam(respuestasArray);
+    const riskScore = calcularRiesgo({
+      score,
+      timeSpent,
+      spam,
+    });
+
+    const suspicious = riskScore >= 50;
+    const vote_weight = suspicious ? 0 : calcularPeso(score);
 
     const { data, error } = await supabase
       .from("proposal_votes")
@@ -105,6 +150,11 @@ export async function POST(req: NextRequest) {
         proposal_title: proposal_title || null,
         module_id: module_id || null,
         module_name: module_name || null,
+        time_spent_seconds: timeSpent,
+        spam_flag: spam,
+        suspicious_flag: suspicious,
+        risk_score: riskScore,
+        review_status: suspicious ? "sospechoso" : "normal",
       })
       .select()
       .single();
