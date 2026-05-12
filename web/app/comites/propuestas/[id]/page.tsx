@@ -53,6 +53,7 @@ export default function ProposalDetailPage() {
   const [guardandoVoto, setGuardandoVoto] = useState(false);
   const [resumenVotos, setResumenVotos] = useState<any>(null);
   const [yaVoto, setYaVoto] = useState(false);
+  const [startedAt] = useState(Date.now());
 
   useEffect(() => {
   cargarPropuesta();
@@ -157,6 +158,8 @@ async function guardarVoto() {
         proposal_title: proposal?.title,
         module_id: proposal?.module_id,
         module_name: proposal?.module_name,
+        respuestas: answers,
+        time_spent_seconds: Math.floor((Date.now() - startedAt) / 1000),
       }),
     });
 
