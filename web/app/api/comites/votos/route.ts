@@ -33,6 +33,14 @@ export async function GET(req: NextRequest) {
 
   const votes = data || [];
 
+  if (proposal_id && actor_hash) {
+  return NextResponse.json({
+    ok: true,
+    yaVoto: votes.length > 0,
+    votes,
+  });
+}
+
   const resumen = {
     total: votes.length,
     favor: votes.filter((v) => v.vote === "A favor").length,
