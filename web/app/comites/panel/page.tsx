@@ -180,6 +180,12 @@ export default function PanelComitePage() {
             <div className="rounded-[28px] bg-white p-5 shadow-sm">
               <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
                 Votaciones pendientes
+                <Link
+  href="/comites/mis-votos"
+  className="mt-4 block rounded-xl border border-[#0A4E84] bg-white px-4 py-3 text-center font-semibold text-[#0A4E84]"
+>
+  Ver mis votos
+</Link>
               </div>
 
               <div className="mt-3 text-sm leading-6 text-slate-600">
