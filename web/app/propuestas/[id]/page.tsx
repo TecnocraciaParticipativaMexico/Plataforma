@@ -133,7 +133,6 @@ const res = await fetch("/api/comites/votos", {
     module_id: proposal?.module_id,
     module_name: proposal?.module_name,
   }),
-});
 
 const responseData = await res.json();
 setResultadoVoto(responseData);
