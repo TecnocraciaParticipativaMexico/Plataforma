@@ -77,6 +77,36 @@ export async function GET(req: NextRequest) {
   }
 }
 
+function textoInvalido(texto: string) {
+  const t = texto.toLowerCase().trim();
+
+  const bloqueadas = [
+    "ching",
+    "pendej",
+    "puto",
+    "puta",
+    "mierda",
+    "verga",
+    "jaja",
+    "asdf",
+    "qwerty",
+    "test",
+    "prueba",
+    "tu mama",
+    "tu mamá",
+    "tu papa",
+    "tu papá",
+  ];
+
+  if (t.length < 20) return true;
+
+  if (bloqueadas.some((p) => t.includes(p))) {
+    return true;
+  }
+
+  return false;
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
@@ -98,20 +128,38 @@ export async function POST(req: NextRequest) {
     risks,
   } = body;
 
-  if (
-    !user_id ||
-    !module_id ||
-    !module_name ||
-    !level ||
-    !title ||
-    !problem ||
-    !proposed_solution
-  ) {
-    return NextResponse.json(
-      { ok: false, error: "Faltan datos obligatorios" },
-      { status: 400 }
-    );
-  }
+if (
+  !title ||
+  !problem ||
+  !solution ||
+  !expected_impact ||
+  !module_id ||
+  !module_name ||
+  !level
+) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error: "Completa todos los campos obligatorios.",
+    },
+    { status: 400 }
+  );
+}
+
+if (
+  textoInvalido(problem) ||
+  textoInvalido(solution) ||
+  textoInvalido(expected_impact)
+) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error:
+        "La propuesta parece incompleta, inválida o contiene lenguaje no permitido.",
+    },
+    { status: 400 }
+  );
+}
 
   const ai_summary = crearResumenAutomatico(body);
 
