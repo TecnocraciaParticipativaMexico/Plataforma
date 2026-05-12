@@ -233,6 +233,13 @@ export default function PanelComitePage() {
             </div>
 
             <Link
+  href="/comites/reputacion"
+  className="mt-4 block rounded-xl border border-[#0A4E84] bg-white px-4 py-3 text-center font-semibold text-[#0A4E84]"
+>
+  Ver mi reputación cívica
+</Link>
+
+            <Link
               href="/comites/revision"
               className="block rounded-2xl border border-[#0A4E84] bg-white px-5 py-4 text-center font-bold text-[#0A4E84]"
             >
