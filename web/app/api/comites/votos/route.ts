@@ -15,25 +15,20 @@ function calcularPeso(score: number) {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const proposal_id = searchParams.get("proposal_id");
+  const actor_hash = searchParams.get("actor_hash");
 
-  if (!proposal_id) {
-    return NextResponse.json(
-      { ok: false, error: "Falta proposal_id" },
-      { status: 400 }
-    );
-  }
-
-  const { data, error } = await supabase
+  let query = supabase
     .from("proposal_votes")
     .select("*")
-    .eq("proposal_id", proposal_id)
     .order("created_at", { ascending: false });
 
+  if (proposal_id) query = query.eq("proposal_id", proposal_id);
+  if (actor_hash) query = query.eq("actor_hash", actor_hash);
+
+  const { data, error } = await query;
+
   if (error) {
-    return NextResponse.json(
-      { ok: false, error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 
   const votes = data || [];
@@ -66,9 +61,12 @@ export async function POST(req: NextRequest) {
       voter_type,
       vote,
       comprehension_score,
+      proposal_title,
+      module_id,
+      module_name,
     } = body;
 
-    if (!proposal_id || !vote || comprehension_score === undefined) {
+    if (!proposal_id || !actor_hash || !vote || comprehension_score === undefined) {
       return NextResponse.json(
         { ok: false, error: "Faltan datos obligatorios" },
         { status: 400 }
@@ -91,19 +89,32 @@ export async function POST(req: NextRequest) {
       .insert({
         proposal_id,
         user_id: user_id || null,
-        actor_hash: actor_hash || null,
+        actor_hash,
         voter_type: voter_type || "ciudadano",
         vote,
         comprehension_score: score,
         vote_weight,
+        proposal_title: proposal_title || null,
+        module_id: module_id || null,
+        module_name: module_name || null,
       })
       .select()
       .single();
 
     if (error) {
+      const duplicate =
+        error.message.includes("duplicate") ||
+        error.message.includes("unique") ||
+        error.code === "23505";
+
       return NextResponse.json(
-        { ok: false, error: error.message },
-        { status: 500 }
+        {
+          ok: false,
+          error: duplicate
+            ? "Ya votaste esta propuesta. Puedes consultar tu voto en Mis votos."
+            : error.message,
+        },
+        { status: duplicate ? 409 : 500 }
       );
     }
 
