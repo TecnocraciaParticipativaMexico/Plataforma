@@ -32,6 +32,36 @@ function detectarSpam(texto: string) {
   return false;
 }
 
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const actor_hash = searchParams.get("actor_hash");
+
+  if (!actor_hash) {
+    return NextResponse.json(
+      { ok: false, error: "Falta actor_hash" },
+      { status: 400 }
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("civic_reputation")
+    .select("*")
+    .eq("actor_hash", actor_hash)
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json(
+      { ok: false, error: error.message },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({
+    ok: true,
+    reputacion: data || null,
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
