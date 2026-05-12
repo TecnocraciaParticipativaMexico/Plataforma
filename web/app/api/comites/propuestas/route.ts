@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
 if (
   !title ||
   !problem ||
-  !solution ||
+  !proposed_solution ||
   !expected_impact ||
   !module_id ||
   !module_name ||
@@ -148,7 +148,7 @@ if (
 
 if (
   textoInvalido(problem) ||
-  textoInvalido(solution) ||
+  textoInvalido(proposed_solution) ||
   textoInvalido(expected_impact)
 ) {
   return NextResponse.json(
