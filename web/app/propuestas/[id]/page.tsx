@@ -49,6 +49,7 @@ export default function PropuestaCiudadanaPage() {
   const [resultadoVoto, setResultadoVoto] = useState<any>(null);
   const [guardandoVoto, setGuardandoVoto] = useState(false);
   const [resumenVotos, setResumenVotos] = useState<any>(null);
+  const [startedAt] = useState(Date.now());
 
   useEffect(() => {
     cargarPropuesta();
@@ -132,6 +133,8 @@ export default function PropuestaCiudadanaPage() {
           proposal_title: proposal?.title,
           module_id: proposal?.module_id,
           module_name: proposal?.module_name,
+          respuestas: answers,
+          time_spent_seconds: Math.floor((Date.now() - startedAt) / 1000),
         }),
       });
 
