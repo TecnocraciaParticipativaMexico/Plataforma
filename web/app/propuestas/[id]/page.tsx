@@ -50,11 +50,14 @@ export default function PropuestaCiudadanaPage() {
   const [guardandoVoto, setGuardandoVoto] = useState(false);
   const [resumenVotos, setResumenVotos] = useState<any>(null);
   const [startedAt] = useState(Date.now());
+  const [yaVoto, setYaVoto] = useState(false);
+  const [startedAt] = useState(Date.now());
 
   useEffect(() => {
-    cargarPropuesta();
-    cargarVotos();
-  }, []);
+  cargarPropuesta();
+  cargarVotos();
+  verificarSiYaVoto();
+}, []);
 
   async function cargarPropuesta() {
     try {
@@ -90,6 +93,22 @@ export default function PropuestaCiudadanaPage() {
     setScore(correctas);
     setResultadoVoto(null);
   }
+
+  async function verificarSiYaVoto() {
+  const actorHash = localStorage.getItem("actor_hash");
+
+  if (!actorHash) return;
+
+  const res = await fetch(
+    `/api/comites/votos?proposal_id=${proposalId}&actor_hash=${actorHash}`
+  );
+
+  const data = await res.json();
+
+  if (data.ok && data.yaVoto) {
+    setYaVoto(true);
+  }
+}
 
   async function guardarVoto() {
     try {
@@ -282,6 +301,27 @@ export default function PropuestaCiudadanaPage() {
                 se calificará con IA.
               </div>
 
+              {yaVoto ? (
+  <div className="rounded-[28px] bg-green-50 p-6 text-green-900 shadow-sm">
+    <div className="text-xl font-bold">
+      ✅ Ya registraste tu voto
+    </div>
+
+    <div className="mt-2 text-sm leading-6">
+      Tu voto ciudadano ya fue guardado y ponderado.
+      No puedes modificarlo para mantener integridad democrática.
+    </div>
+
+    <Link
+      href="/comites/mis-votos"
+      className="mt-4 block rounded-2xl bg-[#0A4E84] px-4 py-3 text-center font-bold text-white"
+    >
+      Ver mis votos
+    </Link>
+  </div>
+) : (
+  <>
+
               {preguntasBase.map((pregunta, index) => (
                 <div
                   key={index}
@@ -363,6 +403,8 @@ export default function PropuestaCiudadanaPage() {
                   )}
                 </div>
               )}
+      </>
+)}
             </section>
           </>
         )}
