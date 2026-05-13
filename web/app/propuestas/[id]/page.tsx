@@ -253,6 +253,8 @@ export default function PropuestaCiudadanaPage() {
                 <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
                   <div className="font-bold text-[#0A4E84]">
                     Votación ponderada acumulada
+                    <div>Votos normales: {resumenVotos.normales || 0}</div>
+                    <div>Votos sospechosos en revisión: {resumenVotos.sospechosos || 0}</div>
                   </div>
 
                   <div>Total de votos: {resumenVotos.total}</div>
@@ -265,6 +267,9 @@ export default function PropuestaCiudadanaPage() {
                   </div>
                   <div className="font-bold">
                     Peso en contra: {Number(resumenVotos.pesoContra || 0).toFixed(2)}
+                    <div className="mt-3 rounded-xl bg-yellow-50 p-3 text-yellow-900">
+  Los votos sospechosos no cuentan en el peso ponderado hasta revisión.
+</div>
                   </div>
                 </div>
               )}
