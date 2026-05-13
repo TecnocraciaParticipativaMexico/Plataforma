@@ -49,7 +49,6 @@ export default function PropuestaCiudadanaPage() {
   const [resultadoVoto, setResultadoVoto] = useState<any>(null);
   const [guardandoVoto, setGuardandoVoto] = useState(false);
   const [resumenVotos, setResumenVotos] = useState<any>(null);
-  const [startedAt] = useState(Date.now());
   const [yaVoto, setYaVoto] = useState(false);
   const [startedAt] = useState(Date.now());
 
@@ -72,27 +71,128 @@ export default function PropuestaCiudadanaPage() {
     }
   }
 
-  async function cargarVotos() {
-    const res = await fetch(`/api/comites/votos?proposal_id=${proposalId}`);
-    const data = await res.json();
+  function normalizarTexto(texto: string) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-    if (data.ok) {
-      setResumenVotos(data.resumen);
+function obtenerPalabrasClaveDesdePropuesta() {
+  const textoBase = normalizarTexto(
+    [
+      proposal?.title || "",
+      proposal?.problem || "",
+      proposal?.proposed_solution || "",
+      proposal?.expected_impact || "",
+      proposal?.risks || "",
+      proposal?.ai_summary || "",
+      proposal?.municipality || "",
+      proposal?.state || "",
+      proposal?.level || "",
+      proposal?.module_name || "",
+    ].join(" ")
+  );
+
+  const stopwords = new Set([
+    "que", "para", "con", "por", "una", "uno", "las", "los", "del", "de",
+    "la", "el", "en", "y", "o", "a", "se", "su", "sus", "un", "al", "es",
+    "no", "si", "sin", "mas", "menos", "este", "esta", "estos", "estas",
+    "como", "sobre", "entre", "ser", "son", "fue", "han", "hace", "hacer",
+    "puede", "pueden", "debe", "deben", "ciudadano", "ciudadanos",
+    "propuesta", "problema", "solucion", "impacto", "riesgo", "riesgos",
+    "modulo", "nivel", "territorial", "publico", "publica",
+  ]);
+
+  const palabras = textoBase
+    .split(" ")
+    .filter((p) => p.length >= 4 && !stopwords.has(p));
+
+  const frecuencia: Record<string, number> = {};
+
+  palabras.forEach((p) => {
+    frecuencia[p] = (frecuencia[p] || 0) + 1;
+  });
+
+  return Object.entries(frecuencia)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 25)
+    .map(([palabra]) => palabra);
+}
+
+function esBasura(texto: string) {
+  const r = normalizarTexto(texto);
+
+  const bloqueadas = [
+    "tu mama",
+    "tu papa",
+    "jajaja",
+    "asdf",
+    "qwerty",
+    "xxxxx",
+    "prueba",
+    "test",
+    "ching",
+    "pendej",
+    "puta",
+    "puto",
+    "verga",
+    "mierda",
+    "no se",
+    "nose",
+    "nada",
+  ];
+
+  if (r.length < 12) return true;
+
+  return bloqueadas.some((b) => r.includes(b));
+}
+
+function evaluarRespuestaAutomatica(respuesta: string, palabrasClave: string[]) {
+  const r = normalizarTexto(respuesta);
+
+  if (esBasura(r)) return 0;
+
+  const palabrasRespuesta = r
+    .split(" ")
+    .filter((p) => p.length >= 4);
+
+  const unicasRespuesta = new Set(palabrasRespuesta);
+
+  let coincidencias = 0;
+
+  palabrasClave.forEach((palabra) => {
+    if (unicasRespuesta.has(palabra)) {
+      coincidencias++;
     }
-  }
+  });
+
+  const ratio = coincidencias / Math.max(1, Math.min(8, palabrasClave.length));
+
+  if (ratio >= 0.45) return 1;
+  if (ratio >= 0.25) return 0.5;
+
+  return 0;
+}
 
   function evaluarRespuestas() {
-    let correctas = 0;
+  const palabrasClave = obtenerPalabrasClaveDesdePropuesta();
 
-    answers.forEach((answer) => {
-      if (answer.trim().length >= 20) {
-        correctas += 1;
-      }
-    });
+  let total = 0;
 
-    setScore(correctas);
-    setResultadoVoto(null);
-  }
+  answers.forEach((respuesta) => {
+    total += evaluarRespuestaAutomatica(
+      respuesta,
+      palabrasClave
+    );
+  });
+
+  setScore(Math.min(10, Math.round(total)));
+  setResultadoVoto(null);
+}
 
   async function verificarSiYaVoto() {
   const actorHash = localStorage.getItem("actor_hash");
