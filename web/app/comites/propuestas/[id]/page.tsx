@@ -54,10 +54,13 @@ export default function ProposalDetailPage() {
   const [resumenVotos, setResumenVotos] = useState<any>(null);
   const [yaVoto, setYaVoto] = useState(false);
   const [startedAt] = useState(Date.now());
+  const [dictamen, setDictamen] = useState<any>(null);
+  const [creandoDictamen, setCreandoDictamen] = useState(false);
 
   useEffect(() => {
   cargarPropuesta();
   cargarVotos();
+  cargarDictamen();
   verificarSiYaVoto();
 }, []);
 
@@ -95,6 +98,49 @@ export default function ProposalDetailPage() {
     setScore(correctas);
     setResultadoVoto(null);
   }
+
+  async function cargarDictamen() {
+  const res = await fetch(`/api/comites/dictamenes?proposal_id=${proposalId}`);
+  const data = await res.json();
+
+  if (data.ok) {
+    setDictamen(data.report);
+  }
+}
+
+async function crearDictamenPreliminar() {
+  try {
+    setCreandoDictamen(true);
+
+    let actorHash = localStorage.getItem("actor_hash");
+
+    if (!actorHash) {
+      actorHash = crypto.randomUUID();
+      localStorage.setItem("actor_hash", actorHash);
+    }
+
+    const res = await fetch("/api/comites/dictamenes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        proposal_id: proposalId,
+        actor_hash: actorHash,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+      setDictamen(data.report);
+    } else {
+      alert(data.error || "Error creando dictamen");
+    }
+  } finally {
+    setCreandoDictamen(false);
+  }
+}
 
   async function verificarSiYaVoto() {
   let actorHash = localStorage.getItem("actor_hash");
@@ -294,6 +340,45 @@ async function guardarVoto() {
                   </div>
                 )}
 
+<div className="mt-6 rounded-2xl bg-slate-50 p-4">
+  <div className="font-bold text-[#0A4E84]">
+    Dictamen técnico colegiado
+  </div>
+
+  {dictamen ? (
+    <>
+      <div className="mt-2 text-sm leading-6 text-slate-700">
+        Folio: <strong>{dictamen.folio}</strong>
+      </div>
+
+      <div className="text-sm leading-6 text-slate-700">
+        Estado: <strong>{dictamen.status}</strong>
+      </div>
+
+      <Link
+        href={`/comites/dictamenes/${dictamen.id}`}
+        className="mt-4 block rounded-xl bg-[#0A4E84] px-4 py-3 text-center font-bold text-white"
+      >
+        Ver dictamen
+      </Link>
+    </>
+  ) : (
+    <>
+      <div className="mt-2 text-sm leading-6 text-slate-700">
+        Aún no existe dictamen preliminar para esta propuesta.
+      </div>
+
+      <button
+        onClick={crearDictamenPreliminar}
+        disabled={creandoDictamen}
+        className="mt-4 w-full rounded-xl bg-[#F2C300] px-4 py-3 font-bold text-[#1F2937] disabled:opacity-50"
+      >
+        {creandoDictamen ? "Creando..." : "Crear dictamen preliminar"}
+      </button>
+    </>
+  )}
+</div>
+                
                 <div className="mt-6 rounded-2xl bg-yellow-50 p-4 text-sm leading-6 text-yellow-900">
                   Para votar, debes responder 10 preguntas de comprensión.
                   Tu voto no se elimina si sacas bajo puntaje, pero su peso se
