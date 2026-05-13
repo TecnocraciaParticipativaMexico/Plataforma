@@ -194,6 +194,15 @@ function evaluarRespuestaAutomatica(respuesta: string, palabrasClave: string[]) 
   setResultadoVoto(null);
 }
 
+  async function cargarVotos() {
+  const res = await fetch(`/api/comites/votos?proposal_id=${proposalId}`);
+  const data = await res.json();
+
+  if (data.ok) {
+    setResumenVotos(data.resumen);
+  }
+}
+
   async function verificarSiYaVoto() {
   const actorHash = localStorage.getItem("actor_hash");
 
