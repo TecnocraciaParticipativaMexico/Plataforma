@@ -287,6 +287,9 @@ async function guardarVoto() {
                     </div>
                     <div className="font-bold">
                       Peso en contra: {resumenVotos.pesoContra.toFixed(2)}
+                      <div className="mt-3 rounded-xl bg-yellow-50 p-3 text-yellow-900">
+  Los votos sospechosos no cuentan en el peso ponderado hasta revisión.
+</div>
                     </div>
                   </div>
                 )}
