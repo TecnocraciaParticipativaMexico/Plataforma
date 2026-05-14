@@ -44,6 +44,13 @@ export default function DictamenDetallePage() {
   const [observationContent, setObservationContent] = useState("");
   const [savingObservation, setSavingObservation] = useState(false);
   const [observationResult, setObservationResult] = useState<any>(null);
+  const [technicalVotes, setTechnicalVotes] = useState<any[]>([]);
+  const [technicalVoteSummary, setTechnicalVoteSummary] = useState<any>(null);
+  const [technicalVote, setTechnicalVote] = useState("Aprobada técnicamente");
+  const [technicalReasoning, setTechnicalReasoning] = useState("");
+  const [conflictDeclared, setConflictDeclared] = useState(false);
+  const [savingTechnicalVote, setSavingTechnicalVote] = useState(false);
+  const [technicalVoteResult, setTechnicalVoteResult] = useState<any>(null);
 
   useEffect(() => {
   cargarDictamen();
@@ -61,6 +68,7 @@ export default function DictamenDetallePage() {
 
 if (encontrado) {
   await cargarObservaciones(encontrado.id);
+  await cargarVotosTecnicos(encontrado.id);
 }
 }
 
@@ -75,6 +83,59 @@ setLoading(false);
 
   if (data.ok) {
     setObservations(data.observations || []);
+  }
+}
+
+async function cargarVotosTecnicos(reportId: string) {
+  const res = await fetch(`/api/comites/dictamenes/votos?report_id=${reportId}`);
+  const data = await res.json();
+
+  if (data.ok) {
+    setTechnicalVotes(data.votes || []);
+    setTechnicalVoteSummary(data.resumen || null);
+  }
+}
+
+async function emitirVotoTecnico() {
+  if (!dictamen) return;
+
+  try {
+    setSavingTechnicalVote(true);
+    setTechnicalVoteResult(null);
+
+    let actorHash = localStorage.getItem("actor_hash");
+
+    if (!actorHash) {
+      actorHash = crypto.randomUUID();
+      localStorage.setItem("actor_hash", actorHash);
+    }
+
+    const res = await fetch("/api/comites/dictamenes/votos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        report_id: dictamen.id,
+        proposal_id: dictamen.proposal_id,
+        actor_hash: actorHash,
+        vote: technicalVote,
+        reasoning: technicalReasoning,
+        technical_weight: conflictDeclared ? 0 : 1,
+        conflict_declared: conflictDeclared,
+      }),
+    });
+
+    const data = await res.json();
+    setTechnicalVoteResult(data);
+
+    if (data.ok) {
+      setTechnicalReasoning("");
+      setConflictDeclared(false);
+      await cargarVotosTecnicos(dictamen.id);
+    }
+  } finally {
+    setSavingTechnicalVote(false);
   }
 }
 
@@ -289,6 +350,109 @@ async function agregarObservacion() {
         {observationResult.ok
           ? "✅ Observación registrada con trazabilidad."
           : `❌ Error: ${observationResult.error}`}
+      </div>
+    )}
+  </div>
+</div>
+
+                <div className="rounded-[24px] bg-white p-5 shadow-sm">
+  <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+    Votación técnica colegiada
+  </div>
+
+  {technicalVoteSummary && (
+    <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+      <div>Total de votos técnicos: {technicalVoteSummary.total}</div>
+      <div>Aprobada técnicamente: {technicalVoteSummary.aprobada}</div>
+      <div>Requiere revisión: {technicalVoteSummary.revision}</div>
+      <div>No viable: {technicalVoteSummary.inviable}</div>
+    </div>
+  )}
+
+  <div className="mt-4 space-y-3">
+    {technicalVotes.length === 0 ? (
+      <div className="text-sm text-slate-600">
+        Aún no hay votos técnicos registrados.
+      </div>
+    ) : (
+      technicalVotes.map((v) => (
+        <div
+          key={v.id}
+          className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700"
+        >
+          <div className="font-bold text-[#0A4E84]">
+            {v.vote}
+          </div>
+
+          <div className="mt-2 whitespace-pre-wrap">{v.reasoning}</div>
+
+          {v.conflict_declared && (
+            <div className="mt-2 rounded-xl bg-yellow-50 p-3 text-yellow-900">
+              Conflicto declarado: este voto tiene peso técnico 0.
+            </div>
+          )}
+
+          <div className="mt-2 text-xs text-slate-400">
+            {new Date(v.created_at).toLocaleString()}
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+
+  <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+    <label className="mb-2 block text-sm font-bold">
+      Voto técnico
+    </label>
+
+    <select
+      value={technicalVote}
+      onChange={(e) => setTechnicalVote(e.target.value)}
+      className="mb-3 w-full rounded-2xl border px-4 py-3 text-sm"
+    >
+      <option>Aprobada técnicamente</option>
+      <option>Requiere revisión</option>
+      <option>No viable</option>
+    </select>
+
+    <label className="mb-2 block text-sm font-bold">
+      Razonamiento técnico
+    </label>
+
+    <textarea
+      value={technicalReasoning}
+      onChange={(e) => setTechnicalReasoning(e.target.value)}
+      rows={5}
+      className="w-full rounded-2xl border px-4 py-3 text-sm"
+      placeholder="Explica tu voto técnico con razones, evidencia, riesgos o metodología..."
+    />
+
+    <label className="mt-4 flex items-start gap-2 text-sm leading-6 text-slate-700">
+      <input
+        type="checkbox"
+        checked={conflictDeclared}
+        onChange={(e) => setConflictDeclared(e.target.checked)}
+        className="mt-1"
+      />
+      <span>
+        Declaro posible conflicto de interés. Mi voto quedará registrado con
+        peso técnico 0, pero visible para trazabilidad.
+      </span>
+    </label>
+
+    <button
+      onClick={emitirVotoTecnico}
+      disabled={savingTechnicalVote || technicalReasoning.trim().length < 20}
+      className="mt-4 w-full rounded-2xl bg-[#F2C300] px-4 py-3 font-bold text-[#1F2937] disabled:opacity-50"
+    >
+      {savingTechnicalVote ? "Guardando..." : "Emitir voto técnico"}
+    </button>
+
+    {technicalVoteResult && (
+      <div className="mt-3 rounded-2xl bg-white p-3 text-sm">
+        {technicalVoteResult.ok
+          ? "✅ Voto técnico registrado con trazabilidad."
+          : `❌ Error: ${technicalVoteResult.error}`}
       </div>
     )}
   </div>
