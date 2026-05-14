@@ -39,10 +39,15 @@ export default function DictamenDetallePage() {
 
   const [dictamen, setDictamen] = useState<Dictamen | null>(null);
   const [loading, setLoading] = useState(true);
+  const [observations, setObservations] = useState<any[]>([]);
+  const [observationType, setObservationType] = useState("Observación técnica");
+  const [observationContent, setObservationContent] = useState("");
+  const [savingObservation, setSavingObservation] = useState(false);
+  const [observationResult, setObservationResult] = useState<any>(null);
 
   useEffect(() => {
-    cargarDictamen();
-  }, []);
+  cargarDictamen();
+}, []);
 
   async function cargarDictamen() {
     const res = await fetch("/api/comites/dictamenes");
@@ -53,10 +58,66 @@ export default function DictamenDetallePage() {
         (r: Dictamen) => r.id === dictamenId
       );
       setDictamen(encontrado || null);
+
+if (encontrado) {
+  await cargarObservaciones(encontrado.id);
+}
+}
+
+setLoading(false);
+}
+
+  async function cargarObservaciones(reportId: string) {
+  const res = await fetch(
+    `/api/comites/dictamenes/observaciones?report_id=${reportId}`
+  );
+  const data = await res.json();
+
+  if (data.ok) {
+    setObservations(data.observations || []);
+  }
+}
+
+async function agregarObservacion() {
+  if (!dictamen) return;
+
+  try {
+    setSavingObservation(true);
+    setObservationResult(null);
+
+    let actorHash = localStorage.getItem("actor_hash");
+
+    if (!actorHash) {
+      actorHash = crypto.randomUUID();
+      localStorage.setItem("actor_hash", actorHash);
     }
 
-    setLoading(false);
+    const res = await fetch("/api/comites/dictamenes/observaciones", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        report_id: dictamen.id,
+        proposal_id: dictamen.proposal_id,
+        actor_hash: actorHash,
+        module_id: dictamen.module_id,
+        observation_type: observationType,
+        content: observationContent,
+      }),
+    });
+
+    const data = await res.json();
+    setObservationResult(data);
+
+    if (data.ok) {
+      setObservationContent("");
+      await cargarObservaciones(dictamen.id);
+    }
+  } finally {
+    setSavingObservation(false);
   }
+}
 
   function Section({
     title,
@@ -154,6 +215,84 @@ export default function DictamenDetallePage() {
                 <Section title="Cadena de custodia" content={dictamen.chain_of_custody_summary} />
                 <Section title="Resumen público" content={dictamen.public_summary} />
                 <Section title="Conclusión" content={dictamen.final_conclusion} />
+
+                <div className="rounded-[24px] bg-white p-5 shadow-sm">
+  <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
+    Observaciones colegiadas
+  </div>
+
+  <div className="mt-4 space-y-3">
+    {observations.length === 0 ? (
+      <div className="text-sm text-slate-600">
+        Aún no hay observaciones técnicas registradas.
+      </div>
+    ) : (
+      observations.map((obs) => (
+        <div
+          key={obs.id}
+          className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700"
+        >
+          <div className="font-bold text-[#0A4E84]">
+            {obs.observation_type}
+          </div>
+
+          <div className="mt-2 whitespace-pre-wrap">{obs.content}</div>
+
+          <div className="mt-2 text-xs text-slate-400">
+            {new Date(obs.created_at).toLocaleString()}
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+
+  <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+    <label className="mb-2 block text-sm font-bold">
+      Tipo de observación
+    </label>
+
+    <select
+      value={observationType}
+      onChange={(e) => setObservationType(e.target.value)}
+      className="mb-3 w-full rounded-2xl border px-4 py-3 text-sm"
+    >
+      <option>Observación técnica</option>
+      <option>Riesgo crítico</option>
+      <option>Solicitud de evidencia</option>
+      <option>Objeción razonada</option>
+      <option>Recomendación</option>
+      <option>Conflicto de interés</option>
+    </select>
+
+    <label className="mb-2 block text-sm font-bold">
+      Contenido
+    </label>
+
+    <textarea
+      value={observationContent}
+      onChange={(e) => setObservationContent(e.target.value)}
+      rows={5}
+      className="w-full rounded-2xl border px-4 py-3 text-sm"
+      placeholder="Escribe una observación técnica clara, con razones y evidencia si aplica..."
+    />
+
+    <button
+      onClick={agregarObservacion}
+      disabled={savingObservation || observationContent.trim().length < 20}
+      className="mt-4 w-full rounded-2xl bg-[#0A4E84] px-4 py-3 font-bold text-white disabled:opacity-50"
+    >
+      {savingObservation ? "Guardando..." : "Agregar observación colegiada"}
+    </button>
+
+    {observationResult && (
+      <div className="mt-3 rounded-2xl bg-white p-3 text-sm">
+        {observationResult.ok
+          ? "✅ Observación registrada con trazabilidad."
+          : `❌ Error: ${observationResult.error}`}
+      </div>
+    )}
+  </div>
+</div>
 
                 <div className="rounded-[24px] bg-white p-5 shadow-sm">
                   <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
