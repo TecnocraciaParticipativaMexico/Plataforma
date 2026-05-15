@@ -6,8 +6,107 @@ type Evento = {
   event_id: string;
   event_type: string;
   created_at: string;
-  payload_json?: any;
+  payload_json: any;
 };
+
+function extraerGoogleMapsLink(texto: string) {
+  const match = texto.match(/https:\/\/[^\s]+/);
+  return match ? match[0] : null;
+}
+
+function extraerCoordsDireccion(texto: string) {
+  const match = texto.match(/Coords dirección:\s*(-\d+\.\d*),\s*(-\d+\.\d*)/i);
+  if (!match) return null;
+
+  return {
+    lat: match[1],
+    lng: match[2],
+  };
+}
+
+function limpiarTextoReporte(texto: string) {
+  return texto
+    .replace(/Google Maps:\s*https:\/\/[^\s]+/gi, "Google Maps")
+    .replace(/Coords dirección:\s*-\d+\.\d*,\s*-\d+\.\d*/gi, "")
+    .replace(/,\s*,/g, ", ")
+    .trim();
+}
+
+function traducirEvento(tipo: string, index: number, eventos: Evento[]) {
+  if (tipo === "ProcessCreated") return "Proceso creado";
+  if (tipo === "EvidenceSubmitted") return "Evidencia subida";
+  if (tipo === "StatusChanged") return "Estado actualizado";
+
+  if (tipo === "CitizenNoteAdded") {
+    const primeraNotaIndex = eventos.findIndex(
+      (evento) => evento.event_type === "CitizenNoteAdded"
+    );
+
+    return index === primeraNotaIndex ? "Reporte inicial" : "Actualización ciudadana";
+  }
+
+  return tipo;
+}
+
+function EvidencePreview({
+  bucket,
+  path,
+  mimeType,
+}: {
+  bucket?: string;
+  path: string;
+  mimeType: string;
+}) {
+  const [signedUrl, setSignedUrl] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+
+    fetch("/api/evidence/signed-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bucket, path }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (alive && data.ok) setSignedUrl(data.signedUrl);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      alive = false;
+    };
+  }, [bucket, path]);
+
+  if (!signedUrl) {
+    return <div className="mt-3 text-xs text-slate-500">Preparando enlace seguro...</div>;
+  }
+
+  if (mimeType.startsWith("image/")) {
+    return (
+      <img
+        src={signedUrl}
+        className="mt-3 rounded-xl"
+        alt="Evidencia ciudadana"
+      />
+    );
+  }
+
+  if (mimeType.startsWith("audio/")) {
+    return <audio controls className="mt-3 w-full" src={signedUrl} />;
+  }
+
+  return (
+    <a
+      href={signedUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-3 inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
+    >
+      Ver archivo
+    </a>
+  );
+}
 
 export default function SeguimientoPage() {
   const [processId, setProcessId] = useState("");
@@ -19,15 +118,13 @@ export default function SeguimientoPage() {
   const [nuevaNota, setNuevaNota] = useState("");
   const [enviandoNota, setEnviandoNota] = useState(false);
   const [nuevoEstado, setNuevoEstado] = useState("Draft");
-const [cambiandoEstado, setCambiandoEstado] = useState(false);
+  const [cambiandoEstado, setCambiandoEstado] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get("processId") || "";
     setProcessId(pid);
-    if (pid) {
-      cargarEventos(pid);
-    }
+    if (pid) void cargarEventos(pid);
   }, []);
 
   async function cargarEventos(pid?: string) {
@@ -62,25 +159,20 @@ const [cambiandoEstado, setCambiandoEstado] = useState(false);
       setError("");
 
       const actorHash = localStorage.getItem("actor_hash") || "anon";
-
       const res = await fetch(`/api/process/${processId}/event`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           event_type: "CitizenNoteAdded",
           actor_hash: actorHash,
-          payload: {
-            note: nuevaNota.trim(),
-          },
+          payload: { note: nuevaNota.trim() },
         }),
       });
 
       const data = await res.json();
 
-      if (!res.ok || !data?.ok) {
-        setError(data?.error || "No se pudo agregar la actualización.");
+      if (!res.ok || !data.ok) {
+        setError(data.error || "No se pudo agregar la actualización.");
         return;
       }
 
@@ -94,51 +186,47 @@ const [cambiandoEstado, setCambiandoEstado] = useState(false);
   }
 
   async function cambiarEstado() {
-  if (!processId) return;
+    if (!processId) return;
 
-  try {
-    setCambiandoEstado(true);
-    setError("");
+    try {
+      setCambiandoEstado(true);
+      setError("");
 
-    const actorHash = localStorage.getItem("actor_hash") || "anon";
-
-    const res = await fetch(`/api/process/${processId}/event`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        event_type: "StatusChanged",
-        actor_hash: actorHash,
-        payload: {
-          status: nuevoEstado,
-          label:
-            nuevoEstado === "Draft"
-              ? "Recibido"
-              : nuevoEstado === "Review"
-              ? "En revisión"
-              : nuevoEstado === "Published"
+      const actorHash = localStorage.getItem("actor_hash") || "anon";
+      const label =
+        nuevoEstado === "Draft"
+          ? "Recibido"
+          : nuevoEstado === "Review"
+            ? "En revisión"
+            : nuevoEstado === "Published"
               ? "Resuelto"
-              : nuevoEstado,
-        },
-      }),
-    });
+              : nuevoEstado;
 
-    const data = await res.json();
+      const res = await fetch(`/api/process/${processId}/event`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event_type: "StatusChanged",
+          actor_hash: actorHash,
+          payload: { status: nuevoEstado, label },
+        }),
+      });
 
-    if (!res.ok || !data?.ok) {
-      setError(data?.error || "No se pudo cambiar estado");
-      return;
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        setError(data.error || "No se pudo cambiar estado");
+        return;
+      }
+
+      await cargarEventos();
+    } catch {
+      setError("Error cambiando estado");
+    } finally {
+      setCambiandoEstado(false);
     }
-
-    await cargarEventos();
-  } catch {
-    setError("Error cambiando estado");
-  } finally {
-    setCambiandoEstado(false);
   }
-}
-  
+
   async function verificarIntegridad() {
     if (!processId) return;
 
@@ -154,53 +242,6 @@ const [cambiandoEstado, setCambiandoEstado] = useState(false);
     }
   }
 
-function traducirEvento(tipo: string, index: number, eventos: any[]) {
-  if (tipo === "ProcessCreated") return "Proceso creado";
-  if (tipo === "EvidenceSubmitted") return "Evidencia subida";
-  if (tipo === "StatusChanged") return "Estado actualizado";
-
-  if (tipo === "CitizenNoteAdded") {
-    const primeraNotaIndex = eventos.findIndex(
-      (evento) => evento.event_type === "CitizenNoteAdded"
-    );
-
-      return index === primeraNotaIndex
-      ? "Reporte inicial"
-      : "Actualización ciudadana";
-  }
-
-  return tipo;
-}  
-
-function extraerGoogleMapsLink(texto: string) {
-  if (!texto) return null;
-
-  const match = texto.match(/https?:\/\/[^\s]+/);
-  return match ? match[0] : null;
-}
-
-function extraerCoordsDireccion(texto: string) {
-  if (!texto) return null;
-
-  const match = texto.match(/Coords dirección:\s*(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/i);
-  if (!match) return null;
-
-  return {
-    lat: match[1],
-    lng: match[2],
-  };
-}
-
-function limpiarTextoReporte(texto: string) {
-  if (!texto) return "";
-
-  return texto
-    .replace(/Google Maps:\s*https?:\/\/[^\s]+/gi, "Google Maps")
-    .replace(/Coords dirección:\s*-?\d+\.?\d*,\s*-?\d+\.?\d*/gi, "")
-    .replace(/,\s*,/g, ", ")
-    .trim();
-}  
-
   const ultimoEstado = [...eventos]
     .reverse()
     .find((evento) => evento.event_type === "StatusChanged");
@@ -211,7 +252,7 @@ function limpiarTextoReporte(texto: string) {
     "Sin estado";
 
   const estadoActualRaw = ultimoEstado?.payload_json?.status || "";
-  
+
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
       <div className="mx-auto max-w-md px-4 py-6">
@@ -254,7 +295,7 @@ function limpiarTextoReporte(texto: string) {
           </div>
         )}
 
-                        {eventos.length > 0 && (
+        {eventos.length > 0 && (
           <div className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
             <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="text-sm font-semibold text-slate-500">
@@ -272,33 +313,33 @@ function limpiarTextoReporte(texto: string) {
 
             <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
               <div className="mb-2 text-sm font-semibold text-slate-600">
+                Cambiar estado del caso
+              </div>
+
+              <select
+                value={nuevoEstado}
+                onChange={(e) => setNuevoEstado(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 p-2 text-sm"
+              >
+                <option value="Draft">Recibido</option>
+                <option value="Review">En revisión</option>
+                <option value="Published">Resuelto</option>
+              </select>
+
+              <button
+                onClick={cambiarEstado}
+                disabled={cambiandoEstado}
+                className="mt-3 rounded-xl bg-green-600 px-4 py-2 font-semibold text-white"
+              >
+                {cambiandoEstado ? "Guardando..." : "Actualizar estado"}
+              </button>
+            </div>
+
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="mb-2 text-sm font-semibold text-slate-600">
                 Agregar actualización
               </div>
 
-<div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
-  <div className="mb-2 text-sm font-semibold text-slate-600">
-    Cambiar estado del caso
-  </div>
-
-  <select
-    value={nuevoEstado}
-    onChange={(e) => setNuevoEstado(e.target.value)}
-    className="w-full rounded-xl border border-slate-300 p-2 text-sm"
-  >
-    <option value="Draft">Recibido</option>
-    <option value="Review">En revisión</option>
-    <option value="Published">Resuelto</option>
-  </select>
-
-  <button
-    onClick={cambiarEstado}
-    disabled={cambiandoEstado}
-    className="mt-3 rounded-xl bg-green-600 px-4 py-2 text-white font-semibold"
-  >
-    {cambiandoEstado ? "Guardando..." : "Actualizar estado"}
-  </button>
-</div>
-              
               <textarea
                 value={nuevaNota}
                 onChange={(e) => setNuevaNota(e.target.value)}
@@ -319,162 +360,141 @@ function limpiarTextoReporte(texto: string) {
             <h2 className="mb-4 text-xl font-bold">Línea de tiempo</h2>
 
             <div className="space-y-4">
-              {eventos.map((evento, index) => (
-<div
-  key={evento.event_id}
-  className="rounded-2xl border border-slate-200 p-4"
->
-  <div className="mb-1 text-sm font-bold text-[#0A4E84]">
-    {index + 1}. {traducirEvento(evento.event_type, index, eventos)}
-  </div>
+              {eventos.map((evento, index) => {
+                const payload = evento.payload_json || {};
+                const note = String(payload.note || "");
+                const coords = extraerCoordsDireccion(note);
+                const mapsLink = extraerGoogleMapsLink(note);
 
-  <div className="mb-3 text-xs text-slate-500">
-    {new Date(evento.created_at).toLocaleString()}
-  </div>
+                return (
+                  <div
+                    key={evento.event_id}
+                    className="rounded-2xl border border-slate-200 p-4"
+                  >
+                    <div className="mb-1 text-sm font-bold text-[#0A4E84]">
+                      {index + 1}. {traducirEvento(evento.event_type, index, eventos)}
+                    </div>
 
-  {evento.event_type === "ProcessCreated" && (
-    <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-      <div>
-        <span className="font-semibold">Proceso:</span>{" "}
-        {evento.payload_json?.tipo_proceso || "Sin tipo"}
-      </div>
-      <div className="mt-2 break-all text-xs text-slate-500">
-        ID: {evento.payload_json?.process_id || evento.event_id}
-      </div>
-    </div>
-  )}
+                    <div className="mb-3 text-xs text-slate-500">
+                      {new Date(evento.created_at).toLocaleString()}
+                    </div>
 
-{evento.event_type === "CitizenNoteAdded" && (
-  <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-    <div className="font-semibold mb-1">
-      {traducirEvento(evento.event_type, index, eventos) === "Reporte inicial"
-        ? "Descripción del reporte"
-        : "Nota ciudadana"}
-    </div>
+                    {evento.event_type === "ProcessCreated" && (
+                      <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+                        <div>
+                          <span className="font-semibold">Proceso:</span>{" "}
+                          {payload.tipo_proceso || "Sin tipo"}
+                        </div>
+                        <div className="mt-2 break-all text-xs text-slate-500">
+                          ID: {payload.process_id || evento.event_id}
+                        </div>
+                      </div>
+                    )}
 
-    <div className="whitespace-pre-wrap break-words">
-      {limpiarTextoReporte(evento.payload_json?.note || "Sin contenido")}
-    </div>
+                    {evento.event_type === "CitizenNoteAdded" && (
+                      <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+                        <div className="mb-1 font-semibold">
+                          {traducirEvento(evento.event_type, index, eventos) === "Reporte inicial"
+                            ? "Descripción del reporte"
+                            : "Nota ciudadana"}
+                        </div>
 
-    {extraerCoordsDireccion(evento.payload_json?.note || "") && (
-      <div className="mt-3 rounded-xl bg-white p-3 text-xs text-slate-600">
-        <div className="font-semibold text-slate-700">Coordenadas detectadas</div>
-        <div className="mt-1">
-          Lat: {extraerCoordsDireccion(evento.payload_json?.note || "")?.lat}
-        </div>
-        <div>
-          Lng: {extraerCoordsDireccion(evento.payload_json?.note || "")?.lng}
-        </div>
-      </div>
-    )}
+                        <div className="whitespace-pre-wrap break-words">
+                          {limpiarTextoReporte(note || "Sin contenido")}
+                        </div>
 
-    {extraerCoordsDireccion(evento.payload_json?.note || "") && (
-      <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200">
-        <iframe
-          title="Mini mapa del reporte"
-          width="100%"
-          height="220"
-          loading="lazy"
-          src={`https://www.openstreetmap.org/export/embed.html?bbox=${
-            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lng) - 0.003
-          }%2C${
-            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lat) - 0.003
-          }%2C${
-            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lng) + 0.003
-          }%2C${
-            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lat) + 0.003
-          }&layer=mapnik&marker=${
-            extraerCoordsDireccion(evento.payload_json?.note || "")?.lat
-          }%2C${
-            extraerCoordsDireccion(evento.payload_json?.note || "")?.lng
-          }`}
-        />
-      </div>
-    )}
+                        {coords && (
+                          <div className="mt-3 rounded-xl bg-white p-3 text-xs text-slate-600">
+                            <div className="font-semibold text-slate-700">Coordenadas detectadas</div>
+                            <div className="mt-1">Lat: {coords.lat}</div>
+                            <div>Lng: {coords.lng}</div>
+                          </div>
+                        )}
 
-    {extraerGoogleMapsLink(evento.payload_json?.note || "") && (
-      <a
-        href={extraerGoogleMapsLink(evento.payload_json?.note || "") || "#"}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-3 inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
-      >
-        Abrir en Google Maps
-      </a>
-    )}
-  </div>
-)}
+                        {coords && (
+                          <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200">
+                            <iframe
+                              title="Mini mapa del reporte"
+                              width="100%"
+                              height="220"
+                              loading="lazy"
+                              src={`https://www.openstreetmap.org/export/embed.html?bbox=${
+                                Number(coords.lng) - 0.003
+                              }%2C${Number(coords.lat) - 0.003}%2C${
+                                Number(coords.lng) + 0.003
+                              }%2C${Number(coords.lat) + 0.003}&layer=mapnik&marker=${
+                                coords.lat
+                              }%2C${coords.lng}`}
+                            />
+                          </div>
+                        )}
 
-  {evento.event_type === "EvidenceSubmitted" && (
-  <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-<div className="font-semibold mb-1">
-  {evento.payload_json?.mime_type?.startsWith("audio/")
-    ? "🎙️ Audio subido"
-    : evento.payload_json?.mime_type === "application/pdf"
-    ? "📄 PDF subido"
-    : "📸 Evidencia subida"}
-</div>
+                        {mapsLink && (
+                          <a
+                            href={mapsLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
+                          >
+                            Abrir en Google Maps
+                          </a>
+                        )}
+                      </div>
+                    )}
 
-    <div className="mt-2">
-      <div>Archivo: {evento.payload_json?.file_name}</div>
-      <div>Tipo: {evento.payload_json?.mime_type}</div>
-    </div>
+                    {evento.event_type === "EvidenceSubmitted" && (
+                      <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+                        <div className="mb-1 font-semibold">
+                          {String(payload.mime_type || "").startsWith("audio/")
+                            ? "Audio subido"
+                            : payload.mime_type === "application/pdf"
+                              ? "PDF subido"
+                              : "Evidencia subida"}
+                        </div>
 
-{evento.payload_json?.storage_path && (
-  <>
-    {evento.payload_json?.mime_type?.startsWith("image/") && (
-      <img
-        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/evidence/${evento.payload_json.storage_path}`}
-        className="mt-3 rounded-xl"
-        alt="Evidencia ciudadana"
-      />
-    )}
+                        <div className="mt-2">
+                          <div>Archivo: {payload.file_name || payload.storage_path || "Sin nombre"}</div>
+                          <div>Tipo: {payload.mime_type || "Sin tipo"}</div>
+                        </div>
 
-    {evento.payload_json?.mime_type?.startsWith("audio/") && (
-      <audio
-        controls
-        className="mt-3 w-full"
-        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/evidence/${evento.payload_json.storage_path}`}
-      />
-    )}
+                        {payload.storage_path && payload.mime_type && (
+                          <EvidencePreview
+                            bucket={payload.storage_bucket}
+                            path={payload.storage_path}
+                            mimeType={payload.mime_type}
+                          />
+                        )}
 
-    {evento.payload_json?.mime_type === "application/pdf" && (
-      <a
-        href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/evidence/${evento.payload_json.storage_path}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-3 inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
-      >
-        Ver PDF
-      </a>
-    )}
-  </>
-)}
+                        {payload.evidence_id && (
+                          <div className="mt-2 break-all text-xs text-slate-500">
+                            Evidencia ID: {payload.evidence_id}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-    {evento.payload_json?.evidence_id && (
-      <div className="mt-2 text-xs text-slate-500 break-all">
-        Evidencia ID: {evento.payload_json.evidence_id}
-      </div>
-    )}
-  </div>
-)}
+                    {evento.event_type === "StatusChanged" && (
+                      <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+                        <div className="mb-1 font-semibold">Estado del caso</div>
+                        <div className="text-lg font-bold text-green-600">
+                          {payload.label || payload.status || "Estado actualizado"}
+                        </div>
+                      </div>
+                    )}
 
-  {evento.event_type === "StatusChanged" && (
-  <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-    <div className="font-semibold mb-1">Estado del caso</div>
-    <div className="text-lg font-bold text-green-600">
-      {evento.payload_json?.label || evento.payload_json?.status || "Estado actualizado"}
-    </div>
-  </div>
-)}
-
-{!["ProcessCreated", "CitizenNoteAdded", "EvidenceSubmitted", "StatusChanged"].includes(evento.event_type) && evento.payload_json && (
-  <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
-    {JSON.stringify(evento.payload_json, null, 2)}
-  </pre>
-)}
-</div>
-              ))}
+                    {![
+                      "ProcessCreated",
+                      "CitizenNoteAdded",
+                      "EvidenceSubmitted",
+                      "StatusChanged",
+                    ].includes(evento.event_type) && payload && (
+                      <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
+                        {JSON.stringify(payload, null, 2)}
+                      </pre>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -482,7 +502,7 @@ function limpiarTextoReporte(texto: string) {
         {verify?.result?.ok && (
           <div className="rounded-[28px] bg-white p-6 text-center shadow-sm">
             <div className="mb-2 text-xl font-bold text-green-600">
-              ✅ Integridad verificada
+              Integridad verificada
             </div>
             <div className="text-sm text-slate-600">
               Eventos revisados: {verify.result.checked_events}
@@ -490,9 +510,9 @@ function limpiarTextoReporte(texto: string) {
           </div>
         )}
 
-        {verify && !verify?.result?.ok && verify?.error && (
+        {verify && !verify?.result?.ok && verify.error && (
           <div className="rounded-2xl bg-red-50 p-4 text-red-700">
-            ❌ {verify.error}
+            {verify.error}
           </div>
         )}
       </div>
