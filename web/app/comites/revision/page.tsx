@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AuthGuard from "../../components/AuthGuard";
 import LogoutButton from "../../components/LogoutButton";
+import { supabaseBrowser } from "../../lib/supabaseBrowser";
 
 const ESTADOS_REVISION = [
   "Pendiente",
@@ -41,6 +42,7 @@ type Solicitud = {
 };
 
 export default function RevisionComitesPage() {
+  const supabase = supabaseBrowser();
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [loading, setLoading] = useState(true);
   const [modulo, setModulo] = useState("Todos");
@@ -77,16 +79,25 @@ export default function RevisionComitesPage() {
   }, [solicitudes, modulo, nivel, estado]);
 
   async function cambiarEstadoSolicitud(id: string, nuevoEstado: string) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const reviewerUserId = sessionData.session?.user?.id || "";
+    const reviewerActorHash = localStorage.getItem("actor_hash") || "";
+
     const res = await fetch("/api/comites/solicitudes", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, review_status: nuevoEstado }),
+      body: JSON.stringify({
+        id,
+        review_status: nuevoEstado,
+        reviewer_user_id: reviewerUserId,
+        reviewer_actor_hash: reviewerActorHash,
+      }),
     });
 
     const data = await res.json();
 
     if (!data.ok) {
-      alert(data.error || "No se pudo actualizar el estado.");
+      alert(data.message || data.error || "No se pudo actualizar el estado.");
       return;
     }
 
