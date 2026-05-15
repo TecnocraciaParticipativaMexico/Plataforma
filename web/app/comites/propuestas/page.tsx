@@ -117,6 +117,9 @@ export default function PropuestasComitePage() {
     }
   }
 
+  const proposalId = result?.proposal?.id;
+  const territorialHref = `/propuestas?level=${encodeURIComponent(level)}&state=${encodeURIComponent(state)}&municipality=${encodeURIComponent(municipality)}`;
+
   return (
     <main className="min-h-screen bg-[#F7F7F5] px-4 py-6 text-[#0A4E84]">
       <div className="mx-auto max-w-md">
@@ -270,6 +273,31 @@ export default function PropuestasComitePage() {
               {result.ok
                 ? "✅ Propuesta creada y puesta en estudio."
                 : `❌ Error: ${result.error}`}
+            </div>
+          )}
+
+          {proposalId && (
+            <div className="mt-4 grid gap-3">
+              <Link
+                href="/comites/propuestas/lista"
+                className="rounded-xl bg-[#0A4E84] px-4 py-3 text-center font-semibold text-white"
+              >
+                Ir a mis propuestas
+              </Link>
+
+              <Link
+                href={territorialHref}
+                className="rounded-xl border border-[#0A4E84] bg-white px-4 py-3 text-center font-semibold text-[#0A4E84]"
+              >
+                Ver propuestas territoriales
+              </Link>
+
+              <Link
+                href={`/propuestas/${proposalId}`}
+                className="rounded-xl bg-[#E6007E] px-4 py-3 text-center font-semibold text-white"
+              >
+                Votar propuestas relacionadas
+              </Link>
             </div>
           )}
         </section>
