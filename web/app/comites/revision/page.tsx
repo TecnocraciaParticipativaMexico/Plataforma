@@ -38,6 +38,12 @@ type Solicitud = {
   curriculum_evidence?: string | null;
   ethics_accepted?: boolean | null;
   is_public_figure?: boolean | null;
+  thematic_review?: {
+    thematic_score: number;
+    thematic_matches: string[];
+    thematic_alerts: string[];
+    thematic_warning: boolean;
+  };
 };
 
 export default function RevisionComitesPage() {
@@ -206,6 +212,32 @@ export default function RevisionComitesPage() {
                     {s.visibility_level || s.participation_type}
                   </span>
                 </div>
+
+                {s.thematic_review && (
+                  <div
+                    className={`mb-3 rounded-2xl p-3 text-sm ${
+                      s.thematic_review.thematic_warning
+                        ? "bg-orange-50 text-orange-900"
+                        : "bg-green-50 text-green-900"
+                    }`}
+                  >
+                    <div className="font-bold">
+                      Coherencia temática: {s.thematic_review.thematic_score}/100
+                    </div>
+                    {s.thematic_review.thematic_matches.length > 0 && (
+                      <div className="mt-2 text-xs">
+                        Coincidencias: {s.thematic_review.thematic_matches.join(", ")}
+                      </div>
+                    )}
+                    {s.thematic_review.thematic_alerts.length > 0 && (
+                      <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-5">
+                        {s.thematic_review.thematic_alerts.map((alerta) => (
+                          <li key={alerta}>{alerta}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
 
                 {s.public_name && (
                   <div className="mb-3 rounded-2xl bg-green-50 p-3 text-sm text-green-800">
