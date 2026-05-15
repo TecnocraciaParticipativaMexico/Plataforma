@@ -51,6 +51,8 @@ export default function DictamenDetallePage() {
   const [conflictDeclared, setConflictDeclared] = useState(false);
   const [savingTechnicalVote, setSavingTechnicalVote] = useState(false);
   const [technicalVoteResult, setTechnicalVoteResult] = useState<any>(null);
+  const [closingReport, setClosingReport] = useState(false);
+  const [closeResult, setCloseResult] = useState<any>(null);
 
   useEffect(() => {
   cargarDictamen();
@@ -136,6 +138,42 @@ async function emitirVotoTecnico() {
     }
   } finally {
     setSavingTechnicalVote(false);
+  }
+}
+
+async function cerrarDictamen() {
+  if (!dictamen) return;
+
+  try {
+    setClosingReport(true);
+    setCloseResult(null);
+
+    let actorHash = localStorage.getItem("actor_hash");
+
+    if (!actorHash) {
+      actorHash = crypto.randomUUID();
+      localStorage.setItem("actor_hash", actorHash);
+    }
+
+    const res = await fetch("/api/comites/dictamenes/cerrar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        report_id: dictamen.id,
+        actor_hash: actorHash,
+      }),
+    });
+
+    const data = await res.json();
+    setCloseResult(data);
+
+    if (data.ok) {
+      setDictamen(data.report);
+    }
+  } finally {
+    setClosingReport(false);
   }
 }
 
@@ -456,6 +494,37 @@ async function agregarObservacion() {
       </div>
     )}
   </div>
+</div>
+
+<div className="mt-5 rounded-2xl bg-blue-50 p-4">
+  <div className="font-bold text-blue-900">
+    Cierre del dictamen
+  </div>
+
+  <div className="mt-2 text-sm leading-6 text-blue-900">
+    El cierre consolida los votos técnicos válidos, registra disensos,
+    actualiza la conclusión final y bloquea el dictamen.
+  </div>
+
+  <button
+    onClick={cerrarDictamen}
+    disabled={closingReport || dictamen.locked || technicalVotes.length === 0}
+    className="mt-4 w-full rounded-2xl bg-[#0A4E84] px-4 py-3 font-bold text-white disabled:opacity-50"
+  >
+    {dictamen.locked
+      ? "Dictamen cerrado"
+      : closingReport
+      ? "Cerrando..."
+      : "Cerrar dictamen"}
+  </button>
+
+  {closeResult && (
+    <div className="mt-3 rounded-2xl bg-white p-3 text-sm">
+      {closeResult.ok
+        ? "✅ Dictamen cerrado con consenso técnico."
+        : `❌ Error: ${closeResult.error}`}
+    </div>
+  )}
 </div>
 
                 <div className="rounded-[24px] bg-white p-5 shadow-sm">
