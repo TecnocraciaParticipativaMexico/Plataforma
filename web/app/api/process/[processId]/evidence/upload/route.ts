@@ -6,36 +6,76 @@ function sha256Hex(buffer: Buffer) {
   return crypto.createHash("sha256").update(buffer).digest("hex");
 }
 
-// ✅ Allowlist MIME types (fácil para mexicanos + acorde al PDF)
 const ALLOWED_MIME = new Set([
-  // imágenes (WhatsApp / cámara)
   "image/jpeg",
   "image/png",
-
-  // documentos (Word -> PDF)
   "application/pdf",
-
-  // audio (WhatsApp / grabadora)
-  "audio/mpeg", // mp3
+  "audio/mpeg",
   "audio/mp3",
-  "audio/mp4", // m4a a veces llega así
+  "audio/mp4",
   "audio/x-m4a",
   "audio/aac",
-
-  // video (WhatsApp / cámara)
+  "audio/webm",
   "video/mp4",
+  "video/webm",
 ]);
 
-// límites por tipo (MVP)
+function detectMime(buf: Buffer) {
+  const hex = buf.subarray(0, 16).toString("hex");
+  const ascii = buf.subarray(0, 16).toString("ascii");
+
+  if (hex.startsWith("ffd8ff")) return "image/jpeg";
+  if (hex.startsWith("89504e470d0a1a0a")) return "image/png";
+  if (ascii.startsWith("%PDF")) return "application/pdf";
+  if (buf.subarray(4, 8).toString("ascii") === "ftyp") return "video/mp4";
+  if (ascii.startsWith("ID3") || hex.startsWith("fffb") || hex.startsWith("fff3")) {
+    return "audio/mpeg";
+  }
+
+  return "application/octet-stream";
+}
+
+function mimeCompatible(declared: string, detected: string) {
+  if (declared === detected) return true;
+  if (declared === "audio/mp3" && detected === "audio/mpeg") return true;
+  if ((declared === "audio/mp4" || declared === "audio/x-m4a") && detected === "video/mp4") return true;
+  return false;
+}
+
+function stripJpegMetadata(buf: Buffer) {
+  if (!buf.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) return buf;
+
+  const chunks = [buf.subarray(0, 2)];
+  let offset = 2;
+
+  while (offset < buf.length) {
+    if (buf[offset] !== 0xff) break;
+
+    const marker = buf[offset + 1];
+    if (marker === 0xda) {
+      chunks.push(buf.subarray(offset));
+      break;
+    }
+
+    const length = buf.readUInt16BE(offset + 2);
+    const end = offset + 2 + length;
+    const isMetadata = marker >= 0xe0 && marker <= 0xef;
+
+    if (!isMetadata) chunks.push(buf.subarray(offset, end));
+    offset = end;
+  }
+
+  return Buffer.concat(chunks);
+}
+
 function maxBytesFor(mime: string) {
-  if (mime.startsWith("image/")) return 10 * 1024 * 1024; // 10MB
-  if (mime === "application/pdf") return 15 * 1024 * 1024; // 15MB
-  if (mime.startsWith("audio/")) return 25 * 1024 * 1024; // 25MB
-  if (mime.startsWith("video/")) return 50 * 1024 * 1024; // 50MB
+  if (mime.startsWith("image/")) return 10 * 1024 * 1024;
+  if (mime === "application/pdf") return 15 * 1024 * 1024;
+  if (mime.startsWith("audio/")) return 25 * 1024 * 1024;
+  if (mime.startsWith("video/")) return 50 * 1024 * 1024;
   return 10 * 1024 * 1024;
 }
 
-// solo para nombrar mejor en storage
 function kindFor(mime: string) {
   if (mime.startsWith("image/")) return "img";
   if (mime === "application/pdf") return "pdf";
@@ -69,30 +109,25 @@ export async function POST(
 
     const mime = String(file.type || "").trim() || "application/octet-stream";
 
-    // ✅ Bloqueo por allowlist
     if (!ALLOWED_MIME.has(mime)) {
       return NextResponse.json(
         {
           ok: false,
           error: "FILE_TYPE_NOT_ALLOWED",
-          message:
-            "Tipo de archivo no permitido. Usa: JPG/PNG, PDF, MP3/M4A o MP4.",
+          message: "Tipo de archivo no permitido. Usa: JPG/PNG, PDF, MP3/M4A, WebM o MP4.",
           mime_type: mime,
         },
         { status: 400 }
       );
     }
 
-    // ✅ Límite por tipo
     const maxBytes = maxBytesFor(mime);
     if (file.size > maxBytes) {
       return NextResponse.json(
         {
           ok: false,
           error: "FILE_TOO_LARGE",
-          message: `Archivo demasiado grande. Límite para ${mime}: ${Math.round(
-            maxBytes / (1024 * 1024)
-          )}MB`,
+          message: `Archivo demasiado grande. Límite para ${mime}: ${Math.round(maxBytes / (1024 * 1024))}MB`,
           size_bytes: file.size,
           max_bytes: maxBytes,
         },
@@ -100,21 +135,31 @@ export async function POST(
       );
     }
 
-    // leer bytes
     const ab = await file.arrayBuffer();
     const buf = Buffer.from(ab);
+    const detectedMime = detectMime(buf);
 
-    // hash
-    const sha256 = sha256Hex(buf);
+    if (!mimeCompatible(mime, detectedMime)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "FILE_SIGNATURE_MISMATCH",
+          message: "La firma real del archivo no coincide con el tipo declarado.",
+          mime_type: mime,
+          detected_mime_type: detectedMime,
+        },
+        { status: 400 }
+      );
+    }
 
-    // ruta en storage (por proceso)
+    const sanitized = detectedMime === "image/jpeg" ? stripJpegMetadata(buf) : buf;
+    const sha256 = sha256Hex(sanitized);
     const safeName = (file.name || "evidence").replace(/[^\w.\-]+/g, "_");
     const kind = kindFor(mime);
     const storage_path = `${pid}/${kind}/${Date.now()}_${sha256.slice(0, 12)}_${safeName}`;
+    const bucket = process.env.EVIDENCE_BUCKET || "evidence-private";
 
-    // subir a bucket evidence
-    const bucket = "evidence";
-    const uploadRes = await supabaseServer.storage.from(bucket).upload(storage_path, buf, {
+    const uploadRes = await supabaseServer.storage.from(bucket).upload(storage_path, sanitized, {
       contentType: mime,
       upsert: false,
     });
@@ -123,7 +168,6 @@ export async function POST(
       return NextResponse.json({ ok: false, error: uploadRes.error.message }, { status: 500 });
     }
 
-    // guardar puntero + hash en DB
     const insertRes = await supabaseServer
       .from("evidence_pointers")
       .insert({
@@ -133,7 +177,7 @@ export async function POST(
         storage_path,
         sha256,
         mime_type: mime,
-        size_bytes: file.size,
+        size_bytes: sanitized.length,
       })
       .select("id")
       .single();
@@ -143,16 +187,16 @@ export async function POST(
     }
 
     const evidence_id = insertRes.data.id;
-
-    // evento append-only
     const payload = {
       evidence_id,
       sha256,
       storage_bucket: bucket,
       storage_path,
       mime_type: mime,
-      size_bytes: file.size,
-      note: "Evidence submitted (raw). Next phase: sanitize/redact + metadata removal.",
+      size_bytes: sanitized.length,
+      note: detectedMime === "image/jpeg"
+        ? "Evidence submitted. JPEG metadata stripped before storage."
+        : "Evidence submitted. Magic bytes validated before storage.",
     };
 
     const ev = await supabaseServer.rpc("add_process_event", {

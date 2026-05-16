@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { assertReportOpen, rateLimit, requireCommitteeActor } from "@/lib/security";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -131,6 +132,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const limited = rateLimit(req, `technical-vote:${report_id}:${actor_hash}`, 3, 10 * 60_000);
+    if (limited) return limited;
+
+    const open = await assertReportOpen(report_id);
+    if (open.response) return open.response;
+
+    const committee = await requireCommitteeActor(actor_hash, Number(open.report?.module_id));
+    if (committee) return committee;
+
     if (String(reasoning).trim().length < 20) {
       return NextResponse.json({
         ok: false,
@@ -192,7 +202,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({
       ok: false,
-      error: err?.message || "Error interno",
+      error: err.message || "Error interno",
     });
   }
 }

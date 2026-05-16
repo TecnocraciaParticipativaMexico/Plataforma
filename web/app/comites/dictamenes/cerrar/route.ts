@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { rateLimit, requireCommitteeActor } from "@/lib/security";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+const MIN_QUORUM_TECNICO = 3;
 
 function sha256(input: any) {
   return crypto.createHash("sha256").update(JSON.stringify(input)).digest("hex");
@@ -65,6 +68,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { report_id, actor_hash } = body;
 
+    const limited = rateLimit(req, `close-report:${report_id}:${actor_hash}`, 2, 10 * 60_000);
+    if (limited) return limited;
+
     if (!report_id) {
       return NextResponse.json(
         { ok: false, error: "Falta report_id" },
@@ -93,6 +99,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const committee = await requireCommitteeActor(actor_hash || "", Number(report.module_id));
+    if (committee) return committee;
+
     const { data: votes, error: votesError } = await supabase
       .from("committee_technical_votes")
       .select("*")
@@ -107,11 +116,11 @@ export async function POST(req: NextRequest) {
 
     const validVotes = (votes || []).filter((v) => !v.conflict_declared);
 
-    if (validVotes.length < 1) {
+    if (validVotes.length < MIN_QUORUM_TECNICO) {
       return NextResponse.json(
         {
           ok: false,
-          error: "No hay votos técnicos válidos para cerrar el dictamen.",
+          error: `Quórum insuficiente: se requieren ${MIN_QUORUM_TECNICO} votos técnicos válidos para cerrar el dictamen.`,
         },
         { status: 400 }
       );
@@ -170,7 +179,7 @@ Este cierre se basa en los votos técnicos registrados, excluyendo votos con con
     });
   } catch (err: any) {
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error cerrando dictamen" },
+      { ok: false, error: err.message || "Error cerrando dictamen" },
       { status: 500 }
     );
   }
