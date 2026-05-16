@@ -121,6 +121,8 @@ export async function PATCH(req: NextRequest) {
 
     const id = body?.id;
     const review_status = body?.review_status;
+    const reviewer_user_id = String(body?.reviewer_user_id || "").trim();
+    const reviewer_actor_hash = String(body?.reviewer_actor_hash || "").trim();
 
     const estadosPermitidos = [
       "Pendiente",
@@ -143,10 +145,44 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    if (!reviewer_user_id && !reviewer_actor_hash) {
+      return NextResponse.json(
+        { ok: false, error: "REVIEWER_REQUIRED" },
+        { status: 400 }
+      );
+    }
+
     if (!estadosPermitidos.includes(review_status)) {
       return NextResponse.json(
         { ok: false, error: "Estado no permitido" },
         { status: 400 }
+      );
+    }
+
+    const { data: application, error: applicationError } = await supabase
+      .from("committee_applications")
+      .select("id,user_id,actor_hash")
+      .eq("id", id)
+      .single();
+
+    if (applicationError || !application) {
+      return NextResponse.json(
+        { ok: false, error: applicationError?.message || "Solicitud no encontrada" },
+        { status: 404 }
+      );
+    }
+
+    const sameUser = reviewer_user_id && application.user_id === reviewer_user_id;
+    const sameActor = reviewer_actor_hash && application.actor_hash === reviewer_actor_hash;
+
+    if (sameUser || sameActor) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "SELF_REVIEW_FORBIDDEN",
+          message: "Nadie puede auto aprobarse, auto evaluarse o votar su propia admisión.",
+        },
+        { status: 403 }
       );
     }
 
