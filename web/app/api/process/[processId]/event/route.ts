@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { rateLimit, requireAdmin } from "@/lib/security";
 
 /**
  * MVP PII Guard (servidor)
@@ -59,10 +60,13 @@ function findPIIInAnyString(value: any): { found: boolean; sample?: string } {
 }
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   context: { params: Promise<{ processId: string }> }
 ) {
   try {
+    const limited = rateLimit(req, "process-event", 15, 60_000);
+    if (limited) return limited;
+
     const { processId } = await context.params;
     const pid = String(processId || "").trim();
     if (!pid) {
@@ -83,15 +87,20 @@ export async function POST(
       );
     }
 
+    if (event_type === "StatusChanged") {
+      const admin = await requireAdmin(req);
+      if (admin.response) return admin.response;
+    }
+
     // MVP actor_hash fijo; luego vendrá IdentidadCivicaAnonima
     const actor_hash = String(body?.actor_hash || "").trim();
 
-if (!actor_hash) {
-  return NextResponse.json(
-    { ok: false, error: "actor_hash requerido" },
-    { status: 400 }
-  );
-}
+    if (!actor_hash) {
+      return NextResponse.json(
+        { ok: false, error: "actor_hash requerido" },
+        { status: 400 }
+      );
+    }
 
     // ✅ Bloqueo anti-PII (servidor) - aplica a TODO el payload
     // (y además hacemos validación específica para CitizenNoteAdded)

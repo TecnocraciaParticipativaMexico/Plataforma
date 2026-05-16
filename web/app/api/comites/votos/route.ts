@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { rateLimit } from "@/lib/security";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -116,6 +117,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const limited = rateLimit(req, `proposal-vote:${proposal_id}:${actor_hash}`, 3, 10 * 60_000);
+    if (limited) return limited;
+
     const score = Number(comprehension_score);
     const timeSpent = Number(time_spent_seconds || 0);
     const respuestasArray = Array.isArray(respuestas) ? respuestas : [];
@@ -136,6 +140,23 @@ export async function POST(req: NextRequest) {
 
     const suspicious = riskScore >= 50;
     const vote_weight = suspicious ? 0 : calcularPeso(score);
+
+    const { data: existingVote } = await supabase
+      .from("proposal_votes")
+      .select("id")
+      .eq("proposal_id", proposal_id)
+      .eq("actor_hash", actor_hash)
+      .maybeSingle();
+
+    if (existingVote) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Ya votaste esta propuesta. Puedes consultar tu voto en Mis votos.",
+        },
+        { status: 409 }
+      );
+    }
 
     const { data, error } = await supabase
       .from("proposal_votes")
@@ -179,7 +200,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, vote: data });
   } catch (err: any) {
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: err.message || "Error interno" },
       { status: 500 }
     );
   }
