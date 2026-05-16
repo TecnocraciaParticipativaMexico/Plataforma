@@ -1,10 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { evaluarCoherenciaTematica } from "@/app/lib/coherenciaTematica";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+function withThematicReview(application: any) {
+  return {
+    ...application,
+    thematic_review: evaluarCoherenciaTematica({
+      module_id: application.module_id,
+      expertise_area: application.expertise_area,
+      experience_summary: application.experience_summary,
+      motivation: application.motivation,
+      curriculum_evidence: application.curriculum_evidence,
+    }),
+  };
+}
 
 export async function GET() {
   try {
@@ -22,7 +36,10 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ ok: true, applications: data || [] });
+    return NextResponse.json({
+      ok: true,
+      applications: (data || []).map(withThematicReview),
+    });
   } catch (err: any) {
     return NextResponse.json(
       { ok: false, error: err?.message || "Error interno" },
@@ -74,6 +91,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const thematic_review = evaluarCoherenciaTematica({
+      module_id,
+      expertise_area,
+      experience_summary,
+      motivation,
+      curriculum_evidence,
+    });
+
     const review_status = is_public_figure
       ? "Revisión ética avanzada"
       : "Revisión ética";
@@ -106,7 +131,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ ok: true, review_status });
+    return NextResponse.json({ ok: true, review_status, thematic_review });
   } catch (err: any) {
     return NextResponse.json(
       { ok: false, error: err?.message || "Error interno" },
