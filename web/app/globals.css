@@ -4,6 +4,53 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Tecnocracia Participativa civic design tokens.
+     These tokens are intentionally inert until adopted by components. */
+  --tp-surface-page: #faf9f9;
+  --tp-surface-card: #ffffff;
+  --tp-surface-muted: #f5f3f3;
+  --tp-surface-raised: #e9e8e8;
+  --tp-text-primary: #1b1c1c;
+  --tp-text-secondary: #3f484e;
+  --tp-outline-soft: #bfc8cf;
+
+  --tp-participation: #e6007e;
+  --tp-participation-soft: #ffd6e9;
+  --tp-participation-strong: #b00061;
+
+  --tp-institutional: #005c7e;
+  --tp-institutional-soft: #c4e7ff;
+  --tp-institutional-strong: #003f59;
+
+  --tp-action: #f2c300;
+  --tp-action-soft: #ffe88a;
+  --tp-action-strong: #8a6b00;
+
+  --tp-validation: #2f7d32;
+  --tp-validation-soft: #d8f3dc;
+  --tp-validation-strong: #1f5f24;
+
+  --tp-traceability: #00a6b2;
+  --tp-traceability-soft: #cef7fa;
+  --tp-traceability-strong: #006c73;
+
+  --tp-evidence: #ff6b5f;
+  --tp-evidence-soft: #ffe0dc;
+  --tp-evidence-strong: #b43a32;
+
+  --tp-dictamen: #6f3cc3;
+  --tp-dictamen-soft: #eadcff;
+  --tp-dictamen-strong: #4b238d;
+
+  --tp-module-turquoise: #00a6b2;
+  --tp-module-purple: #7c3aed;
+  --tp-module-coral: #ff6b5f;
+  --tp-module-jade: #2fbf71;
+  --tp-module-orange: #f59e42;
+  --tp-module-maize: #f2c300;
+  --tp-module-sky: #38bdf8;
+  --tp-module-magenta: #e6007e;
 }
 
 @theme inline {
@@ -11,6 +58,45 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-tp-surface-page: var(--tp-surface-page);
+  --color-tp-surface-card: var(--tp-surface-card);
+  --color-tp-surface-muted: var(--tp-surface-muted);
+  --color-tp-surface-raised: var(--tp-surface-raised);
+  --color-tp-text-primary: var(--tp-text-primary);
+  --color-tp-text-secondary: var(--tp-text-secondary);
+  --color-tp-outline-soft: var(--tp-outline-soft);
+
+  --color-tp-participation: var(--tp-participation);
+  --color-tp-participation-soft: var(--tp-participation-soft);
+  --color-tp-participation-strong: var(--tp-participation-strong);
+  --color-tp-institutional: var(--tp-institutional);
+  --color-tp-institutional-soft: var(--tp-institutional-soft);
+  --color-tp-institutional-strong: var(--tp-institutional-strong);
+  --color-tp-action: var(--tp-action);
+  --color-tp-action-soft: var(--tp-action-soft);
+  --color-tp-action-strong: var(--tp-action-strong);
+  --color-tp-validation: var(--tp-validation);
+  --color-tp-validation-soft: var(--tp-validation-soft);
+  --color-tp-validation-strong: var(--tp-validation-strong);
+  --color-tp-traceability: var(--tp-traceability);
+  --color-tp-traceability-soft: var(--tp-traceability-soft);
+  --color-tp-traceability-strong: var(--tp-traceability-strong);
+  --color-tp-evidence: var(--tp-evidence);
+  --color-tp-evidence-soft: var(--tp-evidence-soft);
+  --color-tp-evidence-strong: var(--tp-evidence-strong);
+  --color-tp-dictamen: var(--tp-dictamen);
+  --color-tp-dictamen-soft: var(--tp-dictamen-soft);
+  --color-tp-dictamen-strong: var(--tp-dictamen-strong);
+
+  --color-tp-module-turquoise: var(--tp-module-turquoise);
+  --color-tp-module-purple: var(--tp-module-purple);
+  --color-tp-module-coral: var(--tp-module-coral);
+  --color-tp-module-jade: var(--tp-module-jade);
+  --color-tp-module-orange: var(--tp-module-orange);
+  --color-tp-module-maize: var(--tp-module-maize);
+  --color-tp-module-sky: var(--tp-module-sky);
+  --color-tp-module-magenta: var(--tp-module-magenta);
 }
 
 @media (prefers-color-scheme: dark) {
