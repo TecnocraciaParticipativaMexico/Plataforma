@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { isAdminUser, rateLimit, requireAdmin, requireUser } from "@/lib/security";
+import { normalizeCommitteeTerritory } from "@/app/lib/territorioComite";
 
 export async function GET(req: NextRequest) {
   try {
@@ -94,6 +95,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const territory = normalizeCommitteeTerritory({ level, municipality, state });
+    if (territory.errors.length > 0) {
+      return NextResponse.json(
+        { ok: false, error: "TERRITORIAL_SCOPE_INVALID", details: territory.errors },
+        { status: 400 }
+      );
+    }
+
     const review_status = is_public_figure
       ? "Revisión ética avanzada"
       : "Revisión ética";
@@ -103,9 +112,9 @@ export async function POST(req: NextRequest) {
       actor_hash,
       module_id,
       module_name,
-      level,
-      municipality: municipality || null,
-      state: state || null,
+      level: territory.level,
+      municipality: territory.municipality,
+      state: territory.state,
       participation_type,
       visibility_level: visibility_level || participation_type,
       public_name: public_name || null,
@@ -126,7 +135,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ ok: true, review_status });
+    return NextResponse.json({
+      ok: true,
+      review_status,
+      territorial_scope: territory.territorial_scope,
+    });
   } catch (err: any) {
     return NextResponse.json(
       { ok: false, error: err.message || "Error interno" },
