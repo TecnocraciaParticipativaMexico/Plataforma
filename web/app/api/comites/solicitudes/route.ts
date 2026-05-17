@@ -183,6 +183,7 @@ export async function PATCH(req: NextRequest) {
 
     const id = body.id;
     const review_status = body.review_status;
+    const reviewer_actor_hash = String(body.reviewer_actor_hash || "").trim();
 
     const estadosPermitidos = [
       "Pendiente",
@@ -209,6 +210,33 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json(
         { ok: false, error: "Estado no permitido" },
         { status: 400 }
+      );
+    }
+
+    const { data: application, error: applicationError } = await supabaseServer
+      .from("committee_applications")
+      .select("id,user_id,actor_hash")
+      .eq("id", id)
+      .single();
+
+    if (applicationError || !application) {
+      return NextResponse.json(
+        { ok: false, error: applicationError?.message || "Solicitud no encontrada" },
+        { status: 404 }
+      );
+    }
+
+    const sameUser = application.user_id === admin.user!.id;
+    const sameActor = reviewer_actor_hash && application.actor_hash === reviewer_actor_hash;
+
+    if (sameUser || sameActor) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "SELF_REVIEW_FORBIDDEN",
+          message: "Nadie puede auto aprobarse, auto evaluarse o votar su propia admisión.",
+        },
+        { status: 403 }
       );
     }
 
