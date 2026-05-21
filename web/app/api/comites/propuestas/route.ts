@@ -77,34 +77,36 @@ export async function GET(req: NextRequest) {
   }
 }
 
-function textoInvalido(texto: string) {
-  const t = texto.toLowerCase().trim();
+function normalizarTexto(texto: string) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-  const bloqueadas = [
-    "ching",
-    "pendej",
-    "puto",
-    "puta",
-    "mierda",
-    "verga",
-    "jaja",
-    "asdf",
-    "qwerty",
-    "test",
-    "prueba",
-    "tu mama",
-    "tu mamá",
-    "tu papa",
-    "tu papá",
+function contieneLenguajeOfensivo(texto: string) {
+  const t = normalizarTexto(texto);
+
+  const patronesOfensivos = [
+    /\bchinga\s+(?:a\s+)?tu\s+(?:madre|mama)\b/u,
+    /\bching(?:a|as|an|ar|ando|ado|ada|ados|adas|ue|ues|uen)\b/u,
+    /\bpendej(?:o|a|os|as)\b/u,
+    /\bput(?:o|a|os|as)\b/u,
+    /\bmierda\b/u,
+    /\bverg(?:a|as)\b/u,
   ];
+
+  return patronesOfensivos.some((patron) => patron.test(t));
+}
+
+function textoInvalido(texto: string) {
+  const t = texto.trim();
 
   if (t.length < 20) return true;
 
-  if (bloqueadas.some((p) => t.includes(p))) {
-    return true;
-  }
-
-  return false;
+  return contieneLenguajeOfensivo(t);
 }
 
 export async function POST(req: NextRequest) {
