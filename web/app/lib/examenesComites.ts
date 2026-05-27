@@ -9,94 +9,36 @@ export type PreguntaExamen = {
 type PreguntaBanco = Omit<PreguntaExamen, "id">;
 
 export const preguntasEticasGlobales: PreguntaBanco[] = [
-  {
-    tipo: "etica",
-    pregunta: "¿Qué debe hacer una persona integrante de comité si detecta un conflicto de interés propio?",
-    opciones: [
-      "Declararlo y abstenerse de evaluar o votar ese caso",
-      "Ocultarlo si considera que puede ser imparcial",
-      "Votar primero y declararlo después",
-      "Pedir a otra persona que vote igual",
-    ],
-    respuestaCorrecta: 0,
-  },
-  {
-    tipo: "etica",
-    pregunta: "¿Cuál es el trato correcto para evidencia con datos personales sensibles?",
-    opciones: [
-      "Publicarla completa para presionar a autoridades",
-      "Proteger identidad, minimizar exposición y revisar con trazabilidad",
-      "Compartirla en redes si parece urgente",
-      "Eliminarla sin dejar registro",
-    ],
-    respuestaCorrecta: 1,
-  },
-  {
-    tipo: "etica",
-    pregunta: "¿Qué principio debe guiar una revisión ciudadana colegiada?",
-    opciones: [
-      "Popularidad de la denuncia",
-      "Afinidad partidista",
-      "Evidencia, imparcialidad y trazabilidad",
-      "Rapidez aunque falten datos",
-    ],
-    respuestaCorrecta: 2,
-  },
-  {
-    tipo: "etica",
-    pregunta: "¿Qué debe pasar con una opinión técnica minoritaria bien fundamentada?",
-    opciones: [
-      "Registrarse como disenso trazable",
-      "Eliminarse para mostrar unanimidad",
-      "Convertirse automáticamente en decisión final",
-      "Ocultarse hasta que haya presión pública",
-    ],
-    respuestaCorrecta: 0,
-  },
-  {
-    tipo: "etica",
-    pregunta: "¿Qué señal amerita revisión ética avanzada de una candidatura?",
-    opciones: [
-      "Experiencia técnica demostrable",
-      "Conflictos de interés, cargo público o exposición política relevante",
-      "Vivir fuera de la capital del estado",
-      "Usar lenguaje técnico en su solicitud",
-    ],
-    respuestaCorrecta: 1,
-  },
-  {
-    tipo: "etica",
-    pregunta: "¿Qué debe evitar un comité ciudadano al revisar propuestas públicas?",
-    opciones: [
-      "Pedir evidencia adicional",
-      "Registrar razones de decisión",
-      "Usar la revisión para castigos o favores personales",
-      "Declarar límites de su competencia",
-    ],
-    respuestaCorrecta: 2,
-  },
-  {
-    tipo: "etica",
-    pregunta: "¿Cómo debe tratarse una acusación grave sin evidencia suficiente?",
-    opciones: [
-      "Como verdad final",
-      "Como información no verificada que requiere corroboración",
-      "Como motivo para sanción inmediata",
-      "Como contenido que debe borrarse sin registro",
-    ],
-    respuestaCorrecta: 1,
-  },
-  {
-    tipo: "etica",
-    pregunta: "¿Qué práctica fortalece la confianza institucional del comité?",
-    opciones: [
-      "Decisiones opacas",
-      "Rotación de criterios según conveniencia",
-      "Trazabilidad, justificación pública y registro de votos",
-      "Evaluaciones anónimas sin fundamento",
-    ],
-    respuestaCorrecta: 2,
-  },
+  { tipo: "etica", pregunta: "Si un integrante del comité descubre información técnicamente relevante obtenida de manera ilegal pero imposible de verificar por otra vía, ¿cuál es la decisión éticamente más sólida?", opciones: ["No utilizarla como evidencia principal y buscar corroboración verificable e independiente.", "Publicarla inmediatamente por interés público.", "Ocultarla completamente aunque revele daño estructural.", "Filtrarla anónimamente para evitar responsabilidad."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué principio debe prevalecer cuando existe tensión entre transparencia pública y protección de personas vulnerables?", opciones: ["Minimización de daño sin sacrificar trazabilidad institucional verificable.", "Transparencia absoluta sin restricciones.", "Confidencialidad total de cualquier información sensible.", "Publicar únicamente información autorizada por autoridades."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué constituye un conflicto de interés estructural dentro de un comité ciudadano experto?", opciones: ["Participar en decisiones donde existen beneficios directos, indirectos o relaciones relevantes no declaradas.", "Tener opiniones políticas personales.", "Haber trabajado previamente en el sector evaluado.", "Discrepar metodológicamente con otros expertos."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué criterio ético fortalece más la legitimidad de un dictamen ciudadano?", opciones: ["Metodología verificable, independencia y límites explícitos del análisis realizado.", "Consenso unánime dentro del comité.", "Aprobación pública mayoritaria.", "Difusión masiva en medios y redes."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "Si un experto detecta un error metodológico que favorece ideológicamente su posición personal, ¿qué debe hacer?", opciones: ["Reportarlo y corregirlo aunque afecte la conclusión deseada.", "Mantenerlo si el objetivo final es socialmente positivo.", "Esperar a que otro integrante lo detecte.", "Modificar únicamente la redacción final del informe."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué riesgo ético surge cuando un comité confunde evidencia con activismo?", opciones: ["Debilitar credibilidad técnica y convertir el análisis en una postura previamente decidida.", "Reducir velocidad de deliberación.", "Eliminar participación ciudadana.", "Impedir análisis interdisciplinario."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué práctica protege mejor la imparcialidad deliberativa?", opciones: ["Separar hipótesis, evidencia, interpretación y recomendación de manera explícita.", "Evitar completamente opiniones divergentes.", "Limitar participación de expertos externos.", "Usar solo fuentes institucionales oficiales."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué constituye una manipulación ética de datos aunque las cifras sean reales?", opciones: ["Presentar información fuera de contexto para inducir conclusiones engañosas.", "Usar visualizaciones complejas.", "Incluir márgenes de error estadísticos.", "Comparar series históricas diferentes."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué obligación ética tiene un comité ante incertidumbre técnica significativa?", opciones: ["Explicitar límites metodológicos y evitar afirmaciones concluyentes no sustentadas.", "Suspender cualquier publicación pública.", "Delegar la decisión a autoridades externas.", "Simplificar resultados para evitar confusión."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué criterio ético debe aplicarse al uso de inteligencia artificial en dictámenes ciudadanos?", opciones: ["La IA debe asistir análisis verificables sin sustituir responsabilidad humana deliberativa.", "La IA debe maximizar eficiencia sobre transparencia.", "La IA debe tomar decisiones neutrales automáticamente.", "La IA debe reemplazar evaluaciones humanas subjetivas."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué riesgo ético implica publicar denuncias no corroboradas con identificación personal?", opciones: ["Exponer personas a daño irreversible sin debido estándar de verificación.", "Reducir velocidad de investigación.", "Eliminar trazabilidad documental.", "Impedir participación ciudadana futura."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué práctica fortalece más la independencia de un comité?", opciones: ["Diversidad metodológica y separación de intereses políticos, económicos y operativos.", "Rotación constante de integrantes.", "Aprobación institucional gubernamental.", "Uniformidad ideológica entre expertos."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué obligación ética existe al usar testimonios de víctimas o denunciantes?", opciones: ["Proteger identidad, consentimiento y contexto evitando revictimización.", "Publicar íntegramente testimonios para transparencia.", "Eliminar cualquier referencia emocional.", "Usar únicamente testimonios judicializados."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué constituye una deliberación ética técnicamente válida?", opciones: ["Evaluar argumentos y evidencia aunque contradigan preferencias previas del comité.", "Mantener coherencia ideológica permanente.", "Evitar desacuerdos para preservar legitimidad.", "Priorizar posiciones mayoritarias automáticamente."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué riesgo surge cuando un comité depende financieramente del actor evaluado?", opciones: ["Comprometer independencia real y percepción pública de imparcialidad.", "Reducir acceso a información técnica.", "Eliminar trazabilidad de resultados.", "Impedir análisis interdisciplinario."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué principio ético debe prevalecer frente a presión política externa?", opciones: ["Integridad metodológica y fidelidad a evidencia verificable.", "Neutralidad discursiva absoluta.", "Evitar cualquier conclusión controversial.", "Posponer indefinidamente el dictamen."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué hace éticamente válida una alerta pública preventiva?", opciones: ["Basarse en evidencia razonable y proporcionalidad frente al riesgo potencial.", "Generar máxima atención mediática.", "Publicarse únicamente tras unanimidad total.", "Usar lenguaje alarmista para acelerar reacción."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué riesgo ético existe al simplificar excesivamente problemas complejos?", opciones: ["Ocultar variables críticas y favorecer decisiones erróneas o manipulables.", "Reducir interés ciudadano.", "Eliminar necesidad de expertos.", "Impedir comunicación pública efectiva."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué práctica protege mejor la memoria institucional de los comités?", opciones: ["Documentar criterios, cambios metodológicos y fundamentos deliberativos verificables.", "Rotar completamente integrantes cada ciclo.", "Eliminar versiones preliminares de análisis.", "Centralizar decisiones en coordinadores técnicos."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué obligación ética existe ante errores detectados en dictámenes previos?", opciones: ["Corregir públicamente preservando trazabilidad histórica de cambios y razones.", "Eliminar versiones antiguas para evitar confusión.", "Esperar confirmación institucional externa.", "Corregir solo errores con impacto político."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué constituye captura institucional de un comité?", opciones: ["Cuando intereses externos condicionan metodología, prioridades o conclusiones sustantivas.", "Recibir críticas públicas frecuentes.", "Mantener relaciones con universidades.", "Publicar dictámenes controversiales."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué criterio ético fortalece más la participación ciudadana?", opciones: ["Permitir intervención significativa sin sacrificar rigor metodológico y protección de evidencia.", "Aceptar cualquier aportación sin filtros.", "Delegar decisiones técnicas a votación popular.", "Limitar participación a especialistas acreditados."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué riesgo ético implica usar métricas técnicamente correctas pero socialmente engañosas?", opciones: ["Generar conclusiones aparentemente objetivas que distorsionan realidad sustantiva.", "Reducir precisión estadística.", "Eliminar interoperabilidad de datos.", "Impedir análisis comparativo internacional."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué práctica fortalece más la justicia procedimental dentro de un comité?", opciones: ["Garantizar revisión crítica, trazabilidad y posibilidad razonada de disenso.", "Mantener votaciones secretas permanentes.", "Evitar participación interdisciplinaria.", "Centralizar validación metodológica."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué obligación ética existe respecto a sesgos algorítmicos detectados?", opciones: ["Documentarlos, mitigarlos y transparentar sus posibles efectos en resultados.", "Ocultarlos para evitar desconfianza pública.", "Eliminar automáticamente cualquier modelo automatizado.", "Delegar toda responsabilidad al desarrollador original."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué riesgo ético surge cuando la reputación de expertos pesa más que la evidencia?", opciones: ["Convertir autoridad percibida en sustituto de validación metodológica.", "Reducir eficiencia deliberativa.", "Eliminar necesidad de documentación técnica.", "Impedir participación ciudadana general."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué criterio ético debe aplicarse ante información técnicamente ambigua pero políticamente explosiva?", opciones: ["Evaluar proporcionalidad, verificabilidad y potencial de daño antes de difundirla.", "Publicarla inmediatamente por transparencia radical.", "Reservarla indefinidamente aunque exista riesgo público.", "Delegar decisión a actores políticos externos."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué práctica protege mejor legitimidad democrática de los comités?", opciones: ["Mantener independencia, transparencia metodológica y límites claros de competencia.", "Buscar aprobación constante de autoridades.", "Evitar cualquier posicionamiento técnico controversial.", "Limitar deliberaciones al ámbito interno."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Qué riesgo ético existe cuando la velocidad de publicación desplaza la validación rigurosa?", opciones: ["Normalizar errores, amplificar desinformación y erosionar confianza institucional.", "Reducir participación ciudadana activa.", "Eliminar necesidad de trazabilidad.", "Impedir análisis interdisciplinario."], respuestaCorrecta: 0 },
+  { tipo: "etica", pregunta: "¿Cuál es el principio rector ético de los Comités Ciudadanos Expertos?", opciones: ["La legitimidad pública surge de evidencia verificable, independencia y responsabilidad metodológica.", "La neutralidad absoluta garantiza objetividad total.", "La mayoría ciudadana define automáticamente la verdad.", "La tecnología puede sustituir deliberación ética humana."], respuestaCorrecta: 0 },
 ];
 
 type PreguntaTecnicaModulo01Fuente = {
@@ -204,93 +146,17 @@ const preguntasTecnicasModulo19 = adaptarBancoTecnico([
   q("¿Qué riesgo existe cuando los criterios técnicos son ambiguos o subjetivos?", "Facilitar discrecionalidad, simulación de competencia y direccionamiento encubierto.", ["Reducir automáticamente calidad del servicio.", "Eliminar participación de empresas grandes.", "Impedir evaluación financiera comparativa."]),
 ]);
 
-const preguntasTecnicasModulo20 = adaptarBancoTecnico([
-  q("¿Qué distingue un indicador cívico verificable de una estadística pública opaca?", "Origen documentado, metodología reproducible, supuestos explícitos y trazabilidad de versiones.", ["Publicación en formato PDF institucional.", "Uso de lenguaje técnico especializado.", "Validación exclusiva por autoridad gubernamental."]),
-  q("¿Qué riesgo surge cuando una política pública se fundamenta en datos sin metadatos verificables?", "Impedir auditoría, reproducibilidad y evaluación independiente de la decisión.", ["Reducir automáticamente precisión matemática.", "Eliminar toda utilidad estadística del dato.", "Impedir visualización en tableros públicos."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No sustituye instituciones científicas ni órganos técnicos; certifica metodología, trazabilidad y evidencia.", ["No puede normalizar datos abiertos.", "No puede generar escenarios prospectivos.", "No puede auditar estadísticas públicas."]),
-  q("¿Qué hace metodológicamente sólida una auditoría estadística de política pública?", "Evaluar fuente, cobertura, sesgos, consistencia temporal, supuestos y reproducibilidad del análisis.", ["Comparar únicamente resultados finales publicados.", "Priorizar indicadores con mayor impacto mediático.", "Usar exclusivamente datos oficiales consolidados."]),
-  q("¿Qué función cumple la IA dentro del módulo?", "Asistir en limpieza, normalización, detección de anomalías y visualización sin decidir conclusiones políticas.", ["Determinar automáticamente qué política pública es correcta.", "Sustituir revisión metodológica de expertos.", "Certificar verdad científica sin auditoría humana."]),
-]);
-
-const preguntasTecnicasModulo21 = adaptarBancoTecnico([
-  q("¿Qué distingue la verificación ciudadana del voto de un cómputo electoral oficial?", "La verificación ciudadana preserva evidencia agregada y detecta inconsistencias sin validar resultados oficiales.", ["La verificación ciudadana sustituye legalmente al cómputo distrital.", "La verificación ciudadana proclama ganadores cuando hay suficientes actas.", "La verificación ciudadana elimina la necesidad de autoridades electorales."]),
-  q("¿Qué característica hace técnicamente válida una alerta electoral estadística?", "Identificar desviaciones significativas con metodología explícita, margen de error y nivel de confianza.", ["Basarse en percepción ciudadana generalizada.", "Detectar cualquier diferencia entre encuesta y resultado.", "Emitirse solo cuando exista denuncia partidista formal."]),
-  q("¿Cuál es el principal límite operativo del INE Cívico?", "No organiza elecciones, no valida resultados oficiales ni sustituye al INE o tribunales electorales.", ["No puede documentar actas públicas de casilla.", "No puede analizar sobrerrepresentación legislativa.", "No puede generar mapas de anomalías electorales."]),
-  q("¿Qué hace metodológicamente sólida la carga ciudadana de actas visibles de casilla?", "Georreferenciación declarativa, sello de tiempo, eliminación de metadatos y repositorio inmutable.", ["Identificación completa del ciudadano que sube el acta.", "Publicación inmediata sin control de duplicados.", "Validación automática del resultado por mayoría de usuarios."]),
-  q("¿Qué riesgo existe si se registra el sentido individual del voto con identidad personal?", "Vulnerar secreto del voto, privacidad y seguridad de la persona participante.", ["Reducir precisión estadística del conteo cívico.", "Impedir comparación con resultados oficiales.", "Eliminar utilidad de actas públicas de casilla."]),
-]);
-
-const preguntasTecnicasModulo22 = adaptarBancoTecnico([
-  q("¿Qué distingue una investigación financiera estructural de una denuncia mediática de corrupción?", "La capacidad de documentar flujos, beneficiarios, triangulaciones y patrones verificables de comportamiento financiero.", ["La cantidad de contratos públicos involucrados.", "La cobertura periodística del caso.", "La existencia de declaraciones patrimoniales públicas."]),
-  q("¿Qué riesgo estructural surge cuando la contratación pública no tiene trazabilidad financiera verificable?", "Facilitar colusión, desvío de recursos y ocultamiento de beneficiarios reales.", ["Reducir velocidad administrativa de compras.", "Impedir auditorías presupuestales ordinarias.", "Eliminar competencia entre proveedores."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No imputa delitos, no sustituye fiscalías ni ejerce funciones coercitivas.", ["No puede analizar contratos públicos.", "No puede generar mapas financieros.", "No puede detectar empresas fachada."]),
-  q("¿Qué hace metodológicamente sólido un expediente financiero ciudadano?", "Relacionar flujos, contratos, beneficiarios, temporalidad y patrones de riesgo verificables.", ["Comparar únicamente montos presupuestales.", "Priorizar filtraciones anónimas sin corroboración.", "Usar exclusivamente declaraciones patrimoniales."]),
-  q("¿Qué función cumple la IA dentro del módulo?", "Detectar anomalías, estructurar redes financieras y preservar evidencia documental trazable.", ["Determinar responsabilidad penal automáticamente.", "Sustituir auditorías forenses humanas.", "Emitir sanciones administrativas digitales."]),
-]);
-
-const preguntasTecnicasModulo23 = adaptarBancoTecnico([
-  q("¿Qué distingue una plataforma auditable por diseño de una plataforma que solo declara ser segura?", "La posibilidad verificable de reproducir, inspeccionar y contrastar técnicamente su comportamiento real.", ["La existencia de políticas internas de privacidad.", "La contratación de empresas externas de ciberseguridad.", "La publicación periódica de reportes ejecutivos."]),
-  q("¿Qué característica fortalece más una auditoría independiente de código fuente?", "Acceso verificable a versiones, compilaciones reproducibles y trazabilidad completa de cambios.", ["Validación exclusiva por el equipo desarrollador.", "Uso de infraestructura propietaria certificada.", "Publicación parcial de módulos no sensibles."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No desarrolla ni opera la plataforma; audita integridad, seguridad y coherencia técnica.", ["No puede revisar infraestructura criptográfica.", "No puede evaluar sesgos algorítmicos.", "No puede generar alertas críticas."]),
-  q("¿Qué vuelve metodológicamente sólida una prueba de penetración ética?", "Definir alcance, registrar hallazgos reproducibles y evitar afectación real a usuarios o sistemas.", ["Intentar comprometer cualquier sistema disponible.", "Publicar inmediatamente vulnerabilidades críticas.", "Ejecutar pruebas sin autorización documental."]),
-  q("¿Qué riesgo existe cuando las compilaciones no son reproducibles?", "Impedir verificar que el código auditado coincide realmente con el software desplegado.", ["Reducir velocidad de despliegue continuo.", "Eliminar compatibilidad multiplataforma.", "Aumentar tamaño del repositorio."]),
-]);
-
-const preguntasTecnicasModulo24 = adaptarBancoTecnico([
-  q("¿Qué distingue un repositorio de memoria periodística verificable de una simple hemeroteca digital?", "La preservación trazable, contextualización técnica y vinculación con evidencia verificable de interés público.", ["La cantidad total de artículos almacenados.", "La publicación automática de noticias recientes.", "La indexación por popularidad mediática."]),
-  q("¿Qué riesgo surge cuando investigaciones periodísticas relevantes dependen únicamente del ciclo noticioso?", "La pérdida progresiva de memoria pública y debilitamiento de rendición de cuentas documentada.", ["La reducción automática de libertad editorial.", "La imposibilidad de verificar hechos históricos.", "La eliminación total de acceso ciudadano."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No define una verdad oficial ni sustituye procesos judiciales o editoriales.", ["No puede preservar investigaciones periodísticas.", "No puede indexar material audiovisual.", "No puede detectar desinformación coordinada."]),
-  q("¿Qué hace metodológicamente sólida una validación básica de contenido periodístico?", "Corroborar hechos verificables mediante fuentes abiertas y documentación pública independiente.", ["Confirmar alineación ideológica entre medios.", "Priorizar investigaciones con mayor impacto mediático.", "Verificar únicamente reputación histórica del periodista."]),
-  q("¿Qué función cumple la IA dentro del módulo?", "Clasificar, indexar, detectar alteraciones y relacionar evidencia preservada sin decidir qué es verdad.", ["Determinar automáticamente credibilidad absoluta de medios.", "Eliminar contenido considerado desinformación.", "Sustituir revisión periodística humana."]),
-]);
-
-const preguntasTecnicasModulo25 = adaptarBancoTecnico([
-  q("¿Qué distingue una política de memoria democrática de una narrativa política conmemorativa?", "La documentación verificable de hechos, patrones y responsabilidades institucionales con metodología auditable.", ["La cantidad de actos públicos realizados anualmente.", "La difusión mediática de testimonios históricos.", "La aprobación legislativa de fechas conmemorativas."]),
-  q("¿Qué riesgo estructural surge cuando hechos graves permanecen fragmentados o sin documentación sistemática?", "La repetición institucional de patrones de abuso, impunidad y negación pública.", ["La pérdida total de interés académico histórico.", "La reducción automática de archivos oficiales.", "La imposibilidad de generar memoria cultural."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No sustituye tribunales, fiscalías ni comisiones de la verdad oficiales.", ["No puede preservar testimonios ciudadanos.", "No puede estructurar líneas de tiempo.", "No puede integrar archivos públicos."]),
-  q("¿Qué hace metodológicamente sólido un expediente histórico de no repetición?", "Integrar contexto, temporalidad, evidencia trazable, patrones estructurales y consecuencias verificables.", ["Acumular el mayor número posible de testimonios.", "Priorizar hechos con mayor cobertura mediática.", "Resumir únicamente conclusiones institucionales."]),
-  q("¿Qué función cumple la IA dentro del módulo?", "Estructurar archivos, detectar patrones y preservar integridad documental sin interpretar la historia.", ["Determinar automáticamente responsables históricos.", "Decidir qué versión de los hechos es verdadera.", "Sustituir análisis de historiadores y peritos."]),
-]);
-
-const preguntasTecnicasModulo26 = adaptarBancoTecnico([
-  q("¿Qué distingue un análisis de soberanía alimentaria de un análisis agrícola meramente productivista?", "Integra producción, acceso, justicia territorial, resiliencia ambiental y control social de cadenas alimentarias.", ["Prioriza exclusivamente volumen de exportación agrícola.", "Evalúa únicamente rendimiento por hectárea cultivada.", "Mide solo autosuficiencia nacional en granos básicos."]),
-  q("¿Qué criterio fortalece más un análisis de precio mínimo viable para productores?", "Costos reales de producción, riesgo climático, financiamiento, logística, margen justo y precio de mercado comparable.", ["Precio promedio nacional reportado por intermediarios.", "Valor de exportación total del cultivo.", "Precio final pagado por consumidores urbanos."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No fija precios por decreto ni sustituye secretarías, programas públicos o autoridades pesqueras.", ["No puede analizar cadenas de valor agrícolas.", "No puede documentar violencia rural.", "No puede comparar precios internacionales."]),
-  q("¿Qué hace metodológicamente sólido un expediente de cadena de valor agroalimentaria?", "Vincular costos, intermediación, logística, precios, márgenes, riesgos y distribución de valor por actor.", ["Comparar únicamente producción anual y exportaciones.", "Priorizar testimonios de productores sin datos económicos.", "Medir solo precio final de venta al consumidor."]),
-  q("¿Qué riesgo surge cuando se evalúa agroexportación sin analizar pago real al productor?", "Ocultar asimetrías de valor y presentar éxito comercial sin justicia económica territorial.", ["Reducir automáticamente competitividad internacional.", "Impedir análisis de tratados comerciales.", "Eliminar relevancia de precios internacionales."]),
-]);
-
-const preguntasTecnicasModulo27 = adaptarBancoTecnico([
-  q("¿Qué distingue una crisis hídrica natural de una crisis hídrica estructuralmente inducida?", "La relación verificable entre escasez, sobreconcesión, mala planeación, contaminación y gobernanza deficiente.", ["La reducción temporal de lluvias en una región específica.", "El aumento estacional de consumo urbano.", "La existencia de sequía meteorológica declarada."]),
-  q("¿Qué hace técnicamente sólido un expediente hídrico territorial?", "Integrar concesiones, disponibilidad, recarga, calidad, uso de suelo, impactos sociales y riesgos acumulativos.", ["Comparar únicamente volumen total de agua concesionada.", "Priorizar denuncias comunitarias sin datos técnicos.", "Usar solo mapas oficiales de disponibilidad anual."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No administra agua, no cancela concesiones ni sustituye autoridades hídricas.", ["No puede analizar acuíferos sobreexplotados.", "No puede emitir dictámenes territoriales.", "No puede documentar conflictos socioambientales."]),
-  q("¿Qué indicador revela posible sobreconcesión hídrica estructural?", "Volumen concesionado superior a disponibilidad sustentable considerando recarga, extracción real y variabilidad climática.", ["Aumento de tarifas urbanas de agua potable.", "Presencia de pozos agrícolas en una zona rural.", "Reducción temporal de almacenamiento en presas."]),
-  q("¿Qué riesgo metodológico existe al evaluar agua sin perspectiva de cuenca?", "Ignorar interdependencias hidrológicas, impactos aguas abajo y acumulación territorial de presiones.", ["Reducir precisión de reportes ciudadanos.", "Impedir análisis jurídico de concesiones.", "Eliminar posibilidad de visualización geográfica."]),
-]);
-
-const preguntasTecnicasModulo28 = adaptarBancoTecnico([
-  q("¿Qué distingue una evaluación ambiental integral de una evaluación meramente procedimental?", "La integración verificable de impactos acumulativos, riesgos climáticos, irreversibilidad y consecuencias intergeneracionales.", ["La cantidad total de anexos técnicos presentados.", "La rapidez con la que se autoriza un proyecto.", "El cumplimiento formal de trámites administrativos."]),
-  q("¿Qué riesgo estructural surge cuando el costo ambiental no se incorpora en decisiones productivas?", "Transferir daño ecológico, sanitario y climático a comunidades y generaciones futuras sin rendición de cuentas.", ["Reducir automáticamente inversión extranjera.", "Impedir crecimiento económico regional.", "Eliminar toda viabilidad energética."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No cancela proyectos ni sustituye autoridades ambientales o regulatorias.", ["No puede modelar escenarios climáticos.", "No puede analizar impacto acumulativo.", "No puede emitir dictámenes territoriales."]),
-  q("¿Qué hace metodológicamente sólido un dictamen de impacto ambiental integral?", "Relacionar daño ecológico, riesgo climático, efectos acumulativos y alternativas sostenibles comparables.", ["Comparar únicamente emisiones directas del proyecto.", "Priorizar cumplimiento documental administrativo.", "Usar exclusivamente estudios financiados por el promovente."]),
-  q("¿Qué función cumple la IA dentro del módulo?", "Integrar datos satelitales, modelar riesgos y detectar patrones territoriales de degradación ambiental.", ["Autorizar automáticamente proyectos sustentables.", "Sustituir peritajes ambientales especializados.", "Decidir qué actividad económica debe prohibirse."]),
-]);
-
-const preguntasTecnicasModulo29 = adaptarBancoTecnico([
-  q("¿Qué distingue una respuesta resiliente de una reacción improvisada ante emergencias?", "La coordinación verificable basada en información estructurada, trazabilidad y aprendizaje acumulativo.", ["La velocidad inicial de movilización espontánea.", "La cantidad total de voluntarios disponibles.", "La cobertura mediática del desastre."]),
-  q("¿Qué riesgo estructural surge cuando la ayuda humanitaria no tiene trazabilidad?", "Duplicación, desvío, abandono territorial y pérdida de confianza pública.", ["Reducción automática de recursos donados.", "Eliminación de protocolos oficiales.", "Imposibilidad de generar mapas de riesgo."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No dirige operativos oficiales ni sustituye autoridades de protección civil.", ["No puede generar alertas tempranas.", "No puede coordinar ayuda solidaria.", "No puede documentar daños estructurales."]),
-  q("¿Qué hace metodológicamente sólido un mapa dinámico de riesgo?", "Integrar amenazas naturales, infraestructura crítica, vulnerabilidad social y capacidad de respuesta.", ["Mostrar únicamente eventos históricos de desastre.", "Priorizar regiones con mayor densidad urbana.", "Usar solo información satelital climática."]),
-  q("¿Qué función cumple la IA dentro del módulo?", "Clasificar reportes, priorizar riesgos y facilitar coordinación logística verificable.", ["Sustituir mandos de protección civil.", "Autorizar evacuaciones obligatorias.", "Tomar decisiones coercitivas automáticas."]),
-]);
-
-const preguntasTecnicasModulo30 = adaptarBancoTecnico([
-  q("¿Qué distingue un dictamen cívico diplomático de una acusación política contra una embajada?", "El dictamen evalúa idoneidad, congruencia institucional y desempeño con evidencia pública verificable.", ["El dictamen busca remover al titular de la misión.", "El dictamen sustituye la evaluación del Poder Ejecutivo.", "El dictamen se basa principalmente en percepción de la diáspora."]),
-  q("¿Cuál es el principal límite operativo del módulo?", "No nombra embajadores, no representa al Estado mexicano ni sustituye la política exterior oficial.", ["No puede analizar compromisos internacionales.", "No puede emitir dossiers por país.", "No puede incorporar participación de la diáspora."]),
-  q("¿Qué hace metodológicamente sólida una evaluación de representación diplomática?", "Relacionar perfil, trayectoria, país receptor, compromisos internacionales y desempeño verificable.", ["Comparar únicamente currículum académico del embajador.", "Medir popularidad pública de la embajada.", "Evaluar solo declaraciones oficiales recientes."]),
-  q("¿Qué riesgo institucional surge cuando cargos diplomáticos se usan como moneda política?", "Deterioro reputacional, pérdida de capacidad técnica y debilitamiento de credibilidad internacional.", ["Reducción automática de comercio bilateral.", "Cancelación inmediata de acuerdos internacionales.", "Pérdida formal de soberanía diplomática."]),
-  q("¿Qué función cumple la diáspora mexicana dentro del módulo?", "Aportar contexto local, evidencia pública y observación cívica agregada sin exposición individual.", ["Elegir representantes diplomáticos alternativos.", "Dirigir relaciones bilaterales desde el exterior.", "Emitir sanciones reputacionales obligatorias."]),
-]);
+const preguntasTecnicasModulo20 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo21 = preguntasTecnicasModulo03;
+const preguntasTecnicasModulo22 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo23 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo24 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo25 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo26 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo27 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo28 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo29 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo30 = preguntasTecnicasModulo02;
 
 export const preguntasTecnicasPorModulo: Record<number, PreguntaBanco[]> = {
   1: preguntasTecnicasModulo01,
