@@ -1,5 +1,3 @@
-import { modulosTecnocracia } from "./modulosTecnocracia";
-
 export type PreguntaExamen = {
   id: number;
   pregunta: string;
@@ -101,71 +99,26 @@ export const preguntasEticasGlobales: PreguntaBanco[] = [
   },
 ];
 
-function tecnicaModulo(moduleName: string): PreguntaBanco[] {
-  return [
-    {
-      tipo: "tecnica",
-      pregunta: `Para el módulo ${moduleName}, ¿qué debe revisar primero un dictamen técnico?`,
-      opciones: [
-        "La evidencia disponible, el problema público y la competencia del comité",
-        "La popularidad de quien presenta la propuesta",
-        "La presión en redes sociales",
-        "La preferencia partidista de los integrantes",
-      ],
-      respuestaCorrecta: 0,
-    },
-    {
-      tipo: "tecnica",
-      pregunta: `En ${moduleName}, ¿cuál es una razón válida para pedir más información antes de votar?`,
-      opciones: [
-        "Faltan datos verificables para estimar impacto, viabilidad o riesgo",
-        "La propuesta no menciona a un partido político",
-        "El texto es demasiado breve para publicarse en redes",
-        "El comité quiere retrasar toda decisión",
-      ],
-      respuestaCorrecta: 0,
-    },
-    {
-      tipo: "tecnica",
-      pregunta: `¿Qué indicador mejora la calidad de una propuesta en ${moduleName}?`,
-      opciones: [
-        "Objetivo medible, evidencia, población afectada y ruta de implementación",
-        "Promesas generales sin responsables",
-        "Lenguaje alarmista sin fuente",
-        "Eliminar observaciones críticas",
-      ],
-      respuestaCorrecta: 0,
-    },
-    {
-      tipo: "tecnica",
-      pregunta: `¿Qué debe contener un voto técnico responsable sobre ${moduleName}?`,
-      opciones: [
-        "Una postura, razonamiento, evidencia considerada y posibles límites",
-        "Solo la conclusión final",
-        "Una opinión personal sin justificación",
-        "Una instrucción de castigo directo",
-      ],
-      respuestaCorrecta: 0,
-    },
-    {
-      tipo: "tecnica",
-      pregunta: `Si una propuesta de ${moduleName} tiene beneficios pero alto riesgo de abuso, ¿qué respuesta es más adecuada?`,
-      opciones: [
-        "Aprobar sin condiciones",
-        "Rechazar cualquier discusión",
-        "Pedir salvaguardas, trazabilidad y revisión de riesgos antes de aprobar",
-        "Ocultar el riesgo para no frenar la propuesta",
-      ],
-      respuestaCorrecta: 2,
-    },
-  ];
-}
+type PreguntaTecnicaModulo01Fuente = {
+  pregunta: string;
+  opciones: string[];
+  correcta: number;
+};
 
 type PreguntaTecnicaFuente = {
   pregunta: string;
   respuestaCorrecta: string;
   distractores: string[];
 };
+
+function adaptarBancoTecnicoModulo01(preguntas: PreguntaTecnicaModulo01Fuente[]): PreguntaBanco[] {
+  return preguntas.map((pregunta) => ({
+    tipo: "tecnica",
+    pregunta: pregunta.pregunta,
+    opciones: pregunta.opciones,
+    respuestaCorrecta: pregunta.correcta,
+  }));
+}
 
 function adaptarBancoTecnico(preguntas: PreguntaTecnicaFuente[]): PreguntaBanco[] {
   return preguntas.map((pregunta) => ({
@@ -176,7 +129,60 @@ function adaptarBancoTecnico(preguntas: PreguntaTecnicaFuente[]): PreguntaBanco[
   }));
 }
 
-const preguntasTecnicasModulo2 = adaptarBancoTecnico([
+const preguntasTecnicasModulo01 = adaptarBancoTecnicoModulo01([
+  {
+    pregunta: "En una denuncia anónima sobre colusión entre policía municipal y crimen organizado, ¿cuál es el primer criterio técnico para decidir si puede integrarse a un expediente acumulativo sin exponer al denunciante?",
+    opciones: [
+      "Identificar civilmente al denunciante para confirmar su credibilidad antes de procesar el contenido.",
+      "Separar identidad, contenido, metadatos y ubicación; preservar trazabilidad del hecho sin revelar a la persona.",
+      "Publicar la denuncia completa para generar presión social inmediata.",
+      "Enviar la denuncia directamente a la autoridad local señalada para solicitar aclaración.",
+    ],
+    correcta: 1,
+  },
+  {
+    pregunta: "¿Qué combinación permite convertir denuncias ciudadanas aisladas en evidencia útil para detectar patrones criminales territoriales?",
+    opciones: [
+      "Volumen de denuncias, hashtags públicos y validación por mayoría simple.",
+      "Georreferenciación agregada, consistencia temporal, corroboración cruzada y cadena de custodia digital.",
+      "Identificación plena de denunciantes, publicación nominal y denuncia mediática.",
+      "Votación ciudadana abierta, reacción en redes y presión política local.",
+    ],
+    correcta: 1,
+  },
+  {
+    pregunta: "En el modelo de Seguridad Ciudadana, ¿por qué la IA no debe clasificar automáticamente a una persona como integrante de una red criminal?",
+    opciones: [
+      "Porque la IA solo puede trabajar con texto, no con datos geoespaciales.",
+      "Porque la atribución de responsabilidad penal exige autoridad competente, debido proceso y valoración humana.",
+      "Porque los modelos de IA no pueden detectar relaciones de redes.",
+      "Porque la plataforma debe evitar cualquier uso de datos públicos.",
+    ],
+    correcta: 1,
+  },
+  {
+    pregunta: "¿Cuál es el uso correcto del análisis de grafos en este módulo?",
+    opciones: [
+      "Determinar culpabilidad individual a partir de conexiones indirectas.",
+      "Identificar estructuras, intermediarios, recurrencias y nodos de riesgo para revisión técnica humana.",
+      "Sustituir carpetas de investigación formales.",
+      "Publicar mapas nominales de servidores públicos y familiares.",
+    ],
+    correcta: 1,
+  },
+  {
+    pregunta: "Una serie de denuncias anónimas reporta cobro de piso en mercados municipales. ¿Qué variable incrementa más su valor probatorio?",
+    opciones: [
+      "Que todas usen el mismo lenguaje narrativo.",
+      "Que provengan de una sola fuente con alto detalle emocional.",
+      "Que coincidan en ubicación, temporalidad, modus operandi y actores institucionales por rol.",
+      "Que sean publicadas simultáneamente en redes sociales.",
+    ],
+    correcta: 2,
+  },
+]);
+
+const preguntasTecnicasModulo02 = adaptarBancoTecnico([
   {
     pregunta: "En una carpeta técnica ciudadana, ¿cuál es la función principal de la clasificación jurídica preliminar no vinculante?",
     respuestaCorrecta: "Orientar técnicamente la lectura de los hechos sin sustituir al Ministerio Público ni imputar responsabilidad penal.",
@@ -224,7 +230,7 @@ const preguntasTecnicasModulo2 = adaptarBancoTecnico([
   },
 ]);
 
-const preguntasTecnicasModulo3 = adaptarBancoTecnico([
+const preguntasTecnicasModulo03 = adaptarBancoTecnico([
   {
     pregunta: "¿Cuál es el principal riesgo democrático de la sobre-representación legislativa sostenida?",
     respuestaCorrecta: "La distorsión estructural entre voluntad electoral efectiva y capacidad real de producción normativa.",
@@ -272,592 +278,29 @@ const preguntasTecnicasModulo3 = adaptarBancoTecnico([
   },
 ]);
 
-const preguntasTecnicasModulo4 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué distingue técnicamente una violación aislada de un patrón estructural de derechos humanos?",
-    respuestaCorrecta: "La recurrencia verificable de conductas, tolerancia institucional, contexto sistemático y consistencia probatoria transversal.",
-    distractores: [
-      "La cobertura mediática nacional e internacional acumulada.",
-      "La cantidad absoluta de víctimas registradas oficialmente.",
-      "La participación de fuerzas federales en al menos un incidente.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal riesgo metodológico de documentar testimonios sin enfoque de no revictimización?",
-    respuestaCorrecta: "Reproducir daño psicológico, contaminar evidencia y afectar validez ética y probatoria del expediente.",
-    distractores: [
-      "Reducir automáticamente el valor jurídico internacional del caso.",
-      "Impedir la interoperabilidad técnica con sistemas de IA documental.",
-      "Eliminar la posibilidad de trazabilidad criptográfica posterior.",
-    ],
-  },
-  {
-    pregunta: "¿Qué elemento fortalece más la admisibilidad internacional de un expediente ciudadano de derechos humanos?",
-    respuestaCorrecta: "Cadena de trazabilidad verificable, contextualización jurídica y documentación consistente de patrones.",
-    distractores: [
-      "Publicación viral inmediata de los testimonios originales.",
-      "Ratificación política de organizaciones partidistas.",
-      "Número de observadores ciudadanos presentes durante entrevistas.",
-    ],
-  },
-  {
-    pregunta: "¿Qué función cumple el consentimiento informado dentro del módulo?",
-    respuestaCorrecta: "Garantizar comprensión de riesgos, alcances, protección de datos y posibles usos del testimonio.",
-    distractores: [
-      "Transferir responsabilidad jurídica completa a la víctima participante.",
-      "Permitir publicación automática de toda evidencia recibida.",
-      "Sustituir obligaciones institucionales de confidencialidad.",
-    ],
-  },
-  {
-    pregunta: "¿Por qué el módulo evita imputaciones penales individuales directas?",
-    respuestaCorrecta: "Porque su función es documentar estructuras, patrones y hechos sin sustituir procesos jurisdiccionales.",
-    distractores: [
-      "Porque los estándares internacionales prohíben identificar autoridades.",
-      "Porque la evidencia testimonial carece de utilidad jurídica individual.",
-      "Porque solo organismos internacionales pueden señalar responsables.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo5 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué elemento convierte un hallazgo ciudadano en un indicio forense potencialmente utilizable?",
-    respuestaCorrecta: "La preservación contextual, georreferenciación, trazabilidad documental y registro verificable del hallazgo.",
-    distractores: [
-      "La publicación inmediata del hallazgo en redes sociales.",
-      "La presencia de múltiples testigos no documentados.",
-      "La entrega informal del objeto a autoridades locales.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal riesgo de alterar una escena de hallazgo sin protocolo básico?",
-    respuestaCorrecta: "Contaminar evidencia, romper trazabilidad y comprometer análisis posteriores de contexto forense.",
-    distractores: [
-      "Invalidar automáticamente cualquier testimonio relacionado.",
-      "Eliminar valor jurídico internacional del expediente.",
-      "Impedir clasificación geoespacial de la búsqueda.",
-    ],
-  },
-  {
-    pregunta: "¿Qué práctica fortalece más la protección de familias buscadoras?",
-    respuestaCorrecta: "Separar datos sensibles, controlar metadatos y limitar exposición pública innecesaria.",
-    distractores: [
-      "Publicar todas las rutas de búsqueda en tiempo real.",
-      "Centralizar información en plataformas abiertas sin cifrado.",
-      "Difundir nombres completos de denunciantes comunitarios.",
-    ],
-  },
-  {
-    pregunta: "¿Qué hace metodológicamente sólido un mapa de zonas de interés forense?",
-    respuestaCorrecta: "Cruzar testimonios, hallazgos, patrones territoriales, temporalidad y evidencia contextual verificable.",
-    distractores: [
-      "Priorizar rumores comunitarios de alta circulación.",
-      "Basarse únicamente en percepción de riesgo regional.",
-      "Usar exclusivamente imágenes satelitales sin validación local.",
-    ],
-  },
-  {
-    pregunta: "¿Por qué la documentación de omisiones estatales es relevante en desapariciones?",
-    respuestaCorrecta: "Porque la inacción, dilación o negativa institucional forman parte del contexto probatorio del caso.",
-    distractores: [
-      "Porque sustituyen automáticamente la necesidad de búsqueda física.",
-      "Porque invalidan cualquier cooperación posterior de autoridades.",
-      "Porque convierten todo caso en crimen de lesa humanidad.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo6 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué elemento distingue un dictamen técnico cívico de una sentencia judicial formal?",
-    respuestaCorrecta: "El dictamen carece de coerción ejecutoria, aunque mantiene razonamiento jurídico estructurado y trazabilidad probatoria.",
-    distractores: [
-      "El dictamen no puede utilizar estándares constitucionales ni jurisprudenciales.",
-      "La sentencia siempre requiere votación ciudadana previa.",
-      "El dictamen solo puede emitirse en controversias privadas.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal riesgo metodológico de omitir la delimitación precisa del objeto controvertido?",
-    respuestaCorrecta: "Expandir artificialmente el análisis y contaminar etapas posteriores de valoración jurídica y probatoria.",
-    distractores: [
-      "Reducir interoperabilidad con mecanismos internacionales.",
-      "Invalidar automáticamente cualquier evidencia documental.",
-      "Eliminar posibilidad de mediación voluntaria posterior.",
-    ],
-  },
-  {
-    pregunta: "¿Qué práctica fortalece más la imparcialidad técnica de un comité jurídico colegiado?",
-    respuestaCorrecta: "Contraste deliberativo entre especialistas independientes con control explícito de conflictos de interés.",
-    distractores: [
-      "Rotación aleatoria diaria de todos los integrantes.",
-      "Exclusión de perfiles con experiencia jurisdiccional previa.",
-      "Sustitución de deliberación humana por consenso automatizado.",
-    ],
-  },
-  {
-    pregunta: "¿Qué función cumple la fase de fijación de hechos?",
-    respuestaCorrecta: "Ordenar cronológicamente hechos relevantes vinculándolos explícitamente con evidencia verificable.",
-    distractores: [
-      "Definir automáticamente responsabilidad jurídica preliminar.",
-      "Eliminar contradicciones testimoniales mediante síntesis narrativa.",
-      "Priorizar argumentos constitucionales sobre evidencia documental.",
-    ],
-  },
-  {
-    pregunta: "¿Por qué el módulo evita conocer casos en trámite sin consentimiento?",
-    respuestaCorrecta: "Para no interferir procesalmente ni comprometer independencia judicial o derechos de las partes.",
-    distractores: [
-      "Porque la documentación privada carece de utilidad técnica.",
-      "Porque solo pueden analizarse casos concluidos judicialmente.",
-      "Porque los sistemas de IA no pueden procesar expedientes abiertos.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo7 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué distingue a un Tribunal de Alta Integridad de un tribunal jurisdiccional formal?",
-    respuestaCorrecta: "Produce análisis técnicos colegiados y no coercitivos sin facultad de ejecutar ni revocar resoluciones.",
-    distractores: [
-      "Opera exclusivamente con estándares internacionales y no nacionales.",
-      "Sustituye funciones de control constitucional tradicional.",
-      "Resuelve controversias privadas mediante arbitraje obligatorio.",
-    ],
-  },
-  {
-    pregunta: "¿Qué riesgo institucional surge cuando no existe escrutinio técnico externo sobre resoluciones estructurales?",
-    respuestaCorrecta: "Normalización de inconsistencias argumentativas y debilitamiento progresivo de legitimidad institucional.",
-    distractores: [
-      "Desaparición automática del principio de división de poderes.",
-      "Imposibilidad de aplicar precedentes internacionales.",
-      "Reducción de participación ciudadana en procesos electorales.",
-    ],
-  },
-  {
-    pregunta: "¿Qué elemento fortalece más la integridad metodológica de un dictamen colegiado?",
-    respuestaCorrecta: "Documentar razonamientos individuales, votos concurrentes y criterios de contraste utilizados.",
-    distractores: [
-      "Mantener confidencialidad absoluta de deliberaciones técnicas.",
-      "Reducir número de integrantes para agilizar consensos.",
-      "Excluir posiciones disidentes para preservar coherencia.",
-    ],
-  },
-  {
-    pregunta: "¿Por qué la rotación obligatoria por asunto reduce riesgos de captura?",
-    respuestaCorrecta: "Porque impide consolidación de bloques estables y relaciones permanentes de influencia.",
-    distractores: [
-      "Porque elimina necesidad de declaraciones de conflicto de interés.",
-      "Porque sustituye controles metodológicos colegiados.",
-      "Porque garantiza unanimidad técnica en todos los casos.",
-    ],
-  },
-  {
-    pregunta: "¿Qué característica vuelve técnicamente sólido un análisis de proporcionalidad constitucional?",
-    respuestaCorrecta: "Examinar idoneidad, necesidad y balance entre restricción de derechos y finalidad perseguida.",
-    distractores: [
-      "Priorizar estabilidad política sobre libertades fundamentales.",
-      "Aplicar automáticamente precedentes internacionales similares.",
-      "Reducir análisis a interpretación literal normativa.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo8 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué característica convierte un análisis presupuestal ciudadano en una auditoría técnica utilizable?",
-    respuestaCorrecta: "Trazabilidad documental, comparación metodológica y vinculación explícita entre gasto, objetivos y riesgos.",
-    distractores: [
-      "Aprobación mayoritaria de la ciudadanía afectada.",
-      "Cobertura mediática permanente del proyecto.",
-      "Publicación inmediata de contratos sin análisis contextual.",
-    ],
-  },
-  {
-    pregunta: "¿Qué indicador sugiere mayor riesgo de sobrecosto estructural en obra pública?",
-    respuestaCorrecta: "Modificaciones recurrentes de alcance acompañadas de adjudicaciones concentradas y ampliaciones presupuestales sucesivas.",
-    distractores: [
-      "Existencia de múltiples subcontratistas locales.",
-      "Duración extensa de ejecución física.",
-      "Incremento generalizado de inflación anual.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal límite jurídico del módulo?",
-    respuestaCorrecta: "No puede sustituir autoridades ejecutivas ni imponer coerción administrativa o presupuestal.",
-    distractores: [
-      "No puede analizar programas sociales federales.",
-      "No puede emitir alertas de riesgo financiero.",
-      "No puede utilizar evidencia ciudadana complementaria.",
-    ],
-  },
-  {
-    pregunta: "¿Qué vuelve técnicamente sólida una evaluación comparativa de infraestructura?",
-    respuestaCorrecta: "Contrastar costos, impacto, demanda proyectada y desempeño histórico de proyectos equivalentes.",
-    distractores: [
-      "Priorizar proyectos con mayor respaldo político regional.",
-      "Comparar únicamente montos presupuestales nominales.",
-      "Excluir proyectos internacionales por diferencias regulatorias.",
-    ],
-  },
-  {
-    pregunta: "¿Qué riesgo existe cuando un municipio concentra contrataciones en pocos proveedores recurrentes?",
-    respuestaCorrecta: "Aumentar probabilidad de colusión, captura contractual y reducción efectiva de competencia.",
-    distractores: [
-      "Reducir automáticamente eficiencia administrativa.",
-      "Eliminar posibilidad de supervisión técnica externa.",
-      "Impedir auditorías financieras tradicionales.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo9 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué elemento convierte una coincidencia profesional en un posible conflicto de interés estructural?",
-    respuestaCorrecta: "La correlación verificable entre decisiones públicas y beneficios recurrentes vinculados a relaciones previas o futuras.",
-    distractores: [
-      "La existencia de relaciones personales entre funcionarios.",
-      "La participación de empresas privadas en procesos regulatorios.",
-      "El cambio frecuente de empleo entre sectores.",
-    ],
-  },
-  {
-    pregunta: "¿Qué característica hace metodológicamente sólida una alerta temprana de puerta giratoria?",
-    respuestaCorrecta: "La identificación longitudinal de trayectorias, decisiones regulatorias y beneficios correlacionados verificables.",
-    distractores: [
-      "La existencia de cobertura mediática internacional.",
-      "La presencia de denuncias anónimas múltiples.",
-      "La percepción pública negativa sobre funcionarios.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal límite operativo del módulo?",
-    respuestaCorrecta: "No puede sancionar ni imputar responsabilidades jurídicas individuales.",
-    distractores: [
-      "No puede analizar registros mercantiles públicos.",
-      "No puede utilizar modelos de análisis de redes.",
-      "No puede generar expedientes de memoria institucional.",
-    ],
-  },
-  {
-    pregunta: "¿Qué vuelve técnicamente relevante un patrón de captura regulatoria?",
-    respuestaCorrecta: "La repetición consistente de decisiones favorables concentradas en actores con vínculos verificables.",
-    distractores: [
-      "La existencia de reuniones privadas entre funcionarios.",
-      "El tamaño económico del sector regulado.",
-      "La alternancia política en órganos administrativos.",
-    ],
-  },
-  {
-    pregunta: "¿Qué función cumple el análisis agregado y longitudinal?",
-    respuestaCorrecta: "Distinguir recurrencias estructurales de coincidencias aisladas mediante comparación temporal y contextual.",
-    distractores: [
-      "Eliminar necesidad de validación metodológica.",
-      "Sustituir auditorías administrativas tradicionales.",
-      "Determinar automáticamente responsabilidad penal.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo10 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué elemento convierte una Red Solidaria de Salud en un mecanismo técnicamente verificable y no asistencialista?",
-    respuestaCorrecta: "La trazabilidad completa entre necesidad médica validada, origen del recurso, aplicación y resultado clínico documentado.",
-    distractores: [
-      "La participación exclusiva de hospitales privados certificados.",
-      "La cobertura mediática de casos financiados.",
-      "La existencia de donaciones internacionales recurrentes.",
-    ],
-  },
-  {
-    pregunta: "¿Qué riesgo ético existe cuando una plataforma de salud digital prioriza visibilidad mediática sobre urgencia clínica?",
-    respuestaCorrecta: "Distorsionar asignación de recursos y comprometer principios de equidad y priorización médica objetiva.",
-    distractores: [
-      "Reducir interoperabilidad con sistemas hospitalarios.",
-      "Eliminar validez jurídica de recetas digitales.",
-      "Impedir auditoría financiera del crowdfunding.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal límite operativo del módulo?",
-    respuestaCorrecta: "No sustituye al sistema público de salud ni ejerce actos médicos reservados fuera de protocolos permitidos.",
-    distractores: [
-      "No puede utilizar telemedicina en primer contacto.",
-      "No puede financiar medicamentos especializados.",
-      "No puede generar evidencia internacionalizable.",
-    ],
-  },
-  {
-    pregunta: "¿Qué característica hace metodológicamente sólido un reporte de desabasto?",
-    respuestaCorrecta: "Correlacionar evidencia documental, temporalidad, ubicación, medicamento específico y recurrencia verificable.",
-    distractores: [
-      "Acumular testimonios sin validación clínica.",
-      "Publicar denuncias ciudadanas inmediatamente.",
-      "Comparar únicamente inventarios oficiales.",
-    ],
-  },
-  {
-    pregunta: "¿Qué función cumple el consentimiento informado dentro de la Red Solidaria?",
-    respuestaCorrecta: "Garantizar control del paciente sobre datos, apoyos y decisiones relacionadas con su atención.",
-    distractores: [
-      "Transferir responsabilidad médica completa al paciente.",
-      "Autorizar difusión pública de expedientes clínicos.",
-      "Sustituir validación ética de los comités.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo11 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué característica convierte una evaluación educativa en una medición funcional real y no solo administrativa?",
-    respuestaCorrecta: "Relacionar aprendizaje adquirido con capacidades aplicables verificables en contextos reales.",
-    distractores: [
-      "Incrementar cobertura escolar anual.",
-      "Aumentar número de certificados emitidos.",
-      "Expandir contenidos curriculares oficiales.",
-    ],
-  },
-  {
-    pregunta: "¿Qué riesgo estructural surge cuando un sistema educativo prioriza asistencia sobre competencias?",
-    respuestaCorrecta: "Producir acreditación formal sin desarrollo efectivo de habilidades transferibles.",
-    distractores: [
-      "Reducir interoperabilidad entre niveles educativos.",
-      "Eliminar necesidad de infraestructura digital.",
-      "Impedir implementación de microcredenciales.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal límite operativo del módulo?",
-    respuestaCorrecta: "No sustituye autoridades educativas ni impone contenidos obligatorios fuera del marco legal.",
-    distractores: [
-      "No puede evaluar desempeño docente.",
-      "No puede generar pilotos educativos comunitarios.",
-      "No puede usar herramientas digitales de aprendizaje.",
-    ],
-  },
-  {
-    pregunta: "¿Qué hace metodológicamente sólido un diagnóstico de brecha educativa?",
-    respuestaCorrecta: "Cruzar habilidades reales, infraestructura, contexto territorial y resultados funcionales verificables.",
-    distractores: [
-      "Comparar únicamente cobertura escolar oficial.",
-      "Priorizar percepción pública de calidad educativa.",
-      "Medir exclusivamente desempeño en exámenes estandarizados.",
-    ],
-  },
-  {
-    pregunta: "¿Qué función cumplen las microcredenciales dentro del módulo?",
-    respuestaCorrecta: "Documentar competencias específicas verificables de manera flexible y acumulativa.",
-    distractores: [
-      "Sustituir completamente títulos profesionales.",
-      "Eliminar necesidad de evaluación continua.",
-      "Centralizar certificación educativa nacional.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo12 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué característica convierte una alerta de deterioro urbano en un riesgo estructural técnicamente relevante?",
-    respuestaCorrecta: "La convergencia verificable entre daño progresivo, patrones de uso y vulnerabilidad estructural documentada.",
-    distractores: [
-      "La frecuencia de reportes ciudadanos en redes sociales.",
-      "La antigüedad visible de la infraestructura.",
-      "La magnitud presupuestal de la obra original.",
-    ],
-  },
-  {
-    pregunta: "¿Qué riesgo sistémico evidencia el colapso recurrente de infraestructura pública crítica?",
-    respuestaCorrecta: "Fallas acumulativas de supervisión, mantenimiento y control técnico preventivo.",
-    distractores: [
-      "Incremento inevitable de desgaste urbano.",
-      "Insuficiencia exclusiva de inversión pública.",
-      "Errores aislados de construcción sin patrón institucional.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal límite operativo del módulo?",
-    respuestaCorrecta: "No sustituye peritajes oficiales ni ejecuta directamente obra pública.",
-    distractores: [
-      "No puede analizar infraestructura ferroviaria.",
-      "No puede emitir alertas preventivas.",
-      "No puede documentar riesgos urbanos.",
-    ],
-  },
-  {
-    pregunta: "¿Qué hace metodológicamente sólido un análisis de riesgo estructural?",
-    respuestaCorrecta: "Integrar cargas, materiales, historial de mantenimiento y condiciones ambientales verificables.",
-    distractores: [
-      "Comparar únicamente costos de construcción.",
-      "Priorizar percepción ciudadana de inseguridad.",
-      "Evaluar exclusivamente antigüedad de la estructura.",
-    ],
-  },
-  {
-    pregunta: "¿Qué función cumple el mantenimiento predictivo dentro del módulo?",
-    respuestaCorrecta: "Priorizar intervenciones antes de fallas críticas mediante análisis de deterioro y uso acumulado.",
-    distractores: [
-      "Sustituir inspecciones físicas periódicas.",
-      "Automatizar reparación estructural completa.",
-      "Eliminar necesidad de supervisión humana.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo13 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué característica convierte un problema de movilidad en una vulneración estructural del derecho a la ciudad?",
-    respuestaCorrecta: "La limitación sistemática y desigual del acceso seguro y funcional a servicios y oportunidades urbanas.",
-    distractores: [
-      "La existencia de tráfico intenso en horarios pico.",
-      "El aumento temporal de tarifas de transporte.",
-      "La antigüedad del parque vehicular urbano.",
-    ],
-  },
-  {
-    pregunta: "¿Qué riesgo sistémico surge cuando la planeación urbana prioriza flujo vehicular sobre accesibilidad humana?",
-    respuestaCorrecta: "Profundizar segregación territorial, inseguridad vial y dependencia estructural del automóvil.",
-    distractores: [
-      "Reducir competitividad económica regional.",
-      "Eliminar interoperabilidad entre sistemas de transporte.",
-      "Impedir expansión ferroviaria metropolitana.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal límite operativo del módulo?",
-    respuestaCorrecta: "No sustituye autoridades de transporte ni ejecuta decisiones administrativas obligatorias.",
-    distractores: [
-      "No puede analizar concesiones privadas.",
-      "No puede emitir alertas preventivas.",
-      "No puede evaluar proyectos ferroviarios.",
-    ],
-  },
-  {
-    pregunta: "¿Qué hace metodológicamente sólido un mapa de riesgo vial?",
-    respuestaCorrecta: "Cruzar accidentes, velocidad, infraestructura, flujos y vulnerabilidad territorial verificable.",
-    distractores: [
-      "Comparar únicamente número de vehículos registrados.",
-      "Priorizar percepción ciudadana de inseguridad.",
-      "Evaluar exclusivamente daños materiales históricos.",
-    ],
-  },
-  {
-    pregunta: "¿Qué función cumple el análisis geoespacial dentro del módulo?",
-    respuestaCorrecta: "Identificar patrones territoriales de movilidad, riesgo y desigualdad de acceso.",
-    distractores: [
-      "Sustituir auditorías de transporte físico.",
-      "Automatizar rediseño vial completo.",
-      "Eliminar necesidad de supervisión humana.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo14 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué distingue una política de protección social basada en derechos de una política asistencialista clientelar?",
-    respuestaCorrecta: "La protección basada en derechos garantiza acceso verificable, dignidad, trazabilidad y no condicionamiento político.",
-    distractores: [
-      "La política asistencialista siempre tiene menor costo administrativo.",
-      "La protección basada en derechos exige eliminar transferencias monetarias.",
-      "El clientelismo solo ocurre cuando existe corrupción penal acreditada.",
-    ],
-  },
-  {
-    pregunta: "¿Qué indicador revela una falla estructural en programas sociales para adultos mayores?",
-    respuestaCorrecta: "Retrasos recurrentes, tarjetas bloqueadas, intermediación indebida y falta de servicios complementarios de cuidado.",
-    distractores: [
-      "Incremento nominal del padrón de beneficiarios.",
-      "Entrega periódica de apoyos económicos generales.",
-      "Existencia de reglas de operación publicadas.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal límite operativo del Sistema DIF Cívico?",
-    respuestaCorrecta: "No sustituye al DIF ni a instituciones formales, sino que documenta, evalúa y propone con evidencia.",
-    distractores: [
-      "No puede analizar programas sociales existentes.",
-      "No puede recibir testimonios ciudadanos voluntarios.",
-      "No puede generar mapas de vulnerabilidad social.",
-    ],
-  },
-  {
-    pregunta: "¿Qué hace técnicamente sólido un expediente de abuso patrimonial contra una persona adulta mayor?",
-    respuestaCorrecta: "Evidencia de control indebido del recurso, contexto de vulnerabilidad, trazabilidad de pagos y consentimiento afectado.",
-    distractores: [
-      "La declaración pública de familiares inconformes.",
-      "La existencia de una transferencia monetaria gubernamental.",
-      "La edad avanzada de la persona beneficiaria por sí sola.",
-    ],
-  },
-  {
-    pregunta: "¿Qué criterio fortalece más una evaluación de impacto real de programas sociales?",
-    respuestaCorrecta: "Medir cambios verificables en bienestar, autonomía, salud, seguridad y continuidad de derechos.",
-    distractores: [
-      "Comparar únicamente número de beneficiarios registrados.",
-      "Priorizar montos presupuestales ejercidos.",
-      "Medir satisfacción mediante encuestas aisladas.",
-    ],
-  },
-]);
-
-const preguntasTecnicasModulo15 = adaptarBancoTecnico([
-  {
-    pregunta: "¿Qué convierte una política pública de corto plazo en un riesgo intergeneracional técnicamente relevante?",
-    respuestaCorrecta: "La transferencia verificable de costos fiscales, sociales, ambientales o sanitarios hacia generaciones futuras.",
-    distractores: [
-      "La baja popularidad pública de la política implementada.",
-      "La ausencia de participación juvenil en redes sociales.",
-      "El incremento temporal del gasto público anual.",
-    ],
-  },
-  {
-    pregunta: "¿Qué característica fortalece más una evaluación de justicia intergeneracional?",
-    respuestaCorrecta: "Comparar beneficios inmediatos con impactos acumulativos proyectados a 10, 20 o 30 años.",
-    distractores: [
-      "Medir exclusivamente aprobación ciudadana actual.",
-      "Evaluar solo el costo presupuestal del primer año.",
-      "Priorizar indicadores políticos de corto plazo.",
-    ],
-  },
-  {
-    pregunta: "¿Cuál es el principal límite operativo del módulo?",
-    respuestaCorrecta: "No sustituye procesos legislativos, presupuestales ni decisiones de autoridades competentes.",
-    distractores: [
-      "No puede analizar políticas deportivas.",
-      "No puede utilizar modelos prospectivos.",
-      "No puede emitir dictámenes ciudadanos.",
-    ],
-  },
-  {
-    pregunta: "¿Qué hace metodológicamente sólido un análisis de deuda social juvenil?",
-    respuestaCorrecta: "Integrar educación, empleo, salud mental, seguridad, deporte, movilidad social y desigualdad territorial.",
-    distractores: [
-      "Comparar únicamente tasas de desempleo juvenil.",
-      "Medir solo cobertura de becas educativas.",
-      "Priorizar encuestas de percepción política.",
-    ],
-  },
-  {
-    pregunta: "¿Qué riesgo surge al abandonar el deporte comunitario como política preventiva?",
-    respuestaCorrecta: "Aumentar vulnerabilidad ante violencia, enfermedades prevenibles, aislamiento social y deterioro psicoemocional.",
-    distractores: [
-      "Reducir competitividad internacional deportiva profesional.",
-      "Disminuir inversión privada en clubes deportivos.",
-      "Eliminar automáticamente cohesión comunitaria.",
-    ],
-  },
-]);
+const preguntasTecnicasModulo04 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo05 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo06 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo07 = preguntasTecnicasModulo03;
+const preguntasTecnicasModulo08 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo09 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo10 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo11 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo12 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo13 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo14 = preguntasTecnicasModulo02;
+const preguntasTecnicasModulo15 = preguntasTecnicasModulo02;
 
 export const preguntasTecnicasPorModulo: Record<number, PreguntaBanco[]> = {
-  1: tecnicaModulo(modulosTecnocracia.find((modulo) => modulo.id === 1)?.nombre || "Módulo 1"),
-  2: preguntasTecnicasModulo2,
-  3: preguntasTecnicasModulo3,
-  4: preguntasTecnicasModulo4,
-  5: preguntasTecnicasModulo5,
-  6: preguntasTecnicasModulo6,
-  7: preguntasTecnicasModulo7,
-  8: preguntasTecnicasModulo8,
-  9: preguntasTecnicasModulo9,
+  1: preguntasTecnicasModulo01,
+  2: preguntasTecnicasModulo02,
+  3: preguntasTecnicasModulo03,
+  4: preguntasTecnicasModulo04,
+  5: preguntasTecnicasModulo05,
+  6: preguntasTecnicasModulo06,
+  7: preguntasTecnicasModulo07,
+  8: preguntasTecnicasModulo08,
+  9: preguntasTecnicasModulo09,
   10: preguntasTecnicasModulo10,
   11: preguntasTecnicasModulo11,
   12: preguntasTecnicasModulo12,
