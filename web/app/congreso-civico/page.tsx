@@ -26,6 +26,25 @@ const severidadLabel = {
   alta: "Alta",
 };
 
+const accesosCongresoCivico = [
+  {
+    href: "/congreso-civico/iniciativas",
+    titulo: "Ver iniciativas",
+    descripcion: "Seguimiento de iniciativas, materias, prioridades y alineacion ciudadana.",
+  },
+  {
+    href: "/congreso-civico/alertas",
+    titulo: "Ver alertas civicas",
+    descripcion: "Consulta de alertas civicas y seguimiento institucional no acusatorio.",
+  },
+  {
+    href: "/congreso-civico/legisladores",
+    titulo: "Ver legisladores y representantes",
+    descripcion:
+      "Lectura de legisladores en funciones, representantes ciudadanos y representacion cuestionada.",
+  },
+] as const;
+
 export default function CongresoCivicoPage() {
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
@@ -65,6 +84,19 @@ export default function CongresoCivicoPage() {
               ))}
             </div>
           </div>
+        </section>
+
+        <section className="mb-8 grid gap-4 md:grid-cols-3">
+          {accesosCongresoCivico.map((acceso) => (
+            <Link
+              key={acceso.href}
+              href={acceso.href}
+              className="rounded-[24px] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="text-sm font-bold text-[#C2187A]">{acceso.titulo}</div>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{acceso.descripcion}</p>
+            </Link>
+          ))}
         </section>
 
         <section className="mb-8">
