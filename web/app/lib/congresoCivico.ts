@@ -16,6 +16,15 @@ export type CongresoCivicoRepresentante = {
   territorio: string;
   rol: string;
   alineacionTerritorial: "alta" | "media" | "baja";
+  tipoRepresentacion:
+    | "legislador-funciones"
+    | "representante-ciudadano"
+    | "representacion-cuestionada";
+  camaraAmbito: string;
+  estadoDistritoSeccion: string;
+  indiceAlineacionCiudadana: number;
+  asistenciaParticipacion: string;
+  alertasRelacionadas: string[];
   observacion: string;
 };
 
@@ -97,6 +106,12 @@ export const representantesCongresoCivico: CongresoCivicoRepresentante[] = [
     territorio: "Zona metropolitana norte",
     rol: "Seguimiento presupuestal",
     alineacionTerritorial: "media",
+    tipoRepresentacion: "legislador-funciones",
+    camaraAmbito: "Camara de Diputados",
+    estadoDistritoSeccion: "Distrito Norte, seccion urbana 04",
+    indiceAlineacionCiudadana: 62,
+    asistenciaParticipacion: "Participacion documentada media en sesiones y votaciones publicas",
+    alertasRelacionadas: ["alt-001"],
     observacion:
       "Actividad publica documentada, con oportunidades de mejora en explicacion territorial de prioridades.",
   },
@@ -106,6 +121,12 @@ export const representantesCongresoCivico: CongresoCivicoRepresentante[] = [
     territorio: "Corredor urbano central",
     rol: "Revision de iniciativas",
     alineacionTerritorial: "alta",
+    tipoRepresentacion: "representante-ciudadano",
+    camaraAmbito: "Ambito ciudadano territorial",
+    estadoDistritoSeccion: "Region Centro, consulta civica territorial",
+    indiceAlineacionCiudadana: 81,
+    asistenciaParticipacion: "Participacion ciudadana alta en mesas de seguimiento y revision publica",
+    alertasRelacionadas: ["alt-003"],
     observacion:
       "Participacion consistente en temas territoriales y comunicacion publica verificable.",
   },
@@ -115,6 +136,12 @@ export const representantesCongresoCivico: CongresoCivicoRepresentante[] = [
     territorio: "Municipios de baja densidad",
     rol: "Vinculacion comunitaria",
     alineacionTerritorial: "baja",
+    tipoRepresentacion: "representacion-cuestionada",
+    camaraAmbito: "Representacion legislativa territorial",
+    estadoDistritoSeccion: "Distrito Rural, secciones comunitarias dispersas",
+    indiceAlineacionCiudadana: 37,
+    asistenciaParticipacion: "Participacion publica baja en seguimiento territorial documentado",
+    alertasRelacionadas: ["alt-002"],
     observacion:
       "Se requiere mayor evidencia publica de seguimiento a necesidades rurales priorizadas por la comunidad.",
   },
