@@ -42,7 +42,7 @@ export default function CongresoCivicoPage() {
             <h1 className="max-w-3xl text-4xl font-bold leading-tight md:text-5xl">
               {propositoCongresoCivico.titulo}
             </h1>
-            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-650">
+            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-700">
               {propositoCongresoCivico.descripcion}
             </p>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
@@ -86,7 +86,7 @@ export default function CongresoCivicoPage() {
                 </div>
                 <h3 className="text-xl font-bold text-[#0A4E84]">{iniciativa.titulo}</h3>
                 <p className="mt-2 text-sm font-semibold text-slate-500">{iniciativa.tema}</p>
-                <p className="mt-3 text-sm leading-6 text-slate-650">{iniciativa.descripcion}</p>
+                <p className="mt-3 text-sm leading-6 text-slate-700">{iniciativa.descripcion}</p>
                 <p className="mt-4 rounded-2xl bg-blue-50 p-3 text-sm leading-6 text-blue-900">
                   {iniciativa.riesgoInstitucional}
                 </p>
@@ -130,7 +130,7 @@ export default function CongresoCivicoPage() {
                       {severidadLabel[alerta.severidad]}
                     </span>
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-650">{alerta.descripcion}</p>
+                  <p className="mt-3 text-sm leading-6 text-slate-700">{alerta.descripcion}</p>
                   <p className="mt-3 rounded-2xl border border-slate-200 p-3 text-sm leading-6 text-slate-600">
                     {alerta.criterioSeguro}
                   </p>
