@@ -31,6 +31,18 @@ function obtenerEtapaTimeline(tipo: string) {
   return timelineCongresoCivico.find((item) => item.fase.startsWith(faseBuscada));
 }
 
+function obtenerRepresentanteRelacionado(tipo: string) {
+  const esBajaAlineacion = tipo.toLowerCase().includes("baja alineacion");
+
+  if (!esBajaAlineacion) {
+    return undefined;
+  }
+
+  return representantesCongresoCivico.find(
+    (representante) => representante.alineacionTerritorial === "baja",
+  );
+}
+
 export default function CongresoCivicoAlertasPage() {
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
@@ -57,9 +69,7 @@ export default function CongresoCivicoAlertasPage() {
           {alertasCongresoCivico.map((alerta) => {
             const iniciativasRelacionadas = obtenerIniciativasRelacionadas(alerta.id);
             const etapaTimeline = obtenerEtapaTimeline(alerta.tipo);
-            const representanteRelacionado = representantesCongresoCivico.find(
-              (representante) => representante.alineacionTerritorial === "baja",
-            );
+            const representanteRelacionado = obtenerRepresentanteRelacionado(alerta.tipo);
 
             return (
               <article key={alerta.id} className="rounded-[28px] bg-white p-5 shadow-sm">
