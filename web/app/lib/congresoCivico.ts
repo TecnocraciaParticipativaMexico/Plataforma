@@ -3,6 +3,9 @@ export type CongresoCivicoIniciativa = {
   titulo: string;
   tema: string;
   estado: "observacion" | "analisis" | "dictamen";
+  prioridad: "baja" | "media" | "alta";
+  indiceAlineacionCiudadana?: number;
+  alertasRelacionadas: string[];
   descripcion: string;
   riesgoInstitucional: string;
 };
@@ -51,6 +54,9 @@ export const iniciativasCongresoCivico: CongresoCivicoIniciativa[] = [
     titulo: "Transparencia de votaciones nominales",
     tema: "Rendicion de cuentas",
     estado: "analisis",
+    prioridad: "alta",
+    indiceAlineacionCiudadana: 64,
+    alertasRelacionadas: ["alt-001", "alt-003"],
     descripcion:
       "Contrasta votaciones publicas con compromisos territoriales previamente documentados.",
     riesgoInstitucional:
@@ -61,6 +67,9 @@ export const iniciativasCongresoCivico: CongresoCivicoIniciativa[] = [
     titulo: "Seguimiento a presupuesto territorial",
     tema: "Presupuesto publico",
     estado: "observacion",
+    prioridad: "media",
+    indiceAlineacionCiudadana: 48,
+    alertasRelacionadas: ["alt-002"],
     descripcion:
       "Monitorea asignaciones regionales y su coherencia con necesidades publicas verificables.",
     riesgoInstitucional:
@@ -71,6 +80,9 @@ export const iniciativasCongresoCivico: CongresoCivicoIniciativa[] = [
     titulo: "Registro civico de compromisos legislativos",
     tema: "Memoria institucional",
     estado: "dictamen",
+    prioridad: "baja",
+    indiceAlineacionCiudadana: 72,
+    alertasRelacionadas: ["alt-003"],
     descripcion:
       "Organiza compromisos, intervenciones y resultados legislativos para consulta ciudadana.",
     riesgoInstitucional:
