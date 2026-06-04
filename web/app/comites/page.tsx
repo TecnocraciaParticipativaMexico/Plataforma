@@ -37,6 +37,21 @@ export default function ComitesPage() {
           </p>
         </section>
 
+        <section className="mb-6 rounded-[28px] border border-[#0A4E84] bg-white p-6 shadow-sm">
+          <div className="mb-2 text-sm font-bold text-[#C2187A]">Módulo 03</div>
+          <h2 className="mb-3 text-2xl font-bold">Congreso Cívico</h2>
+          <p className="mb-5 text-sm leading-6 text-slate-600">
+            Seguimiento ciudadano de iniciativas, representantes, alertas cívicas
+            y alineación territorial.
+          </p>
+          <Link
+            href="/congreso-civico"
+            className="block rounded-2xl bg-[#0A4E84] px-5 py-4 text-center text-lg font-bold text-white"
+          >
+            Entrar a Congreso Cívico
+          </Link>
+        </section>
+
         <section className="mb-6 rounded-[28px] bg-white p-6 shadow-sm">
           <div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
             Reglas principales

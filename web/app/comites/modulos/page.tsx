@@ -48,6 +48,21 @@ export default function ModulosComitesPage() {
           />
         </div>
 
+        <section className="mb-6 rounded-[28px] border border-[#0A4E84] bg-white p-5 shadow-sm">
+          <div className="mb-2 text-sm font-bold text-[#C2187A]">Módulo 03</div>
+          <h2 className="mb-3 text-2xl font-bold leading-tight">Congreso Cívico</h2>
+          <p className="mb-5 text-sm leading-6 text-slate-600">
+            Seguimiento ciudadano de iniciativas, representantes, alertas cívicas
+            y alineación territorial.
+          </p>
+          <Link
+            href="/congreso-civico"
+            className="block w-full rounded-2xl bg-[#0A4E84] px-4 py-3 text-center text-sm font-bold text-white"
+          >
+            Entrar a Congreso Cívico
+          </Link>
+        </section>
+
         <div className="space-y-4">
           {modulos.map((modulo) => (
             <div
