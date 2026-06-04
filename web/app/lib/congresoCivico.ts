@@ -43,11 +43,11 @@ export type CongresoCivicoTimeline = {
 };
 
 export const propositoCongresoCivico = {
-  titulo: "Congreso Civico de Evaluacion Legislativa",
+  titulo: "Congreso Civico",
   descripcion:
-    "Modulo ciudadano de lectura, contraste y seguimiento legislativo con datos publicos, lenguaje institucional y trazabilidad civica. No sustituye al Congreso formal ni emite efectos juridicos vinculantes.",
+    "Un espacio para seguir iniciativas, representantes, alertas civicas y alineacion ciudadana.",
   alcance:
-    "Permite observar representacion cuestionada, divergencia ciudadana-legislativa, baja alineacion territorial y alertas civicas con criterios verificables.",
+    "Ayuda a saber que se propone, quien participa, como avanza y que temas necesitan mas explicacion.",
 } as const;
 
 export const lenguajeSeguroCongresoCivico = [
@@ -67,9 +67,9 @@ export const iniciativasCongresoCivico: CongresoCivicoIniciativa[] = [
     indiceAlineacionCiudadana: 64,
     alertasRelacionadas: ["alt-001", "alt-003"],
     descripcion:
-      "Contrasta votaciones publicas con compromisos territoriales previamente documentados.",
+      "Busca que las votaciones importantes puedan consultarse y explicarse con claridad.",
     riesgoInstitucional:
-      "Posible divergencia ciudadana-legislativa si el sentido del voto no se explica con evidencia publica.",
+      "Puede haber divergencia ciudadana-legislativa si el voto no se explica de forma publica.",
   },
   {
     id: "ini-002",
@@ -80,9 +80,9 @@ export const iniciativasCongresoCivico: CongresoCivicoIniciativa[] = [
     indiceAlineacionCiudadana: 48,
     alertasRelacionadas: ["alt-002"],
     descripcion:
-      "Monitorea asignaciones regionales y su coherencia con necesidades publicas verificables.",
+      "Revisa si los recursos publicos responden a necesidades reales del territorio.",
     riesgoInstitucional:
-      "Baja alineacion territorial cuando beneficios, costos o prioridades no corresponden al territorio afectado.",
+      "Hay baja alineacion territorial cuando las prioridades publicas no coinciden con la comunidad.",
   },
   {
     id: "ini-003",
@@ -93,9 +93,9 @@ export const iniciativasCongresoCivico: CongresoCivicoIniciativa[] = [
     indiceAlineacionCiudadana: 72,
     alertasRelacionadas: ["alt-003"],
     descripcion:
-      "Organiza compromisos, intervenciones y resultados legislativos para consulta ciudadana.",
+      "Guarda compromisos, avances y pendientes para que puedan consultarse despues.",
     riesgoInstitucional:
-      "Representacion cuestionada cuando el historial publico muestra inconsistencias persistentes sin explicacion suficiente.",
+      "La representacion puede ser cuestionada cuando faltan avances o explicaciones claras.",
   },
 ];
 
@@ -110,10 +110,10 @@ export const representantesCongresoCivico: CongresoCivicoRepresentante[] = [
     camaraAmbito: "Camara de Diputados",
     estadoDistritoSeccion: "Distrito Norte, seccion urbana 04",
     indiceAlineacionCiudadana: 62,
-    asistenciaParticipacion: "Participacion documentada media en sesiones y votaciones publicas",
+    asistenciaParticipacion: "Participacion media en sesiones y votaciones publicas",
     alertasRelacionadas: ["alt-001"],
     observacion:
-      "Actividad publica documentada, con oportunidades de mejora en explicacion territorial de prioridades.",
+      "Tiene actividad publica, pero puede explicar mejor algunas prioridades del territorio.",
   },
   {
     id: "rep-002",
@@ -125,10 +125,10 @@ export const representantesCongresoCivico: CongresoCivicoRepresentante[] = [
     camaraAmbito: "Ambito ciudadano territorial",
     estadoDistritoSeccion: "Region Centro, consulta civica territorial",
     indiceAlineacionCiudadana: 81,
-    asistenciaParticipacion: "Participacion ciudadana alta en mesas de seguimiento y revision publica",
+    asistenciaParticipacion: "Participacion alta en mesas de seguimiento y revision publica",
     alertasRelacionadas: ["alt-003"],
     observacion:
-      "Participacion consistente en temas territoriales y comunicacion publica verificable.",
+      "Mantiene participacion constante y comunicacion clara con su territorio.",
   },
   {
     id: "rep-003",
@@ -140,10 +140,10 @@ export const representantesCongresoCivico: CongresoCivicoRepresentante[] = [
     camaraAmbito: "Representacion legislativa territorial",
     estadoDistritoSeccion: "Distrito Rural, secciones comunitarias dispersas",
     indiceAlineacionCiudadana: 37,
-    asistenciaParticipacion: "Participacion publica baja en seguimiento territorial documentado",
+    asistenciaParticipacion: "Participacion baja en seguimiento territorial",
     alertasRelacionadas: ["alt-002"],
     observacion:
-      "Se requiere mayor evidencia publica de seguimiento a necesidades rurales priorizadas por la comunidad.",
+      "Necesita mostrar mas seguimiento a necesidades rurales priorizadas por la comunidad.",
   },
 ];
 
@@ -153,27 +153,27 @@ export const alertasCongresoCivico: CongresoCivicoAlerta[] = [
     tipo: "Alerta civica de explicacion insuficiente",
     severidad: "media",
     descripcion:
-      "Una votacion relevante requiere justificacion publica mas clara frente a compromisos territoriales documentados.",
+      "Una votacion relevante necesita una explicacion publica mas clara.",
     criterioSeguro:
-      "Se formula como solicitud de explicacion y no como imputacion personal o juridica.",
+      "Se presenta como solicitud de explicacion, no como acusacion.",
   },
   {
     id: "alt-002",
     tipo: "Alerta civica de baja alineacion territorial",
     severidad: "alta",
     descripcion:
-      "La prioridad legislativa observada se aparta de necesidades territoriales recurrentes en datos publicos.",
+      "La prioridad observada se aleja de necesidades frecuentes del territorio.",
     criterioSeguro:
-      "Se basa en contraste entre agenda publica, territorio y evidencia disponible.",
+      "Se basa en comparar agenda publica, territorio y datos disponibles.",
   },
   {
     id: "alt-003",
     tipo: "Alerta civica de seguimiento pendiente",
     severidad: "informativa",
     descripcion:
-      "Existe compromiso publico sin evidencia suficiente de avance, respuesta o cierre documentado.",
+      "Existe un compromiso publico sin avance o cierre claro todavia.",
     criterioSeguro:
-      "Se mantiene como seguimiento documental hasta contar con nueva informacion.",
+      "Se mantiene como seguimiento hasta contar con nueva informacion.",
   },
 ];
 
@@ -181,21 +181,21 @@ export const timelineCongresoCivico: CongresoCivicoTimeline[] = [
   {
     id: "time-001",
     fase: "1. Registro publico",
-    descripcion: "Carga inicial de iniciativas, compromisos, representantes y fuentes verificables.",
+    descripcion: "Se registran iniciativas, compromisos, representantes y fuentes.",
   },
   {
     id: "time-002",
-    fase: "2. Contraste civico",
-    descripcion: "Comparacion entre agenda legislativa, territorio, compromisos y evidencia ciudadana.",
+    fase: "2. Revision ciudadana",
+    descripcion: "Se compara agenda legislativa, territorio y prioridades ciudadanas.",
   },
   {
     id: "time-003",
     fase: "3. Alerta civica",
-    descripcion: "Emision de observaciones institucionales con lenguaje seguro y alcance no vinculante.",
+    descripcion: "Se marca un tema que necesita explicacion, atencion o seguimiento.",
   },
   {
     id: "time-004",
     fase: "4. Memoria y seguimiento",
-    descripcion: "Actualizacion de resultados, respuestas publicas y cambios de alineacion territorial.",
+    descripcion: "Se actualizan avances, respuestas publicas y pendientes.",
   },
 ];
