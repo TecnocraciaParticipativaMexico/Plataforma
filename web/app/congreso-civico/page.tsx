@@ -60,7 +60,7 @@ export default function CongresoCivicoPage() {
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
       <div className="mx-auto max-w-6xl px-4 py-8">
         <Link href="/" className="mb-5 inline-block text-sm font-semibold">
-           Volver al inicio
+          {"<-"} Volver al inicio
         </Link>
 
         <section className="mb-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
