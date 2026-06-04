@@ -5,44 +5,41 @@ import {
   representantesCongresoCivico,
 } from "../../lib/congresoCivico";
 
-const comparacionesMock = {
+const comparaciones = {
   "rep-001": {
     iniciativaId: "ini-001",
-    posturaCiudadana:
-      "Solicitud territorial de mayor explicacion publica sobre votos y compromisos presupuestales.",
+    posturaCiudadana: "Piden explicar mejor votos y compromisos presupuestales.",
   },
   "rep-002": {
     iniciativaId: "ini-003",
-    posturaCiudadana:
-      "Respaldo territorial a la memoria institucional y seguimiento civico de compromisos publicos.",
+    posturaCiudadana: "Apoyan guardar compromisos y revisar avances publicos.",
   },
   "rep-003": {
     iniciativaId: "ini-002",
-    posturaCiudadana:
-      "Prioridad comunitaria centrada en presupuesto territorial, servicios cercanos y seguimiento institucional.",
+    posturaCiudadana: "Prioridad en presupuesto territorial y servicios cercanos.",
   },
 } as const;
 
 const rangosAlineacion = [
   {
     etiqueta: "Alta alineacion",
-    descripcion: "75 a 100 puntos: consistencia alta entre territorio, postura publica y seguimiento.",
-    clase: "bg-emerald-600",
+    descripcion: "75 a 100: responde bien a prioridades ciudadanas.",
+    clase: "bg-[#16A34A]",
   },
   {
     etiqueta: "Alineacion media",
-    descripcion: "55 a 74 puntos: consistencia parcial con aspectos pendientes de explicacion.",
-    clase: "bg-sky-600",
+    descripcion: "55 a 74: hay avances, pero faltan explicaciones.",
+    clase: "bg-[#0EA5E9]",
   },
   {
     etiqueta: "Baja alineacion",
-    descripcion: "40 a 54 puntos: distancia relevante entre prioridades territoriales y seguimiento.",
-    clase: "bg-amber-500",
+    descripcion: "40 a 54: conviene revisar mejor la relacion con el territorio.",
+    clase: "bg-[#F97316]",
   },
   {
     etiqueta: "Divergencia significativa",
-    descripcion: "0 a 39 puntos: divergencia ciudadana-legislativa que requiere observacion civica.",
-    clase: "bg-[#C2187A]",
+    descripcion: "0 a 39: hay distancia importante con prioridades ciudadanas.",
+    clase: "bg-[#E4007C]",
   },
 ] as const;
 
@@ -63,7 +60,7 @@ function obtenerRango(indice: number) {
 }
 
 function obtenerComparacion(representanteId: string) {
-  return comparacionesMock[representanteId as keyof typeof comparacionesMock];
+  return comparaciones[representanteId as keyof typeof comparaciones];
 }
 
 function obtenerIniciativa(iniciativaId: string) {
@@ -76,32 +73,30 @@ function obtenerAlertas(alertasRelacionadas: string[]) {
 
 export default function CongresoCivicoAlineacionPage() {
   return (
-    <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
+    <main className="min-h-screen bg-[#FFF8F0] text-[#0A4E84]">
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <Link href="/congreso-civico" className="mb-5 inline-block text-sm font-semibold">
-          Volver a Congreso Civico
+        <Link href="/congreso-civico" className="mb-5 inline-block text-sm font-semibold text-[#E4007C]">
+          {"<-"} Volver a Congreso Civico
         </Link>
 
         <section className="mb-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
           <div>
-            <div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-              Alineacion ciudadana-territorial
+            <div className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">
+              Alineacion ciudadana
             </div>
             <h1 className="max-w-3xl text-4xl font-bold leading-tight md:text-5xl">
-              Lectura civica de alineacion territorial
+              Que tan cerca esta cada representante de su territorio
             </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-700">
-              Vista read-only para observar la relacion entre representantes, prioridades territoriales,
-              iniciativas y alertas civicas. El indice es mock, institucional y no produce efectos juridicos
-              vinculantes.
+            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-700">
+              Compara calificacion ciudadana, propuesta relacionada y alertas civicas en una sola vista.
             </p>
           </div>
 
-          <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="text-sm font-bold text-[#C2187A]">Rangos visuales</div>
+          <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#F7C9DD]">
+            <div className="text-sm font-bold text-[#E4007C]">Rangos</div>
             <div className="mt-4 grid gap-3">
               {rangosAlineacion.map((rango) => (
-                <div key={rango.etiqueta} className="rounded-2xl border border-slate-200 p-3">
+                <div key={rango.etiqueta} className="rounded-2xl border border-[#F7C9DD] p-3">
                   <div className="flex items-center gap-3">
                     <span className={`h-3 w-3 rounded-full ${rango.clase}`} />
                     <span className="text-sm font-bold text-[#0A4E84]">{rango.etiqueta}</span>
@@ -121,11 +116,12 @@ export default function CongresoCivicoAlineacionPage() {
             const alertas = obtenerAlertas(representante.alertasRelacionadas);
 
             return (
-              <article key={representante.id} className="rounded-[28px] bg-white p-5 shadow-sm">
-                <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+              <article key={representante.id} className="overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-[#F7C9DD]">
+                <div className="h-2 bg-gradient-to-r from-[#E4007C] via-[#F97316] to-[#16A34A]" />
+                <div className="grid gap-6 p-5 lg:grid-cols-[0.95fr_1.05fr]">
                   <div>
                     <div className="flex flex-wrap gap-2">
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-900">
+                      <span className="rounded-full bg-[#F2C300] px-3 py-1 text-xs font-bold text-[#1F2937]">
                         {representante.tipoRepresentacion.replaceAll("-", " ")}
                       </span>
                       <span className={`rounded-full px-3 py-1 text-xs font-bold text-white ${rango.clase}`}>
@@ -134,18 +130,13 @@ export default function CongresoCivicoAlineacionPage() {
                     </div>
 
                     <h2 className="mt-4 text-2xl font-bold text-[#0A4E84]">{representante.nombre}</h2>
-                    <p className="mt-1 text-sm font-semibold text-[#C2187A]">
-                      {representante.estadoDistritoSeccion}
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-slate-700">{representante.observacion}</p>
+                    <p className="mt-1 text-sm font-semibold text-[#E4007C]">{representante.territorio}</p>
 
                     <div className="mt-5">
                       <div className="flex items-end justify-between gap-4">
-                        <div className="text-sm font-bold text-slate-600">
-                          Indice de alineacion ciudadana-territorial
-                        </div>
+                        <div className="text-sm font-bold text-slate-600">Calificacion ciudadana</div>
                         <div className="text-3xl font-bold text-[#0A4E84]">
-                          {representante.indiceAlineacionCiudadana}
+                          {representante.indiceAlineacionCiudadana}/100
                         </div>
                       </div>
                       <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
@@ -154,69 +145,51 @@ export default function CongresoCivicoAlineacionPage() {
                           style={{ width: `${representante.indiceAlineacionCiudadana}%` }}
                         />
                       </div>
-                      <p className="mt-2 text-xs leading-5 text-slate-500">{rango.descripcion}</p>
                     </div>
                   </div>
 
                   <div className="grid gap-4">
-                    <div className="rounded-2xl border border-slate-200 p-4">
-                      <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-500">
-                        Comparacion mock
-                      </h3>
+                    <div className="rounded-2xl bg-[#E0F2FE] p-4">
+                      <h3 className="text-sm font-bold text-[#0A4E84]">Comparacion ciudadana</h3>
                       <div className="mt-3 grid gap-3 md:grid-cols-2">
-                        <div className="rounded-2xl bg-slate-50 p-3">
-                          <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#C2187A]">
-                            Postura ciudadana territorial
+                        <div className="rounded-2xl bg-white p-3">
+                          <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#E4007C]">
+                            La gente pide
                           </div>
                           <p className="mt-2 text-sm leading-6 text-slate-700">
-                            {comparacion?.posturaCiudadana ?? "Sin postura territorial vinculada en el mock actual."}
+                            {comparacion?.posturaCiudadana ?? "Sin postura vinculada por ahora."}
                           </p>
                         </div>
-                        <div className="rounded-2xl bg-blue-50 p-3">
-                          <div className="text-xs font-bold uppercase tracking-[0.14em] text-blue-900">
-                            Iniciativa relacionada
+                        <div className="rounded-2xl bg-white p-3">
+                          <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B5CF6]">
+                            Propuesta relacionada
                           </div>
                           {iniciativa ? (
-                            <div>
-                              <Link
-                                href={`/congreso-civico/iniciativas/${iniciativa.id}`}
-                                className="mt-2 block text-sm font-bold text-[#0A4E84]"
-                              >
-                                {iniciativa.titulo}
-                              </Link>
-                              <p className="mt-2 text-xs leading-5 text-slate-600">
-                                {iniciativa.riesgoInstitucional}
-                              </p>
-                            </div>
+                            <Link
+                              href={`/congreso-civico/iniciativas/${iniciativa.id}`}
+                              className="mt-2 block text-sm font-bold text-[#0A4E84]"
+                            >
+                              {iniciativa.titulo}
+                            </Link>
                           ) : (
-                            <p className="mt-2 text-sm leading-6 text-slate-700">
-                              Sin iniciativa vinculada en el mock actual.
-                            </p>
+                            <p className="mt-2 text-sm leading-6 text-slate-700">Sin propuesta vinculada.</p>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200 p-4">
-                      <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-500">
-                        Alertas vinculadas
-                      </h3>
+                    <div className="rounded-2xl border border-[#F7C9DD] p-4">
+                      <h3 className="text-sm font-bold text-[#E4007C]">Alertas civicas</h3>
                       {alertas.length > 0 ? (
                         <div className="mt-3 grid gap-3">
                           {alertas.map((alerta) => (
-                            <div key={alerta.id} className="rounded-2xl bg-slate-50 p-3">
-                              <div className="text-sm font-bold text-[#0A4E84]">{alerta.tipo}</div>
-                              <p className="mt-2 text-sm leading-6 text-slate-700">{alerta.descripcion}</p>
-                              <p className="mt-2 text-xs leading-5 text-slate-500">
-                                {alerta.criterioSeguro}
-                              </p>
+                            <div key={alerta.id} className="rounded-2xl bg-[#FFF1A8] p-3 text-sm text-slate-700">
+                              {alerta.tipo}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="mt-3 text-sm leading-6 text-slate-600">
-                          Sin alerta civica vinculada en el mock actual.
-                        </p>
+                        <p className="mt-3 text-sm leading-6 text-slate-600">Sin alertas civicas.</p>
                       )}
                     </div>
                   </div>
