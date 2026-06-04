@@ -43,6 +43,11 @@ const accesosCongresoCivico = [
     descripcion:
       "Lectura de legisladores en funciones, representantes ciudadanos y representacion cuestionada.",
   },
+  {
+    href: "/congreso-civico/timeline",
+    titulo: "Ver timeline civico",
+    descripcion: "Trazabilidad legislativa de etapas, eventos, iniciativas y alertas civicas.",
+  },
 ] as const;
 
 export default function CongresoCivicoPage() {
@@ -86,7 +91,7 @@ export default function CongresoCivicoPage() {
           </div>
         </section>
 
-        <section className="mb-8 grid gap-4 md:grid-cols-3">
+        <section className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {accesosCongresoCivico.map((acceso) => (
             <Link
               key={acceso.href}
