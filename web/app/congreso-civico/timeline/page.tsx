@@ -10,16 +10,18 @@ const tipoEventoPorFase = {
   "2.": "Revision ciudadana",
   "3.": "Alerta civica",
   "4.": "Seguimiento",
-};
+} as const;
 
 const tipoColor = {
   Registro: "bg-[#0EA5E9] text-white",
   "Revision ciudadana": "bg-[#8B5CF6] text-white",
   "Alerta civica": "bg-[#E4007C] text-white",
   Seguimiento: "bg-[#16A34A] text-white",
-};
+} as const;
 
-function obtenerTipoEvento(fase: string) {
+type TipoEvento = keyof typeof tipoColor;
+
+function obtenerTipoEvento(fase: string): TipoEvento {
   const clave = Object.keys(tipoEventoPorFase).find((prefijo) => fase.startsWith(prefijo));
 
   return clave ? tipoEventoPorFase[clave as keyof typeof tipoEventoPorFase] : "Seguimiento";
