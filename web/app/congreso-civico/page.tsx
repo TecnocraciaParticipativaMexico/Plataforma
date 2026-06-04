@@ -2,98 +2,85 @@ import Link from "next/link";
 import {
   alertasCongresoCivico,
   iniciativasCongresoCivico,
-  lenguajeSeguroCongresoCivico,
   propositoCongresoCivico,
   representantesCongresoCivico,
   timelineCongresoCivico,
 } from "../lib/congresoCivico";
 
 const estadoLabel = {
-  observacion: "Observacion",
-  analisis: "Analisis",
-  dictamen: "Dictamen civico",
+  observacion: "En observacion",
+  analisis: "En analisis",
+  dictamen: "Con dictamen civico",
 };
 
 const alineacionLabel = {
-  alta: "Alta alineacion territorial",
-  media: "Alineacion territorial media",
-  baja: "Baja alineacion territorial",
+  alta: "Alta",
+  media: "Media",
+  baja: "Baja",
 };
 
 const severidadLabel = {
-  informativa: "Informativa",
-  media: "Media",
-  alta: "Alta",
+  informativa: "Seguimiento",
+  media: "Atencion media",
+  alta: "Atencion alta",
 };
 
 const accesosCongresoCivico = [
   {
     href: "/congreso-civico/iniciativas",
-    titulo: "Ver iniciativas",
-    descripcion: "Seguimiento de iniciativas, materias, prioridades y alineacion ciudadana.",
+    titulo: "Iniciativas",
+    descripcion: "Consulta que se propone, quien participa y como va avanzando.",
+    color: "bg-[#E4007C] text-white",
   },
   {
     href: "/congreso-civico/alertas",
-    titulo: "Ver alertas civicas",
-    descripcion: "Consulta de alertas civicas y seguimiento institucional no acusatorio.",
+    titulo: "Alertas civicas",
+    descripcion: "Ve que temas necesitan explicacion, seguimiento o mas claridad publica.",
+    color: "bg-[#F97316] text-white",
   },
   {
     href: "/congreso-civico/legisladores",
-    titulo: "Ver legisladores y representantes",
-    descripcion:
-      "Lectura de legisladores en funciones, representantes ciudadanos y representacion cuestionada.",
+    titulo: "Representantes",
+    descripcion: "Revisa rol, territorio, calificacion ciudadana y alertas relacionadas.",
+    color: "bg-[#0A4E84] text-white",
   },
   {
     href: "/congreso-civico/timeline",
-    titulo: "Ver timeline civico",
-    descripcion: "Trazabilidad legislativa de etapas, eventos, iniciativas y alertas civicas.",
+    titulo: "Timeline civico",
+    descripcion: "Sigue las etapas principales de cada tema en una linea simple.",
+    color: "bg-[#8B5CF6] text-white",
   },
   {
     href: "/congreso-civico/alineacion",
-    titulo: "Ver alineacion ciudadana",
-    descripcion: "Lectura read-only de alineacion ciudadana-territorial y divergencias documentadas.",
+    titulo: "Alineacion ciudadana",
+    descripcion: "Compara prioridades ciudadanas con decisiones y propuestas publicas.",
+    color: "bg-[#16A34A] text-white",
   },
 ] as const;
 
 export default function CongresoCivicoPage() {
   return (
-    <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
+    <main className="min-h-screen bg-[#FFF8F0] text-[#0A4E84]">
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <Link href="/" className="mb-5 inline-block text-sm font-semibold">
+        <Link href="/" className="mb-5 inline-block text-sm font-semibold text-[#E4007C]">
           {"<-"} Volver al inicio
         </Link>
 
-        <section className="mb-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-          <div>
-            <div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-              Modulo civico legislativo
-            </div>
-            <h1 className="max-w-3xl text-4xl font-bold leading-tight md:text-5xl">
-              {propositoCongresoCivico.titulo}
-            </h1>
-            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-700">
-              {propositoCongresoCivico.descripcion}
-            </p>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-              {propositoCongresoCivico.alcance}
-            </p>
+        <section className="mb-8 rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-[#F7C9DD]">
+          <div className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">
+            Modulo 03
           </div>
-
-          <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="mb-3 text-sm font-bold text-[#C2187A]">
-              Lenguaje institucional seguro
-            </div>
-            <div className="grid gap-2">
-              {lenguajeSeguroCongresoCivico.map((termino) => (
-                <div
-                  key={termino}
-                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700"
-                >
-                  {termino}
-                </div>
-              ))}
-            </div>
-          </div>
+          <h1 className="max-w-3xl text-4xl font-bold leading-tight md:text-5xl">
+            Congreso Civico
+          </h1>
+          <p className="mt-4 max-w-3xl text-base leading-7 text-slate-700">
+            {propositoCongresoCivico.titulo} ayuda a seguir iniciativas, representantes,
+            alertas y alineacion ciudadana en un solo lugar.
+          </p>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+            La idea es simple: saber que se propone, quien participa, como avanza y que temas
+            necesitan mas explicacion publica.
+          </p>
         </section>
 
         <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -101,10 +88,10 @@ export default function CongresoCivicoPage() {
             <Link
               key={acceso.href}
               href={acceso.href}
-              className="rounded-[24px] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className={`${acceso.color} rounded-[24px] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
             >
-              <div className="text-sm font-bold text-[#C2187A]">{acceso.titulo}</div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{acceso.descripcion}</p>
+              <div className="text-lg font-bold">{acceso.titulo}</div>
+              <p className="mt-3 text-sm leading-6 opacity-95">{acceso.descripcion}</p>
             </Link>
           ))}
         </section>
@@ -112,25 +99,27 @@ export default function CongresoCivicoPage() {
         <section className="mb-8">
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-                Iniciativas mock
+              <div className="text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">
+                Iniciativas
               </div>
-              <h2 className="mt-1 text-2xl font-bold">Seguimiento legislativo inicial</h2>
+              <h2 className="mt-1 text-2xl font-bold">Que se esta revisando</h2>
             </div>
-            <div className="text-sm font-semibold text-slate-500">Solo lectura</div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            {iniciativasCongresoCivico.map((iniciativa) => (
+            {iniciativasCongresoCivico.map((iniciativa, index) => (
               <article key={iniciativa.id} className="rounded-[24px] bg-white p-5 shadow-sm">
-                <div className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-[#C2187A]">
+                <div className="mb-3 inline-flex rounded-full bg-[#F2C300] px-3 py-1 text-xs font-bold text-[#1F2937]">
                   {estadoLabel[iniciativa.estado]}
                 </div>
                 <h3 className="text-xl font-bold text-[#0A4E84]">{iniciativa.titulo}</h3>
-                <p className="mt-2 text-sm font-semibold text-slate-500">{iniciativa.tema}</p>
-                <p className="mt-3 text-sm leading-6 text-slate-700">{iniciativa.descripcion}</p>
-                <p className="mt-4 rounded-2xl bg-blue-50 p-3 text-sm leading-6 text-blue-900">
-                  {iniciativa.riesgoInstitucional}
+                <p className="mt-2 text-sm font-semibold text-[#E4007C]">{iniciativa.tema}</p>
+                <p className="mt-3 text-sm leading-6 text-slate-700">
+                  {index === 0
+                    ? "Busca que las votaciones sean faciles de consultar y explicar."
+                    : index === 1
+                      ? "Da seguimiento a recursos y necesidades del territorio."
+                      : "Ordena compromisos para que la ciudadania pueda revisarlos."}
                 </p>
               </article>
             ))}
@@ -139,58 +128,57 @@ export default function CongresoCivicoPage() {
 
         <section className="mb-8 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
           <div>
-            <div className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-              Representantes mock
+            <div className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">
+              Representantes
             </div>
             <div className="space-y-4">
               {representantesCongresoCivico.map((representante) => (
                 <article key={representante.id} className="rounded-[24px] bg-white p-5 shadow-sm">
-                  <div className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                  <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#0EA5E9]">
                     {representante.territorio}
                   </div>
                   <h3 className="mt-2 text-xl font-bold">{representante.nombre}</h3>
-                  <p className="mt-1 text-sm font-semibold text-[#C2187A]">{representante.rol}</p>
+                  <p className="mt-1 text-sm font-semibold text-[#E4007C]">{representante.rol}</p>
                   <p className="mt-3 text-sm font-bold text-slate-700">
-                    {alineacionLabel[representante.alineacionTerritorial]}
+                    Calificacion ciudadana: {representante.indiceAlineacionCiudadana}/100
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{representante.observacion}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Alineacion territorial: {alineacionLabel[representante.alineacionTerritorial]}
+                  </p>
                 </article>
               ))}
             </div>
           </div>
 
           <div>
-            <div className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-              Alertas civicas mock
+            <div className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">
+              Alertas civicas
             </div>
             <div className="space-y-4">
               {alertasCongresoCivico.map((alerta) => (
                 <article key={alerta.id} className="rounded-[24px] bg-white p-5 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-lg font-bold">{alerta.tipo}</h3>
-                    <span className="rounded-full bg-[#F2C300] px-3 py-1 text-xs font-bold text-[#1F2937]">
+                    <span className="rounded-full bg-[#FF6B6B] px-3 py-1 text-xs font-bold text-white">
                       {severidadLabel[alerta.severidad]}
                     </span>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-slate-700">{alerta.descripcion}</p>
-                  <p className="mt-3 rounded-2xl border border-slate-200 p-3 text-sm leading-6 text-slate-600">
-                    {alerta.criterioSeguro}
-                  </p>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="rounded-[28px] bg-white p-6 shadow-sm">
-          <div className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-            Timeline basico
+        <section className="rounded-[28px] bg-[#0A4E84] p-6 text-white shadow-sm">
+          <div className="mb-4 text-sm font-bold uppercase tracking-[0.16em] text-[#F2C300]">
+            Como avanza
           </div>
           <div className="grid gap-4 md:grid-cols-4">
             {timelineCongresoCivico.map((item) => (
-              <div key={item.id} className="rounded-2xl border border-slate-200 p-4">
-                <h3 className="font-bold text-[#0A4E84]">{item.fase}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{item.descripcion}</p>
+              <div key={item.id} className="rounded-2xl bg-white/10 p-4">
+                <h3 className="font-bold">{item.fase}</h3>
+                <p className="mt-2 text-sm leading-6 text-white/85">{item.descripcion}</p>
               </div>
             ))}
           </div>
