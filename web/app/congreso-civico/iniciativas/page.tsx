@@ -124,6 +124,13 @@ export default function CongresoCivicoIniciativasPage() {
                     )}
                   </div>
                 </div>
+
+                <Link
+                  href={`/congreso-civico/iniciativas/${iniciativa.id}`}
+                  className="mt-5 inline-block rounded-2xl bg-[#0A4E84] px-5 py-3 text-sm font-bold text-white"
+                >
+                  Ver detalle de iniciativa
+                </Link>
               </article>
             );
           })}
