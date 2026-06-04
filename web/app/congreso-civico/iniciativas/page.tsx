@@ -5,9 +5,9 @@ import {
 } from "../../lib/congresoCivico";
 
 const estadoLabel = {
-  observacion: "Observacion",
-  analisis: "Analisis legislativo",
-  dictamen: "Dictamen civico",
+  observacion: "En observacion",
+  analisis: "En analisis",
+  dictamen: "Con dictamen civico",
 };
 
 const prioridadLabel = {
@@ -16,11 +16,17 @@ const prioridadLabel = {
   alta: "Prioridad alta",
 };
 
-const severidadLabel = {
-  informativa: "Informativa",
-  media: "Media",
-  alta: "Alta",
-};
+const propuestaPor = {
+  "ini-001": "Mesa ciudadana de rendicion de cuentas",
+  "ini-002": "Comunidad territorial de presupuesto publico",
+  "ini-003": "Equipo civico de memoria legislativa",
+} as const;
+
+const resumenSimple = {
+  "ini-001": "Que cada voto importante pueda consultarse y explicarse de forma clara.",
+  "ini-002": "Dar seguimiento a recursos publicos y necesidades reales del territorio.",
+  "ini-003": "Guardar compromisos y avances para que no se pierdan en el tiempo.",
+} as const;
 
 function obtenerAlertasRelacionadas(alertaIds: string[]) {
   return alertasCongresoCivico.filter((alerta) => alertaIds.includes(alerta.id));
@@ -28,23 +34,21 @@ function obtenerAlertasRelacionadas(alertaIds: string[]) {
 
 export default function CongresoCivicoIniciativasPage() {
   return (
-    <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
+    <main className="min-h-screen bg-[#FFF8F0] text-[#0A4E84]">
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <Link href="/congreso-civico" className="mb-5 inline-block text-sm font-semibold">
-          ← Volver a Congreso Civico
+        <Link href="/congreso-civico" className="mb-5 inline-block text-sm font-semibold text-[#E4007C]">
+          {"<-"} Volver a Congreso Civico
         </Link>
 
         <section className="mb-8 max-w-3xl">
-          <div className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-            Iniciativas legislativas mock
+          <div className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">
+            Iniciativas
           </div>
           <h1 className="text-4xl font-bold leading-tight md:text-5xl">
-            Seguimiento civico de iniciativas
+            Que se propone y como va
           </h1>
-          <p className="mt-4 text-sm leading-6 text-slate-600">
-            Vista read-only para observar materia, estado legislativo, prioridad,
-            alineacion ciudadana y alertas relacionadas. El lenguaje es institucional,
-            no acusatorio y no produce efectos juridicos vinculantes.
+          <p className="mt-4 text-base leading-7 text-slate-700">
+            Consulta que se propone, quien participa, que tan importante es y si tiene alertas civicas.
           </p>
         </section>
 
@@ -53,84 +57,69 @@ export default function CongresoCivicoIniciativasPage() {
             const alertas = obtenerAlertasRelacionadas(iniciativa.alertasRelacionadas);
 
             return (
-              <article key={iniciativa.id} className="rounded-[28px] bg-white p-5 shadow-sm">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="max-w-3xl">
-                    <div className="flex flex-wrap gap-2">
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-900">
-                        {estadoLabel[iniciativa.estado]}
-                      </span>
-                      <span className="rounded-full bg-[#F2C300] px-3 py-1 text-xs font-bold text-[#1F2937]">
-                        {prioridadLabel[iniciativa.prioridad]}
-                      </span>
-                    </div>
-
-                    <h2 className="mt-4 text-2xl font-bold text-[#0A4E84]">
-                      {iniciativa.titulo}
-                    </h2>
-                    <p className="mt-2 text-sm font-semibold text-[#C2187A]">
-                      Tema / materia: {iniciativa.tema}
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-slate-700">
-                      {iniciativa.descripcion}
-                    </p>
+              <article key={iniciativa.id} className="overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-[#F7C9DD]">
+                <div className="h-2 bg-gradient-to-r from-[#E4007C] via-[#F97316] to-[#F2C300]" />
+                <div className="p-5">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-full bg-[#0EA5E9] px-3 py-1 text-xs font-bold text-white">
+                      Iniciativa
+                    </span>
+                    <span className="rounded-full bg-[#F2C300] px-3 py-1 text-xs font-bold text-[#1F2937]">
+                      {estadoLabel[iniciativa.estado]}
+                    </span>
+                    <span className="rounded-full bg-[#16A34A] px-3 py-1 text-xs font-bold text-white">
+                      {prioridadLabel[iniciativa.prioridad]}
+                    </span>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 lg:min-w-56">
-                    <div className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                      Indice de alineacion ciudadana
+                  <div className="mt-5 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+                    <div>
+                      <p className="text-sm font-bold text-[#E4007C]">
+                        Quien la propuso: {propuestaPor[iniciativa.id as keyof typeof propuestaPor]}
+                      </p>
+                      <h2 className="mt-2 text-2xl font-bold text-[#0A4E84]">{iniciativa.titulo}</h2>
+                      <p className="mt-2 text-sm font-semibold text-[#8B5CF6]">{iniciativa.tema}</p>
+                      <p className="mt-4 text-base leading-7 text-slate-700">
+                        {resumenSimple[iniciativa.id as keyof typeof resumenSimple]}
+                      </p>
                     </div>
-                    <div className="mt-2 text-3xl font-bold text-[#0A4E84]">
-                      {iniciativa.indiceAlineacionCiudadana ?? "Sin dato"}
-                      {typeof iniciativa.indiceAlineacionCiudadana === "number" ? "/100" : ""}
+
+                    <div className="rounded-2xl bg-[#E0F2FE] p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#0A4E84]">
+                        Alineacion ciudadana
+                      </div>
+                      <div className="mt-2 text-4xl font-bold text-[#0A4E84]">
+                        {iniciativa.indiceAlineacionCiudadana ?? "Sin dato"}
+                        {typeof iniciativa.indiceAlineacionCiudadana === "number" ? "/100" : ""}
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-slate-700">
+                        Ayuda a comparar la propuesta con prioridades ciudadanas.
+                      </p>
                     </div>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">
-                      Indicador mock de contraste entre agenda, territorio y evidencia disponible.
-                    </p>
                   </div>
-                </div>
 
-                <div className="mt-5 rounded-2xl bg-blue-50 p-4 text-sm leading-6 text-blue-900">
-                  {iniciativa.riesgoInstitucional}
-                </div>
-
-                <div className="mt-5">
-                  <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-500">
-                    Alertas relacionadas
-                  </h3>
-
-                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <div className="mt-5 grid gap-3 md:grid-cols-2">
                     {alertas.length > 0 ? (
                       alertas.map((alerta) => (
-                        <div key={alerta.id} className="rounded-2xl border border-slate-200 p-4">
-                          <div className="flex items-center justify-between gap-3">
-                            <h4 className="font-bold text-[#0A4E84]">{alerta.tipo}</h4>
-                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-                              {severidadLabel[alerta.severidad]}
-                            </span>
-                          </div>
-                          <p className="mt-2 text-sm leading-6 text-slate-600">
-                            {alerta.descripcion}
-                          </p>
-                          <p className="mt-2 text-xs leading-5 text-slate-500">
-                            {alerta.criterioSeguro}
-                          </p>
+                        <div key={alerta.id} className="rounded-2xl border border-[#F7C9DD] p-4">
+                          <div className="font-bold text-[#E4007C]">{alerta.tipo}</div>
+                          <p className="mt-2 text-sm leading-6 text-slate-600">{alerta.descripcion}</p>
                         </div>
                       ))
                     ) : (
-                      <div className="rounded-2xl border border-slate-200 p-4 text-sm text-slate-600">
-                        Sin alertas relacionadas en el mock actual.
+                      <div className="rounded-2xl border border-[#F7C9DD] p-4 text-sm text-slate-600">
+                        Sin alertas civicas por ahora.
                       </div>
                     )}
                   </div>
-                </div>
 
-                <Link
-                  href={`/congreso-civico/iniciativas/${iniciativa.id}`}
-                  className="mt-5 inline-block rounded-2xl bg-[#0A4E84] px-5 py-3 text-sm font-bold text-white"
-                >
-                  Ver detalle de iniciativa
-                </Link>
+                  <Link
+                    href={`/congreso-civico/iniciativas/${iniciativa.id}`}
+                    className="mt-5 inline-block rounded-2xl bg-[#E4007C] px-5 py-3 text-sm font-bold text-white shadow-sm"
+                  >
+                    Ver iniciativa
+                  </Link>
+                </div>
               </article>
             );
           })}
