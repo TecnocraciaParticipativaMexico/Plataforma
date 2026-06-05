@@ -17,13 +17,13 @@ const tipoRepresentacionConfig: Record<
     text: "text-[#E4007C]",
   },
   "representacion-proporcional": {
-    label: "Representacion proporcional",
+    label: "Representación proporcional",
     dot: "bg-[#0EA5E9]",
     badge: "bg-[#E0F2FE] text-[#0369A1]",
     text: "text-[#0EA5E9]",
   },
   "disputa-ciudadana": {
-    label: "Representacion en disputa ciudadana",
+    label: "Representación en disputa ciudadana",
     dot: "bg-[#F97316]",
     badge: "bg-[#FFEDD5] text-[#C2410C]",
     text: "text-[#F97316]",
@@ -98,16 +98,16 @@ export default function CongresoCivicoDiputadosPage() {
     <main className="min-h-screen bg-[#F8FAFC] text-[#0A4E84]">
       <div className="mx-auto max-w-7xl px-4 py-6 md:py-8">
         <Link href="/congreso-civico/representacion" className="mb-5 inline-block text-sm font-semibold text-[#E4007C]">
-          {"<-"} Volver al Mapa de Representacion
+          {"<-"} Volver al Mapa de Representación
         </Link>
 
         <section className="mb-5 overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-[#F7C9DD]">
           <div className="h-3 bg-[#E4007C]" />
           <div className="grid gap-5 p-5 md:grid-cols-[1.15fr_0.85fr] md:p-7 md:items-end">
             <div>
-              <div className="text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">Mapa de Representacion</div>
-              <h1 className="mt-2 text-4xl font-black leading-tight text-[#111827] md:text-6xl">Camara de Diputados</h1>
-              <p className="mt-3 max-w-xl text-base leading-7 text-slate-700">Consulta las curules y quien ocupa cada espacio.</p>
+              <div className="text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">Mapa de Representación</div>
+              <h1 className="mt-2 text-4xl font-black leading-tight text-[#111827] md:text-6xl">Cámara de Diputados</h1>
+              <p className="mt-3 max-w-xl text-base leading-7 text-slate-700">Consulta las curules y quién ocupa cada espacio.</p>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
@@ -181,7 +181,7 @@ export default function CongresoCivicoDiputadosPage() {
                     </div>
                     <div>
                       <h2 className="text-2xl font-black text-[#111827]">{representanteInicial.nombre}</h2>
-                      <p className="mt-1 text-sm font-bold text-[#0A4E84]">Diputacion Federal</p>
+                      <p className="mt-1 text-sm font-bold text-[#0A4E84]">Diputación Federal</p>
                       <p className="mt-1 text-sm text-slate-600">
                         {[representanteInicial.territorio.estado, representanteInicial.territorio.distrito].filter(Boolean).join(" - ")}
                       </p>
@@ -192,7 +192,7 @@ export default function CongresoCivicoDiputadosPage() {
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   <div className="rounded-2xl bg-[#FFF1A8] p-4">
-                    <div className="text-xs font-bold text-slate-600">Calificacion ciudadana</div>
+                    <div className="text-xs font-bold text-slate-600">Calificación ciudadana</div>
                     <div className="mt-1 text-3xl font-black text-[#0A4E84]">{representanteInicial.calificacionCiudadana}/100</div>
                   </div>
                   <div className="rounded-2xl bg-[#DCFCE7] p-4">
@@ -208,11 +208,11 @@ export default function CongresoCivicoDiputadosPage() {
                     <div className="mt-1 text-3xl font-black text-[#0EA5E9]">{representanteInicial.propuestasCiudadanasRecibidas.length}</div>
                   </div>
                   <div className="rounded-2xl bg-[#FFEDD5] p-4">
-                    <div className="text-xs font-bold text-slate-600">Alertas civicas</div>
+                    <div className="text-xs font-bold text-slate-600">Alertas cívicas</div>
                     <div className="mt-1 text-3xl font-black text-[#F97316]">{alertasIniciales.length}</div>
                   </div>
                   <div className="rounded-2xl bg-[#F8FAFC] p-4">
-                    <div className="text-xs font-bold text-slate-600">Alineacion territorial</div>
+                    <div className="text-xs font-bold text-slate-600">Alineación territorial</div>
                     <div className="mt-1 text-lg font-black text-[#0A4E84]">{alineacionLabel[representanteInicial.alineacionTerritorial]}</div>
                   </div>
                 </div>
@@ -221,7 +221,7 @@ export default function CongresoCivicoDiputadosPage() {
                   <div className="rounded-2xl border border-[#E5E7EB] p-4">
                     <div className="text-xs font-bold text-slate-500">Perfil completado por</div>
                     <div className="mt-1 text-sm font-black text-[#111827]">
-                      {representanteInicial.perfilCompletadoPor === "representante" ? "Representante" : "Comite ciudadano"}
+                      {representanteInicial.perfilCompletadoPor === "representante" ? "Representante" : "Comité ciudadano"}
                     </div>
                   </div>
                   <div className="rounded-2xl border border-[#E5E7EB] p-4">
@@ -236,14 +236,14 @@ export default function CongresoCivicoDiputadosPage() {
           </article>
         </section>
 
-        <section className="grid gap-5 lg:grid-cols-[1fr_0.85fr]">
-          <article className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-[#E5E7EB]">
-            <h2 className="text-lg font-black text-[#111827]">Leyenda de colores</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <section className="grid gap-4 lg:grid-cols-[1fr_0.85fr]">
+          <article className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-[#E5E7EB]">
+            <h2 className="text-xs font-black uppercase tracking-[0.12em] text-[#E4007C]">Leyenda de colores</h2>
+            <div className="mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
               {Object.entries(tipoRepresentacionConfig).map(([id, config]) => (
-                <div key={id} className="flex items-center gap-3 rounded-2xl bg-[#F8FAFC] p-3">
-                  <span className={`${config.dot} h-4 w-4 shrink-0 rounded-full`} />
-                  <span className="text-xs font-bold text-slate-700">{config.label}</span>
+                <div key={id} className="flex items-center gap-2 rounded-xl bg-[#F8FAFC] px-2 py-1.5">
+                  <span className={`${config.dot} h-2.5 w-2.5 shrink-0 rounded-full`} />
+                  <span className="text-[11px] font-bold leading-4 text-slate-700">{config.label}</span>
                 </div>
               ))}
             </div>
