@@ -229,6 +229,13 @@ export default function CongresoCivicoSenadoPage() {
                     <div className="mt-1 text-sm font-black text-[#111827]">Escaño {escanoInicial?.numeroVisual}</div>
                   </div>
                 </div>
+
+                <Link
+                  href="/congreso-civico/representacion/representantes/senadora-metropolitana-norte"
+                  className="mt-4 inline-flex rounded-full bg-[#E4007C] px-4 py-2 text-sm font-black text-white shadow-sm transition hover:bg-[#C9006B]"
+                >
+                  Ver perfil completo -&gt;
+                </Link>
               </div>
             ) : (
               <div className="p-5 text-sm font-semibold text-slate-600">No hay representante cargado para la vista inicial.</div>
