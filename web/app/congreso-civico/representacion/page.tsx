@@ -34,6 +34,7 @@ const accesosRepresentacion = [
     descripcion: "Explora los estados disponibles.",
     etiqueta: `${estadosRepresentacionCongresoCivico.length} estados`,
     clase: "bg-[#16A34A] text-white",
+    href: "/congreso-civico/representacion/estados/jalisco",
   },
 ] as const;
 
