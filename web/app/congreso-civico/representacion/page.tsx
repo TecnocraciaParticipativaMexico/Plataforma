@@ -35,6 +35,13 @@ const accesosRepresentacion = [
     etiqueta: `${estadosRepresentacionCongresoCivico.length} estados`,
     clase: "bg-[#16A34A] text-white",
   },
+  {
+    titulo: "Registrar perfil de prueba",
+    descripcion: "Genera una vista demo para entender el perfil ciudadano.",
+    etiqueta: "Demo local",
+    clase: "bg-[#8B5CF6] text-white",
+    href: "/congreso-civico/representacion/registro",
+  },
 ] as const;
 
 const resumenRepresentacion = [
@@ -83,7 +90,7 @@ export default function CongresoCivicoRepresentacionPage() {
           </div>
         </section>
 
-        <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {accesosRepresentacion.map((acceso) => {
             const cardContent = (
               <>
