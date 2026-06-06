@@ -9,16 +9,17 @@ type TipoRepresentacion =
   | "Representante ciudadano por voto popular"
   | "Legislador en funciones";
 
-type SeveridadAlerta = "Baja" | "Media" | "Alta";
-type CategoriaAlerta = "Asistencia" | "Votación" | "Respuesta ciudadana" | "Transparencia" | "Alineación territorial";
-type EstadoAlerta = "En observación" | "Requiere seguimiento" | "Atendida" | "En revisión";
+type Nivel = "Alta" | "Media" | "Baja";
 type EstadoIniciativa = "En discusión" | "En análisis" | "En votación" | "Aprobada" | "Archivada";
 type TipoIniciativa = "apoyada" | "presentada" | "seguimiento";
 type VotoEmitido = "A favor" | "En contra" | "Abstención";
 type EstadoRespuesta = "Recibida" | "En revisión" | "Respondida" | "Canalizada" | "Sin respuesta registrada";
-type PrioridadCiudadana = "Baja" | "Media" | "Alta";
+type CategoriaAlerta = "Asistencia" | "Votación" | "Respuesta ciudadana" | "Transparencia" | "Alineación territorial";
+type EstadoAlerta = "En observación" | "Requiere seguimiento" | "Atendida" | "En revisión";
+type CategoriaPrioridad = "Agua" | "Seguridad" | "Salud" | "Educación" | "Movilidad" | "Presupuesto público" | "Medio ambiente";
+type EstadoSeguimiento = "Atendida" | "En seguimiento" | "Pendiente de respuesta" | "En análisis";
 
-type IniciativaLegislativa = {
+type Iniciativa = {
   titulo: string;
   categoria: string;
   estado: EstadoIniciativa;
@@ -27,11 +28,11 @@ type IniciativaLegislativa = {
   tipo: TipoIniciativa;
 };
 
-type VotacionReciente = {
+type Votacion = {
   tema: string;
   fecha: string;
   votoEmitido: VotoEmitido;
-  participacionCiudadanaRelacionada: string;
+  participacionCiudadanaRelacionada: Nivel;
 };
 
 type PropuestaCiudadana = {
@@ -40,25 +41,27 @@ type PropuestaCiudadana = {
   fechaRecepcion: string;
   firmasCiudadanas: number;
   estadoRespuesta: EstadoRespuesta;
-  prioridadCiudadana: PrioridadCiudadana;
+  prioridadCiudadana: Nivel;
   resumen: string;
 };
 
 type AlertaCivica = {
   titulo: string;
   categoria: CategoriaAlerta;
-  severidad: SeveridadAlerta;
+  severidad: Nivel;
   fecha: string;
   estado: EstadoAlerta;
   resumenCiudadano: string;
   accionSugerida: string;
 };
 
-type IndicadoresParticipacion = {
-  asistencia: number;
-  alineacionTerritorial: number;
-  participacionCiudadana: number;
-  transparenciaLegislativa: number;
+type PrioridadTerritorial = {
+  tema: string;
+  categoria: CategoriaPrioridad;
+  prioridadCiudadana: Nivel;
+  actividadRelacionada: string;
+  estadoSeguimiento: EstadoSeguimiento;
+  alineacion: Nivel;
 };
 
 type RepresentanteMock = {
@@ -79,34 +82,34 @@ type RepresentanteMock = {
   abstenciones: number;
   alineacionTerritorial: number;
   actividadEnPlataforma: string;
-  iniciativas: IniciativaLegislativa[];
-  votaciones: VotacionReciente[];
+  iniciativas: Iniciativa[];
+  votaciones: Votacion[];
   propuestasCiudadanas: PropuestaCiudadana[];
   alertas: AlertaCivica[];
-  indicadoresParticipacion: IndicadoresParticipacion;
+  prioridadesTerritoriales: PrioridadTerritorial[];
+  comparativoCiudadano: Array<{ titulo: string; descripcion: string; color: string }>;
+  indicadoresParticipacion: {
+    asistencia: number;
+    alineacionTerritorial: number;
+    participacionCiudadana: number;
+    transparenciaLegislativa: number;
+  };
   timeline: Array<{ evento: string; fecha: string; descripcion: string }>;
 };
 
-const tipoConfig: Record<TipoRepresentacion, { badge: string }> = {
-  "Elegido por voto directo": { badge: "bg-[#FCE7F3] text-[#BE185D]" },
-  "Representación proporcional": { badge: "bg-[#E0F2FE] text-[#0369A1]" },
-  "Representación en disputa ciudadana": { badge: "bg-[#FFEDD5] text-[#C2410C]" },
-  "Curul socialmente impugnada": { badge: "bg-[#FEF3C7] text-[#92400E]" },
-  "Representante ciudadano por voto popular": { badge: "bg-[#EDE9FE] text-[#6D28D9]" },
-  "Legislador en funciones": { badge: "bg-[#DCFCE7] text-[#15803D]" },
+const tipoConfig: Record<TipoRepresentacion, string> = {
+  "Elegido por voto directo": "bg-[#FCE7F3] text-[#BE185D]",
+  "Representación proporcional": "bg-[#E0F2FE] text-[#0369A1]",
+  "Representación en disputa ciudadana": "bg-[#FFEDD5] text-[#C2410C]",
+  "Curul socialmente impugnada": "bg-[#FEF3C7] text-[#92400E]",
+  "Representante ciudadano por voto popular": "bg-[#EDE9FE] text-[#6D28D9]",
+  "Legislador en funciones": "bg-[#DCFCE7] text-[#15803D]",
 };
 
-const alertaConfig: Record<SeveridadAlerta, string> = {
-  Baja: "bg-[#E0F2FE] text-[#0369A1]",
-  Media: "bg-[#FEF3C7] text-[#92400E]",
-  Alta: "bg-[#FFEDD5] text-[#C2410C]",
-};
-
-const estadoAlertaConfig: Record<EstadoAlerta, string> = {
-  "En observación": "bg-[#E0F2FE] text-[#0369A1]",
-  "Requiere seguimiento": "bg-[#FEF3C7] text-[#92400E]",
-  Atendida: "bg-[#DCFCE7] text-[#15803D]",
-  "En revisión": "bg-[#EDE9FE] text-[#6D28D9]",
+const nivelConfig: Record<Nivel, { badge: string; bar: string; text: string }> = {
+  Alta: { badge: "bg-[#DCFCE7] text-[#15803D]", bar: "bg-[#16A34A]", text: "text-[#15803D]" },
+  Media: { badge: "bg-[#FEF3C7] text-[#92400E]", bar: "bg-[#F97316]", text: "text-[#C2410C]" },
+  Baja: { badge: "bg-[#FCE7F3] text-[#BE185D]", bar: "bg-[#E4007C]", text: "text-[#BE185D]" },
 };
 
 const estadoIniciativaConfig: Record<EstadoIniciativa, string> = {
@@ -125,10 +128,18 @@ const respuestaConfig: Record<EstadoRespuesta, string> = {
   "Sin respuesta registrada": "bg-[#FCE7F3] text-[#BE185D]",
 };
 
-const prioridadConfig: Record<PrioridadCiudadana, string> = {
-  Baja: "bg-[#DCFCE7] text-[#15803D]",
-  Media: "bg-[#FEF3C7] text-[#92400E]",
-  Alta: "bg-[#FFEDD5] text-[#C2410C]",
+const estadoAlertaConfig: Record<EstadoAlerta, string> = {
+  "En observación": "bg-[#E0F2FE] text-[#0369A1]",
+  "Requiere seguimiento": "bg-[#FEF3C7] text-[#92400E]",
+  Atendida: "bg-[#DCFCE7] text-[#15803D]",
+  "En revisión": "bg-[#EDE9FE] text-[#6D28D9]",
+};
+
+const estadoSeguimientoConfig: Record<EstadoSeguimiento, string> = {
+  Atendida: "bg-[#DCFCE7] text-[#15803D]",
+  "En seguimiento": "bg-[#E0F2FE] text-[#0369A1]",
+  "Pendiente de respuesta": "bg-[#FCE7F3] text-[#BE185D]",
+  "En análisis": "bg-[#EDE9FE] text-[#6D28D9]",
 };
 
 const tabsVisuales = [
@@ -145,7 +156,7 @@ const tabsVisuales = [
 const filtrosPropuestas = ["Todas", "Recibidas", "En revisión", "Respondidas", "Sin respuesta registrada"] as const;
 const filtrosAlertas = ["Todas", "Asistencia", "Votación", "Respuesta ciudadana", "Transparencia", "Alineación territorial"] as const;
 
-function crearIniciativas(territorio: string): IniciativaLegislativa[] {
+function crearIniciativas(territorio: string): Iniciativa[] {
   return [
     { titulo: `Transparencia de votaciones públicas en ${territorio}`, categoria: "Transparencia legislativa", estado: "En discusión", fecha: "12 mayo 2026", impactoTerritorial: "Mejora seguimiento ciudadano de decisiones públicas.", tipo: "presentada" },
     { titulo: "Presupuesto territorial participativo", categoria: "Presupuesto público", estado: "En análisis", fecha: "28 abril 2026", impactoTerritorial: "Ordena prioridades de inversión local documentadas.", tipo: "apoyada" },
@@ -156,7 +167,7 @@ function crearIniciativas(territorio: string): IniciativaLegislativa[] {
   ];
 }
 
-function crearVotaciones(): VotacionReciente[] {
+function crearVotaciones(): Votacion[] {
   return [
     { tema: "Transparencia pública", votoEmitido: "A favor", fecha: "12 mayo 2026", participacionCiudadanaRelacionada: "Alta" },
     { tema: "Movilidad segura", votoEmitido: "A favor", fecha: "04 mayo 2026", participacionCiudadanaRelacionada: "Media" },
@@ -194,6 +205,27 @@ function crearAlertasCivicas(territorio: string): AlertaCivica[] {
   ];
 }
 
+// TODO: reemplazar alineación mock por cálculo real usando propuestas, votaciones, respuestas ciudadanas y datos territoriales.
+function crearPrioridadesTerritoriales(territorio: string): PrioridadTerritorial[] {
+  return [
+    { tema: `Abasto de agua en zonas prioritarias de ${territorio}`, categoria: "Agua", prioridadCiudadana: "Alta", actividadRelacionada: "Seguimiento a propuesta de presupuesto para agua comunitaria.", estadoSeguimiento: "En seguimiento", alineacion: "Media" },
+    { tema: "Entornos seguros y prevención comunitaria", categoria: "Seguridad", prioridadCiudadana: "Alta", actividadRelacionada: "Revisión de reportes ciudadanos y solicitudes de coordinación local.", estadoSeguimiento: "En análisis", alineacion: "Media" },
+    { tema: "Atención preventiva y acceso básico a salud", categoria: "Salud", prioridadCiudadana: "Media", actividadRelacionada: "Solicitud de diagnóstico territorial sobre servicios disponibles.", estadoSeguimiento: "Pendiente de respuesta", alineacion: "Baja" },
+    { tema: "Escuelas con cruces seguros y mejor conectividad", categoria: "Educación", prioridadCiudadana: "Media", actividadRelacionada: "Iniciativa de cruces seguros cerca de escuelas.", estadoSeguimiento: "Atendida", alineacion: "Alta" },
+    { tema: "Movilidad peatonal y transporte accesible", categoria: "Movilidad", prioridadCiudadana: "Alta", actividadRelacionada: "Votaciones vinculadas a movilidad segura y reportes ciudadanos.", estadoSeguimiento: "En seguimiento", alineacion: "Alta" },
+    { tema: "Claridad del gasto público territorial", categoria: "Presupuesto público", prioridadCiudadana: "Alta", actividadRelacionada: "Reporte abierto de sesiones, votaciones y gasto territorial.", estadoSeguimiento: "En seguimiento", alineacion: "Media" },
+    { tema: "Monitoreo ambiental de zonas comunitarias", categoria: "Medio ambiente", prioridadCiudadana: "Baja", actividadRelacionada: "Seguimiento documental de reportes ambientales locales.", estadoSeguimiento: "En análisis", alineacion: "Media" },
+  ];
+}
+
+function crearComparativoCiudadano(territorio: string) {
+  return [
+    { titulo: "Lo que más pide el territorio", descripcion: `En ${territorio} destacan movilidad segura, agua comunitaria y claridad en el uso de recursos públicos.`, color: "bg-[#E0F2FE] text-[#0369A1]" },
+    { titulo: "Lo que más atiende el representante", descripcion: "La actividad registrada se concentra en movilidad, transparencia legislativa y seguimiento de propuestas ciudadanas.", color: "bg-[#DCFCE7] text-[#15803D]" },
+    { titulo: "Brechas de seguimiento", descripcion: "Salud preventiva, agua comunitaria y presupuesto público mantienen puntos abiertos para revisión documental.", color: "bg-[#FCE7F3] text-[#BE185D]" },
+  ];
+}
+
 const REPRESENTANTES_MOCK: RepresentanteMock[] = [
   {
     id: "maria-teresa-lopez-garcia",
@@ -217,6 +249,8 @@ const REPRESENTANTES_MOCK: RepresentanteMock[] = [
     votaciones: crearVotaciones(),
     propuestasCiudadanas: crearPropuestasCiudadanas("Jalisco"),
     alertas: crearAlertasCivicas("Jalisco"),
+    prioridadesTerritoriales: crearPrioridadesTerritoriales("Jalisco"),
+    comparativoCiudadano: crearComparativoCiudadano("Jalisco"),
     indicadoresParticipacion: { asistencia: 94, alineacionTerritorial: 78, participacionCiudadana: 82, transparenciaLegislativa: 88 },
     timeline: [
       { evento: "Perfil creado", fecha: "02 abril 2026", descripcion: "Se abrió ficha pública de seguimiento ciudadano." },
@@ -247,6 +281,8 @@ const REPRESENTANTES_MOCK: RepresentanteMock[] = [
     votaciones: crearVotaciones(),
     propuestasCiudadanas: crearPropuestasCiudadanas("Nuevo León"),
     alertas: crearAlertasCivicas("Nuevo León"),
+    prioridadesTerritoriales: crearPrioridadesTerritoriales("Nuevo León"),
+    comparativoCiudadano: crearComparativoCiudadano("Nuevo León"),
     indicadoresParticipacion: { asistencia: 95, alineacionTerritorial: 84, participacionCiudadana: 79, transparenciaLegislativa: 91 },
     timeline: [
       { evento: "Perfil creado", fecha: "11 marzo 2026", descripcion: "Ficha inicial de Senado registrada." },
@@ -277,6 +313,8 @@ const REPRESENTANTES_MOCK: RepresentanteMock[] = [
     votaciones: crearVotaciones(),
     propuestasCiudadanas: crearPropuestasCiudadanas("Jalisco ciudadano"),
     alertas: crearAlertasCivicas("Jalisco ciudadano"),
+    prioridadesTerritoriales: crearPrioridadesTerritoriales("Jalisco ciudadano"),
+    comparativoCiudadano: crearComparativoCiudadano("Jalisco ciudadano"),
     indicadoresParticipacion: { asistencia: 89, alineacionTerritorial: 81, participacionCiudadana: 86, transparenciaLegislativa: 80 },
     timeline: [
       { evento: "Perfil creado", fecha: "18 marzo 2026", descripcion: "Registro ciudadano territorial inicial." },
@@ -295,20 +333,31 @@ export function generateStaticParams() {
   return REPRESENTANTES_MOCK.map((representante) => ({ id: representante.id }));
 }
 
-function contarIniciativas(iniciativas: IniciativaLegislativa[], tipo: TipoIniciativa) {
+function contarIniciativas(iniciativas: Iniciativa[], tipo: TipoIniciativa) {
   return iniciativas.filter((iniciativa) => iniciativa.tipo === tipo).length;
 }
 
-function contarPropuestas(propuestas: PropuestaCiudadana[], estado: EstadoRespuesta) {
-  return propuestas.filter((propuesta) => propuesta.estadoRespuesta === estado).length;
-}
-
-function contarAlertas(alertas: AlertaCivica[], estado: EstadoAlerta) {
-  return alertas.filter((alerta) => alerta.estado === estado).length;
+function contarPorEstado<T extends { estado?: string; estadoRespuesta?: string; estadoSeguimiento?: string }>(items: T[], estado: string) {
+  return items.filter((item) => item.estado === estado || item.estadoRespuesta === estado || item.estadoSeguimiento === estado).length;
 }
 
 function sumarFirmas(propuestas: PropuestaCiudadana[]) {
   return propuestas.reduce((total, propuesta) => total + propuesta.firmasCiudadanas, 0);
+}
+
+function obtenerNivelAlineacion(valor: number): Nivel {
+  if (valor >= 80) return "Alta";
+  if (valor >= 60) return "Media";
+  return "Baja";
+}
+
+function MetricCard({ label, value, color }: { label: string; value: string | number; color: string }) {
+  return (
+    <article className="rounded-[18px] bg-white p-3 shadow-sm ring-1 ring-[#E5E7EB]">
+      <div className={`${color} rounded-2xl px-3 py-2 text-2xl font-black`}>{value}</div>
+      <div className="mt-2 text-[11px] font-bold uppercase leading-4 text-slate-600">{label}</div>
+    </article>
+  );
 }
 
 export default function CongresoCivicoRepresentantePerfilPage({ params }: { params: { id: string } }) {
@@ -318,46 +367,61 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
     notFound();
   }
 
-  const tipo = tipoConfig[representante.tipoRepresentacion];
   const propuestas = representante.propuestasCiudadanas;
   const alertas = representante.alertas;
+  const prioridades = representante.prioridadesTerritoriales;
+  const nivelAlineacion = obtenerNivelAlineacion(representante.alineacionTerritorial);
+  const nivelAlineacionConfig = nivelConfig[nivelAlineacion];
   const nivelRespuestaCiudadana = 68;
   const nivelAtencionAlertas = 72;
+
   const resumenActividad = [
-    { label: "Iniciativas apoyadas", valor: contarIniciativas(representante.iniciativas, "apoyada"), color: "bg-[#DCFCE7] text-[#15803D]" },
-    { label: "Iniciativas presentadas", valor: contarIniciativas(representante.iniciativas, "presentada"), color: "bg-[#E0F2FE] text-[#0369A1]" },
-    { label: "Votos emitidos", valor: representante.votaciones.length, color: "bg-[#EDE9FE] text-[#6D28D9]" },
-    { label: "Propuestas ciudadanas", valor: propuestas.length, color: "bg-[#FFF1A8] text-[#0A4E84]" },
-    { label: "Alertas activas", valor: alertas.filter((alerta) => alerta.estado !== "Atendida").length, color: "bg-[#FFEDD5] text-[#C2410C]" },
+    { label: "Iniciativas apoyadas", value: contarIniciativas(representante.iniciativas, "apoyada"), color: "bg-[#DCFCE7] text-[#15803D]" },
+    { label: "Iniciativas presentadas", value: contarIniciativas(representante.iniciativas, "presentada"), color: "bg-[#E0F2FE] text-[#0369A1]" },
+    { label: "Votos emitidos", value: representante.votaciones.length, color: "bg-[#EDE9FE] text-[#6D28D9]" },
+    { label: "Propuestas ciudadanas", value: propuestas.length, color: "bg-[#FFF1A8] text-[#0A4E84]" },
+    { label: "Alertas activas", value: alertas.filter((alerta) => alerta.estado !== "Atendida").length, color: "bg-[#FFEDD5] text-[#C2410C]" },
   ];
-  const metricas = [
-    { label: "Calificación ciudadana", valor: `${representante.calificacionCiudadana}/100`, color: "bg-[#FFF1A8] text-[#0A4E84]" },
-    { label: "Asistencia", valor: `${representante.asistencia}%`, color: "bg-[#DCFCE7] text-[#15803D]" },
-    { label: "Inasistencias", valor: representante.inasistencias, color: "bg-[#FCE7F3] text-[#BE185D]" },
-    { label: "Retardos", valor: representante.retardos, color: "bg-[#FFEDD5] text-[#C2410C]" },
-    { label: "Votos a favor", valor: representante.votosAFavor, color: "bg-[#E0F2FE] text-[#0369A1]" },
-    { label: "Votos en contra", valor: representante.votosEnContra, color: "bg-[#FEF3C7] text-[#92400E]" },
-    { label: "Abstenciones", valor: representante.abstenciones, color: "bg-slate-100 text-slate-600" },
+
+  const metricasBase = [
+    { label: "Calificación ciudadana", value: `${representante.calificacionCiudadana}/100`, color: "bg-[#FFF1A8] text-[#0A4E84]" },
+    { label: "Asistencia", value: `${representante.asistencia}%`, color: "bg-[#DCFCE7] text-[#15803D]" },
+    { label: "Inasistencias", value: representante.inasistencias, color: "bg-[#FCE7F3] text-[#BE185D]" },
+    { label: "Retardos", value: representante.retardos, color: "bg-[#FFEDD5] text-[#C2410C]" },
+    { label: "Votos a favor", value: representante.votosAFavor, color: "bg-[#E0F2FE] text-[#0369A1]" },
+    { label: "Votos en contra", value: representante.votosEnContra, color: "bg-[#FEF3C7] text-[#92400E]" },
+    { label: "Abstenciones", value: representante.abstenciones, color: "bg-slate-100 text-slate-600" },
   ];
+
+  const metricasAlineacion = [
+    { label: "Alineación territorial", value: `${representante.alineacionTerritorial}%`, color: "bg-[#EDE9FE] text-[#6D28D9]" },
+    { label: "Prioridades atendidas", value: contarPorEstado(prioridades, "Atendida"), color: "bg-[#DCFCE7] text-[#15803D]" },
+    { label: "Prioridades en seguimiento", value: contarPorEstado(prioridades, "En seguimiento"), color: "bg-[#E0F2FE] text-[#0369A1]" },
+    { label: "Participación territorial", value: `${representante.indicadoresParticipacion.participacionCiudadana}%`, color: "bg-[#FFF1A8] text-[#0A4E84]" },
+    { label: "Última actualización", value: representante.timeline[1]?.fecha ?? "Sin fecha", color: "bg-[#FCE7F3] text-[#BE185D]" },
+  ];
+
   const metricasPropuestas = [
-    { label: "Propuestas recibidas", valor: propuestas.length, color: "bg-[#E0F2FE] text-[#0369A1]" },
-    { label: "Firmas acumuladas", valor: sumarFirmas(propuestas).toLocaleString("es-MX"), color: "bg-[#FFF1A8] text-[#0A4E84]" },
-    { label: "Respuestas emitidas", valor: contarPropuestas(propuestas, "Respondida"), color: "bg-[#DCFCE7] text-[#15803D]" },
-    { label: "En revisión", valor: contarPropuestas(propuestas, "En revisión"), color: "bg-[#FEF3C7] text-[#92400E]" },
-    { label: "Sin respuesta registrada", valor: contarPropuestas(propuestas, "Sin respuesta registrada"), color: "bg-[#FCE7F3] text-[#BE185D]" },
+    { label: "Propuestas recibidas", value: propuestas.length, color: "bg-[#E0F2FE] text-[#0369A1]" },
+    { label: "Firmas acumuladas", value: sumarFirmas(propuestas).toLocaleString("es-MX"), color: "bg-[#FFF1A8] text-[#0A4E84]" },
+    { label: "Respuestas emitidas", value: contarPorEstado(propuestas, "Respondida"), color: "bg-[#DCFCE7] text-[#15803D]" },
+    { label: "En revisión", value: contarPorEstado(propuestas, "En revisión"), color: "bg-[#FEF3C7] text-[#92400E]" },
+    { label: "Sin respuesta registrada", value: contarPorEstado(propuestas, "Sin respuesta registrada"), color: "bg-[#FCE7F3] text-[#BE185D]" },
   ];
+
   const metricasAlertas = [
-    { label: "Alertas activas", valor: alertas.filter((alerta) => alerta.estado !== "Atendida").length, color: "bg-[#FFEDD5] text-[#C2410C]" },
-    { label: "En observación", valor: contarAlertas(alertas, "En observación"), color: "bg-[#E0F2FE] text-[#0369A1]" },
-    { label: "Requieren seguimiento", valor: contarAlertas(alertas, "Requiere seguimiento"), color: "bg-[#FEF3C7] text-[#92400E]" },
-    { label: "Atendidas", valor: contarAlertas(alertas, "Atendida"), color: "bg-[#DCFCE7] text-[#15803D]" },
-    { label: "Última actualización", valor: alertas[0]?.fecha ?? "Sin fecha", color: "bg-[#EDE9FE] text-[#6D28D9]" },
+    { label: "Alertas activas", value: alertas.filter((alerta) => alerta.estado !== "Atendida").length, color: "bg-[#FFEDD5] text-[#C2410C]" },
+    { label: "En observación", value: contarPorEstado(alertas, "En observación"), color: "bg-[#E0F2FE] text-[#0369A1]" },
+    { label: "Requieren seguimiento", value: contarPorEstado(alertas, "Requiere seguimiento"), color: "bg-[#FEF3C7] text-[#92400E]" },
+    { label: "Atendidas", value: contarPorEstado(alertas, "Atendida"), color: "bg-[#DCFCE7] text-[#15803D]" },
+    { label: "Última actualización", value: alertas[0]?.fecha ?? "Sin fecha", color: "bg-[#EDE9FE] text-[#6D28D9]" },
   ];
+
   const indicadores = [
-    { label: "Asistencia", valor: representante.indicadoresParticipacion.asistencia, color: "bg-[#16A34A]" },
-    { label: "Alineación territorial", valor: representante.indicadoresParticipacion.alineacionTerritorial, color: "bg-[#8B5CF6]" },
-    { label: "Participación ciudadana", valor: representante.indicadoresParticipacion.participacionCiudadana, color: "bg-[#0EA5E9]" },
-    { label: "Transparencia legislativa", valor: representante.indicadoresParticipacion.transparenciaLegislativa, color: "bg-[#E4007C]" },
+    { label: "Asistencia", value: representante.indicadoresParticipacion.asistencia, color: "bg-[#16A34A]" },
+    { label: "Alineación territorial", value: representante.indicadoresParticipacion.alineacionTerritorial, color: "bg-[#8B5CF6]" },
+    { label: "Participación ciudadana", value: representante.indicadoresParticipacion.participacionCiudadana, color: "bg-[#0EA5E9]" },
+    { label: "Transparencia legislativa", value: representante.indicadoresParticipacion.transparenciaLegislativa, color: "bg-[#E4007C]" },
   ];
 
   return (
@@ -375,7 +439,7 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
                 {representante.iniciales}
               </div>
               <div>
-                <span className={`${tipo.badge} inline-flex rounded-full px-4 py-2 text-xs font-black uppercase`}>{representante.tipoRepresentacion}</span>
+                <span className={`${tipoConfig[representante.tipoRepresentacion]} inline-flex rounded-full px-4 py-2 text-xs font-black uppercase`}>{representante.tipoRepresentacion}</span>
                 <h1 className="mt-3 text-4xl font-black leading-tight text-[#111827] md:text-5xl">{representante.nombre}</h1>
                 <p className="mt-2 text-base font-bold text-[#0A4E84]">{representante.cargo}</p>
                 <p className="mt-1 text-sm font-semibold text-slate-600">
@@ -402,21 +466,11 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
         </section>
 
         <section className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {resumenActividad.map((item) => (
-            <article key={item.label} className="rounded-[18px] bg-white p-3 shadow-sm ring-1 ring-[#E5E7EB]">
-              <div className={`${item.color} rounded-2xl px-3 py-2 text-2xl font-black`}>{item.valor}</div>
-              <div className="mt-2 text-[11px] font-bold uppercase leading-4 text-slate-600">{item.label}</div>
-            </article>
-          ))}
+          {resumenActividad.map((item) => <MetricCard key={item.label} {...item} />)}
         </section>
 
         <section className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-          {metricas.map((metrica) => (
-            <article key={metrica.label} className="rounded-[18px] bg-white p-3 shadow-sm ring-1 ring-[#E5E7EB]">
-              <div className={`${metrica.color} rounded-2xl px-3 py-2 text-2xl font-black`}>{metrica.valor}</div>
-              <div className="mt-2 text-[11px] font-bold uppercase leading-4 text-slate-600">{metrica.label}</div>
-            </article>
-          ))}
+          {metricasBase.map((item) => <MetricCard key={item.label} {...item} />)}
         </section>
 
         <section className="mb-5 overflow-hidden rounded-[22px] bg-white shadow-sm ring-1 ring-[#E5E7EB]">
@@ -429,16 +483,82 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
         </section>
 
         <section className="mb-5 overflow-hidden rounded-[24px] bg-white shadow-sm ring-1 ring-[#E5E7EB]">
+          <div className="bg-[#E4007C] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white">Alineación territorial</div>
+          <div className="grid gap-5 p-5 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="space-y-4">
+              <p className="rounded-[18px] bg-[#F8FAFC] p-4 text-sm font-semibold leading-6 text-slate-600 ring-1 ring-slate-100">
+                Este indicador compara prioridades ciudadanas del territorio con la actividad pública registrada del representante.
+              </p>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                {metricasAlineacion.map((item) => <MetricCard key={item.label} {...item} />)}
+              </div>
+
+              <article className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
+                <h2 className="text-sm font-black uppercase tracking-[0.12em] text-[#0A4E84]">¿Cómo se calcula?</h2>
+                <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">
+                  En esta versión demostrativa, el indicador usa datos de ejemplo. En una etapa posterior podrá calcularse con propuestas ciudadanas, votaciones, asistencia, respuestas públicas y prioridades territoriales verificadas.
+                </p>
+              </article>
+            </div>
+
+            <div className="space-y-4">
+              <article className="rounded-[20px] bg-[#F8FAFC] p-5 ring-1 ring-slate-100">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-lg font-black text-[#111827]">Nivel de alineación territorial</h2>
+                    <p className="mt-1 text-sm font-semibold text-slate-600">Lectura demostrativa para seguimiento ciudadano.</p>
+                  </div>
+                  <span className={`${nivelAlineacionConfig.badge} inline-flex rounded-full px-4 py-2 text-xs font-black uppercase`}>{nivelAlineacion}</span>
+                </div>
+                <div className="mt-5 flex items-end justify-between gap-4">
+                  <span className={`text-5xl font-black ${nivelAlineacionConfig.text}`}>{representante.alineacionTerritorial}%</span>
+                  <span className="pb-2 text-xs font-black uppercase tracking-[0.12em] text-slate-500">Alineación</span>
+                </div>
+                <div className="mt-4 h-5 overflow-hidden rounded-full bg-white ring-1 ring-slate-100">
+                  <div className={`${nivelAlineacionConfig.bar} h-full rounded-full`} style={{ width: `${representante.alineacionTerritorial}%` }} />
+                </div>
+              </article>
+
+              <div>
+                <h2 className="mb-3 text-sm font-black uppercase tracking-[0.12em] text-[#0A4E84]">Comparativo ciudadano</h2>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {representante.comparativoCiudadano.map((item) => (
+                    <article key={item.titulo} className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
+                      <span className={`${item.color} rounded-full px-3 py-1 text-[11px] font-black uppercase`}>{item.titulo}</span>
+                      <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">{item.descripcion}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h2 className="mb-3 text-sm font-black uppercase tracking-[0.12em] text-[#0A4E84]">Prioridades territoriales</h2>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {prioridades.map((prioridad) => (
+                    <article key={`${prioridad.tema}-${prioridad.categoria}`} className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#0A4E84] ring-1 ring-slate-100">{prioridad.categoria}</span>
+                        <span className={`${nivelConfig[prioridad.prioridadCiudadana].badge} rounded-full px-3 py-1 text-xs font-black`}>Prioridad {prioridad.prioridadCiudadana}</span>
+                        <span className={`${estadoSeguimientoConfig[prioridad.estadoSeguimiento]} rounded-full px-3 py-1 text-xs font-black`}>{prioridad.estadoSeguimiento}</span>
+                        <span className={`${nivelConfig[prioridad.alineacion].badge} rounded-full px-3 py-1 text-xs font-black`}>Alineación {prioridad.alineacion}</span>
+                      </div>
+                      <h3 className="mt-3 text-base font-black text-[#111827]">{prioridad.tema}</h3>
+                      <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{prioridad.actividadRelacionada}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-5 overflow-hidden rounded-[24px] bg-white shadow-sm ring-1 ring-[#E5E7EB]">
           <div className="bg-[#E4007C] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white">Alertas cívicas del representante</div>
           <div className="grid gap-5 p-5 lg:grid-cols-[0.85fr_1.15fr]">
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                {metricasAlertas.map((metrica) => (
-                  <article key={metrica.label} className="rounded-[18px] bg-[#F8FAFC] p-3 ring-1 ring-slate-100">
-                    <div className={`${metrica.color} rounded-2xl px-3 py-2 text-2xl font-black`}>{metrica.valor}</div>
-                    <div className="mt-2 text-[11px] font-bold uppercase leading-4 text-slate-600">{metrica.label}</div>
-                  </article>
-                ))}
+                {metricasAlertas.map((item) => <MetricCard key={item.label} {...item} />)}
               </div>
 
               <article className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
@@ -470,13 +590,11 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
                 {alertas.map((alerta) => (
                   <article key={`${alerta.titulo}-${alerta.fecha}`} className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
                     <div className="flex flex-wrap gap-2">
-                      <span className={`${alertaConfig[alerta.severidad]} rounded-full px-3 py-1 text-xs font-black`}>{alerta.severidad}</span>
+                      <span className={`${nivelConfig[alerta.severidad].badge} rounded-full px-3 py-1 text-xs font-black`}>{alerta.severidad}</span>
                       <span className={`${estadoAlertaConfig[alerta.estado]} rounded-full px-3 py-1 text-xs font-black`}>{alerta.estado}</span>
                     </div>
                     <h2 className="mt-3 text-base font-black text-[#111827]">{alerta.titulo}</h2>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#0A4E84]">
-                      {alerta.categoria} · {alerta.fecha}
-                    </p>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#0A4E84]">{alerta.categoria} · {alerta.fecha}</p>
                     <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">{alerta.resumenCiudadano}</p>
                     <div className="mt-4 rounded-2xl bg-white p-3 text-sm font-semibold leading-6 text-slate-700 ring-1 ring-slate-100">
                       <span className="font-black text-[#E4007C]">Acción sugerida: </span>{alerta.accionSugerida}
@@ -493,12 +611,7 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
           <div className="grid gap-5 p-5 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                {metricasPropuestas.map((metrica) => (
-                  <article key={metrica.label} className="rounded-[18px] bg-[#F8FAFC] p-3 ring-1 ring-slate-100">
-                    <div className={`${metrica.color} rounded-2xl px-3 py-2 text-2xl font-black`}>{metrica.valor}</div>
-                    <div className="mt-2 text-[11px] font-bold uppercase leading-4 text-slate-600">{metrica.label}</div>
-                  </article>
-                ))}
+                {metricasPropuestas.map((item) => <MetricCard key={item.label} {...item} />)}
               </div>
 
               <article className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
@@ -531,12 +644,10 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
                   <article key={`${propuesta.titulo}-${propuesta.fechaRecepcion}`} className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
                     <div className="flex flex-wrap gap-2">
                       <span className={`${respuestaConfig[propuesta.estadoRespuesta]} rounded-full px-3 py-1 text-xs font-black`}>{propuesta.estadoRespuesta}</span>
-                      <span className={`${prioridadConfig[propuesta.prioridadCiudadana]} rounded-full px-3 py-1 text-xs font-black`}>Prioridad {propuesta.prioridadCiudadana}</span>
+                      <span className={`${nivelConfig[propuesta.prioridadCiudadana].badge} rounded-full px-3 py-1 text-xs font-black`}>Prioridad {propuesta.prioridadCiudadana}</span>
                     </div>
                     <h2 className="mt-3 text-base font-black text-[#111827]">{propuesta.titulo}</h2>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#0A4E84]">
-                      {propuesta.categoria} · {propuesta.fechaRecepcion}
-                    </p>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#0A4E84]">{propuesta.categoria} · {propuesta.fechaRecepcion}</p>
                     <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">{propuesta.resumen}</p>
                     <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <span className="rounded-2xl bg-white px-3 py-2 text-sm font-black text-[#111827] ring-1 ring-slate-100">
@@ -569,17 +680,13 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
               <div className="grid gap-3 p-5">
                 {representante.iniciativas.map((iniciativa) => (
                   <article key={iniciativa.titulo} className="rounded-2xl bg-[#F8FAFC] p-4">
-                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div>
-                        <div className="flex flex-wrap gap-2">
-                          <span className="rounded-full bg-white px-3 py-1 text-xs font-black uppercase text-[#0A4E84]">{iniciativa.tipo}</span>
-                          <span className={`${estadoIniciativaConfig[iniciativa.estado]} rounded-full px-3 py-1 text-xs font-black`}>{iniciativa.estado}</span>
-                        </div>
-                        <h2 className="mt-3 text-lg font-black text-[#111827]">{iniciativa.titulo}</h2>
-                        <p className="mt-1 text-sm font-semibold text-slate-600">{iniciativa.categoria} · {iniciativa.fecha}</p>
-                        <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{iniciativa.impactoTerritorial}</p>
-                      </div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-black uppercase text-[#0A4E84]">{iniciativa.tipo}</span>
+                      <span className={`${estadoIniciativaConfig[iniciativa.estado]} rounded-full px-3 py-1 text-xs font-black`}>{iniciativa.estado}</span>
                     </div>
+                    <h2 className="mt-3 text-lg font-black text-[#111827]">{iniciativa.titulo}</h2>
+                    <p className="mt-1 text-sm font-semibold text-slate-600">{iniciativa.categoria} · {iniciativa.fecha}</p>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{iniciativa.impactoTerritorial}</p>
                   </article>
                 ))}
               </div>
@@ -603,7 +710,7 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
                         <td className="py-3 font-bold text-[#111827]">{votacion.tema}</td>
                         <td className="py-3 text-slate-600">{votacion.fecha}</td>
                         <td className="py-3 font-semibold text-[#0A4E84]">{votacion.votoEmitido}</td>
-                        <td className="py-3"><span className="rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-black text-[#15803D]">{votacion.participacionCiudadanaRelacionada}</span></td>
+                        <td className="py-3"><span className={`${nivelConfig[votacion.participacionCiudadanaRelacionada].badge} rounded-full px-3 py-1 text-xs font-black`}>{votacion.participacionCiudadanaRelacionada}</span></td>
                       </tr>
                     ))}
                   </tbody>
@@ -620,10 +727,10 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
                   <div key={indicador.label}>
                     <div className="mb-2 flex items-center justify-between gap-3 text-sm font-black text-[#111827]">
                       <span>{indicador.label}</span>
-                      <span>{indicador.valor}%</span>
+                      <span>{indicador.value}%</span>
                     </div>
                     <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-                      <div className={`${indicador.color} h-full rounded-full`} style={{ width: `${indicador.valor}%` }} />
+                      <div className={`${indicador.color} h-full rounded-full`} style={{ width: `${indicador.value}%` }} />
                     </div>
                   </div>
                 ))}
