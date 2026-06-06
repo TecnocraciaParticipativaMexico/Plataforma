@@ -9,7 +9,9 @@ type TipoRepresentacion =
   | "Representante ciudadano por voto popular"
   | "Legislador en funciones";
 
-type SeveridadAlerta = "baja" | "media" | "alta";
+type SeveridadAlerta = "Baja" | "Media" | "Alta";
+type CategoriaAlerta = "Asistencia" | "Votación" | "Respuesta ciudadana" | "Transparencia" | "Alineación territorial";
+type EstadoAlerta = "En observación" | "Requiere seguimiento" | "Atendida" | "En revisión";
 type EstadoIniciativa = "En discusión" | "En análisis" | "En votación" | "Aprobada" | "Archivada";
 type TipoIniciativa = "apoyada" | "presentada" | "seguimiento";
 type VotoEmitido = "A favor" | "En contra" | "Abstención";
@@ -42,6 +44,16 @@ type PropuestaCiudadana = {
   resumen: string;
 };
 
+type AlertaCivica = {
+  titulo: string;
+  categoria: CategoriaAlerta;
+  severidad: SeveridadAlerta;
+  fecha: string;
+  estado: EstadoAlerta;
+  resumenCiudadano: string;
+  accionSugerida: string;
+};
+
 type IndicadoresParticipacion = {
   asistencia: number;
   alineacionTerritorial: number;
@@ -62,38 +74,39 @@ type RepresentanteMock = {
   asistencia: number;
   inasistencias: number;
   retardos: number;
-  votosEmitidos: number;
   votosAFavor: number;
   votosEnContra: number;
   abstenciones: number;
-  iniciativasApoyadas: number;
-  propuestasCiudadanasRecibidas: number;
-  firmasCiudadanasRecibidas: number;
-  respuestasACiudadanos: number;
-  alertasCivicas: number;
   alineacionTerritorial: number;
   actividadEnPlataforma: string;
   iniciativas: IniciativaLegislativa[];
   votaciones: VotacionReciente[];
   propuestasCiudadanas: PropuestaCiudadana[];
+  alertas: AlertaCivica[];
   indicadoresParticipacion: IndicadoresParticipacion;
-  alertas: Array<{ titulo: string; severidad: SeveridadAlerta; descripcion: string }>;
   timeline: Array<{ evento: string; fecha: string; descripcion: string }>;
 };
 
-const tipoConfig: Record<TipoRepresentacion, { badge: string; dot: string }> = {
-  "Elegido por voto directo": { badge: "bg-[#FCE7F3] text-[#BE185D]", dot: "bg-[#E4007C]" },
-  "Representación proporcional": { badge: "bg-[#E0F2FE] text-[#0369A1]", dot: "bg-[#0EA5E9]" },
-  "Representación en disputa ciudadana": { badge: "bg-[#FFEDD5] text-[#C2410C]", dot: "bg-[#F97316]" },
-  "Curul socialmente impugnada": { badge: "bg-[#FEF3C7] text-[#92400E]", dot: "bg-[#F2C300]" },
-  "Representante ciudadano por voto popular": { badge: "bg-[#EDE9FE] text-[#6D28D9]", dot: "bg-[#8B5CF6]" },
-  "Legislador en funciones": { badge: "bg-[#DCFCE7] text-[#15803D]", dot: "bg-[#16A34A]" },
+const tipoConfig: Record<TipoRepresentacion, { badge: string }> = {
+  "Elegido por voto directo": { badge: "bg-[#FCE7F3] text-[#BE185D]" },
+  "Representación proporcional": { badge: "bg-[#E0F2FE] text-[#0369A1]" },
+  "Representación en disputa ciudadana": { badge: "bg-[#FFEDD5] text-[#C2410C]" },
+  "Curul socialmente impugnada": { badge: "bg-[#FEF3C7] text-[#92400E]" },
+  "Representante ciudadano por voto popular": { badge: "bg-[#EDE9FE] text-[#6D28D9]" },
+  "Legislador en funciones": { badge: "bg-[#DCFCE7] text-[#15803D]" },
 };
 
 const alertaConfig: Record<SeveridadAlerta, string> = {
-  baja: "bg-[#E0F2FE] text-[#0369A1]",
-  media: "bg-[#FEF3C7] text-[#92400E]",
-  alta: "bg-[#FFEDD5] text-[#C2410C]",
+  Baja: "bg-[#E0F2FE] text-[#0369A1]",
+  Media: "bg-[#FEF3C7] text-[#92400E]",
+  Alta: "bg-[#FFEDD5] text-[#C2410C]",
+};
+
+const estadoAlertaConfig: Record<EstadoAlerta, string> = {
+  "En observación": "bg-[#E0F2FE] text-[#0369A1]",
+  "Requiere seguimiento": "bg-[#FEF3C7] text-[#92400E]",
+  Atendida: "bg-[#DCFCE7] text-[#15803D]",
+  "En revisión": "bg-[#EDE9FE] text-[#6D28D9]",
 };
 
 const estadoIniciativaConfig: Record<EstadoIniciativa, string> = {
@@ -123,64 +136,23 @@ const tabsVisuales = [
   "Actividad legislativa",
   "Votaciones",
   "Propuestas ciudadanas",
-  "Transparencia",
   "Alertas cívicas",
+  "Transparencia",
   "Alineación territorial",
   "Timeline personal",
 ] as const;
 
 const filtrosPropuestas = ["Todas", "Recibidas", "En revisión", "Respondidas", "Sin respuesta registrada"] as const;
+const filtrosAlertas = ["Todas", "Asistencia", "Votación", "Respuesta ciudadana", "Transparencia", "Alineación territorial"] as const;
 
 function crearIniciativas(territorio: string): IniciativaLegislativa[] {
   return [
-    {
-      titulo: `Transparencia de votaciones públicas en ${territorio}`,
-      categoria: "Transparencia legislativa",
-      estado: "En discusión",
-      fecha: "12 mayo 2026",
-      impactoTerritorial: "Mejora seguimiento ciudadano de decisiones públicas.",
-      tipo: "presentada",
-    },
-    {
-      titulo: "Presupuesto territorial participativo",
-      categoria: "Presupuesto público",
-      estado: "En análisis",
-      fecha: "28 abril 2026",
-      impactoTerritorial: "Ordena prioridades de inversión local documentadas.",
-      tipo: "apoyada",
-    },
-    {
-      titulo: "Registro de compromisos legislativos",
-      categoria: "Rendición de cuentas",
-      estado: "En votación",
-      fecha: "10 abril 2026",
-      impactoTerritorial: "Permite comparar compromisos con actividad pública.",
-      tipo: "presentada",
-    },
-    {
-      titulo: "Cruces seguros cerca de escuelas",
-      categoria: "Movilidad y seguridad vial",
-      estado: "Aprobada",
-      fecha: "02 abril 2026",
-      impactoTerritorial: "Prioriza zonas escolares con reportes ciudadanos.",
-      tipo: "seguimiento",
-    },
-    {
-      titulo: "Reporte abierto de sesiones de comisión",
-      categoria: "Acceso a información",
-      estado: "En análisis",
-      fecha: "21 marzo 2026",
-      impactoTerritorial: "Facilita consulta pública de trabajo legislativo.",
-      tipo: "apoyada",
-    },
-    {
-      titulo: "Mesa ciudadana de seguimiento trimestral",
-      categoria: "Participación ciudadana",
-      estado: "Archivada",
-      fecha: "08 marzo 2026",
-      impactoTerritorial: "Deja antecedentes para rediseño de participación local.",
-      tipo: "seguimiento",
-    },
+    { titulo: `Transparencia de votaciones públicas en ${territorio}`, categoria: "Transparencia legislativa", estado: "En discusión", fecha: "12 mayo 2026", impactoTerritorial: "Mejora seguimiento ciudadano de decisiones públicas.", tipo: "presentada" },
+    { titulo: "Presupuesto territorial participativo", categoria: "Presupuesto público", estado: "En análisis", fecha: "28 abril 2026", impactoTerritorial: "Ordena prioridades de inversión local documentadas.", tipo: "apoyada" },
+    { titulo: "Registro de compromisos legislativos", categoria: "Rendición de cuentas", estado: "En votación", fecha: "10 abril 2026", impactoTerritorial: "Permite comparar compromisos con actividad pública.", tipo: "presentada" },
+    { titulo: "Cruces seguros cerca de escuelas", categoria: "Movilidad y seguridad vial", estado: "Aprobada", fecha: "02 abril 2026", impactoTerritorial: "Prioriza zonas escolares con reportes ciudadanos.", tipo: "seguimiento" },
+    { titulo: "Reporte abierto de sesiones de comisión", categoria: "Acceso a información", estado: "En análisis", fecha: "21 marzo 2026", impactoTerritorial: "Facilita consulta pública de trabajo legislativo.", tipo: "apoyada" },
+    { titulo: "Mesa ciudadana de seguimiento trimestral", categoria: "Participación ciudadana", estado: "Archivada", fecha: "08 marzo 2026", impactoTerritorial: "Deja antecedentes para rediseño de participación local.", tipo: "seguimiento" },
   ];
 }
 
@@ -202,64 +174,26 @@ function crearVotaciones(): VotacionReciente[] {
 // TODO: reemplazar propuestas mock por datos reales vinculados a representantes y territorio.
 function crearPropuestasCiudadanas(territorio: string): PropuestaCiudadana[] {
   return [
-    {
-      titulo: `Cruces seguros cerca de escuelas en ${territorio}`,
-      categoria: "Movilidad segura",
-      fechaRecepcion: "09 mayo 2026",
-      firmasCiudadanas: 1246,
-      estadoRespuesta: "Respondida",
-      prioridadCiudadana: "Alta",
-      resumen: "Solicita priorizar pasos peatonales, señalética y reducción de velocidad en zonas escolares.",
-    },
-    {
-      titulo: "Reporte abierto de sesiones y votaciones",
-      categoria: "Transparencia",
-      fechaRecepcion: "02 mayo 2026",
-      firmasCiudadanas: 690,
-      estadoRespuesta: "En revisión",
-      prioridadCiudadana: "Media",
-      resumen: "Pide publicar de forma clara asistencia, votaciones y participación en comisiones.",
-    },
-    {
-      titulo: "Semáforo de compromisos públicos",
-      categoria: "Rendición de cuentas",
-      fechaRecepcion: "25 abril 2026",
-      firmasCiudadanas: 438,
-      estadoRespuesta: "Recibida",
-      prioridadCiudadana: "Media",
-      resumen: "Propone dar seguimiento visual a compromisos territoriales y avances documentados.",
-    },
-    {
-      titulo: "Mesa territorial de seguimiento ciudadano",
-      categoria: "Participación ciudadana",
-      fechaRecepcion: "18 abril 2026",
-      firmasCiudadanas: 238,
-      estadoRespuesta: "Canalizada",
-      prioridadCiudadana: "Baja",
-      resumen: "Sugiere abrir reuniones periódicas para revisar propuestas locales con evidencia pública.",
-    },
-    {
-      titulo: "Presupuesto para agua comunitaria",
-      categoria: "Servicios públicos",
-      fechaRecepcion: "10 abril 2026",
-      firmasCiudadanas: 860,
-      estadoRespuesta: "En revisión",
-      prioridadCiudadana: "Alta",
-      resumen: "Solicita revisar inversión prioritaria en infraestructura básica y reportes de avance.",
-    },
-    {
-      titulo: "Informe de respuestas pendientes",
-      categoria: "Seguimiento ciudadano",
-      fechaRecepcion: "03 abril 2026",
-      firmasCiudadanas: 312,
-      estadoRespuesta: "Sin respuesta registrada",
-      prioridadCiudadana: "Alta",
-      resumen: "Busca identificar propuestas recibidas que aún no cuentan con actualización pública.",
-    },
+    { titulo: `Cruces seguros cerca de escuelas en ${territorio}`, categoria: "Movilidad segura", fechaRecepcion: "09 mayo 2026", firmasCiudadanas: 1246, estadoRespuesta: "Respondida", prioridadCiudadana: "Alta", resumen: "Solicita priorizar pasos peatonales, señalética y reducción de velocidad en zonas escolares." },
+    { titulo: "Reporte abierto de sesiones y votaciones", categoria: "Transparencia", fechaRecepcion: "02 mayo 2026", firmasCiudadanas: 690, estadoRespuesta: "En revisión", prioridadCiudadana: "Media", resumen: "Pide publicar de forma clara asistencia, votaciones y participación en comisiones." },
+    { titulo: "Semáforo de compromisos públicos", categoria: "Rendición de cuentas", fechaRecepcion: "25 abril 2026", firmasCiudadanas: 438, estadoRespuesta: "Recibida", prioridadCiudadana: "Media", resumen: "Propone dar seguimiento visual a compromisos territoriales y avances documentados." },
+    { titulo: "Mesa territorial de seguimiento ciudadano", categoria: "Participación ciudadana", fechaRecepcion: "18 abril 2026", firmasCiudadanas: 238, estadoRespuesta: "Canalizada", prioridadCiudadana: "Baja", resumen: "Sugiere abrir reuniones periódicas para revisar propuestas locales con evidencia pública." },
+    { titulo: "Presupuesto para agua comunitaria", categoria: "Servicios públicos", fechaRecepcion: "10 abril 2026", firmasCiudadanas: 860, estadoRespuesta: "En revisión", prioridadCiudadana: "Alta", resumen: "Solicita revisar inversión prioritaria en infraestructura básica y reportes de avance." },
+    { titulo: "Informe de respuestas pendientes", categoria: "Seguimiento ciudadano", fechaRecepcion: "03 abril 2026", firmasCiudadanas: 312, estadoRespuesta: "Sin respuesta registrada", prioridadCiudadana: "Alta", resumen: "Busca identificar propuestas recibidas que aún no cuentan con actualización pública." },
   ];
 }
 
-// TODO: sustituir estos datos mock por fuentes oficiales y registros ciudadanos normalizados en una integración posterior.
+// TODO: reemplazar alertas mock por datos reales de seguimiento ciudadano, asistencia, votaciones y respuestas públicas.
+function crearAlertasCivicas(territorio: string): AlertaCivica[] {
+  return [
+    { titulo: "Seguimiento de asistencia reciente", categoria: "Asistencia", severidad: "Media", fecha: "15 mayo 2026", estado: "En observación", resumenCiudadano: "Se registran variaciones recientes en asistencia que conviene revisar con el calendario público.", accionSugerida: "Consultar sesiones y solicitar actualización de asistencia verificable." },
+    { titulo: "Votación con alta participación ciudadana", categoria: "Votación", severidad: "Alta", fecha: "12 mayo 2026", estado: "Requiere seguimiento", resumenCiudadano: "Una votación relevante para el territorio tuvo alta participación ciudadana relacionada.", accionSugerida: "Revisar postura pública y contrastarla con prioridades ciudadanas registradas." },
+    { titulo: `Respuesta pendiente en ${territorio}`, categoria: "Respuesta ciudadana", severidad: "Media", fecha: "09 mayo 2026", estado: "En revisión", resumenCiudadano: "Hay propuestas ciudadanas que todavía requieren una actualización pública de seguimiento.", accionSugerida: "Pedir claridad sobre estado, plazo estimado y canal de respuesta." },
+    { titulo: "Actualización de información pública", categoria: "Transparencia", severidad: "Baja", fecha: "02 mayo 2026", estado: "Atendida", resumenCiudadano: "La ficha recibió una actualización demostrativa de datos de actividad y votaciones.", accionSugerida: "Mantener el historial visible para consulta ciudadana." },
+    { titulo: "Diferencia de prioridad territorial", categoria: "Alineación territorial", severidad: "Media", fecha: "25 abril 2026", estado: "En observación", resumenCiudadano: "Algunos temas locales aparecen con menor seguimiento en la actividad pública registrada.", accionSugerida: "Observar próximas votaciones y documentar si aumenta la alineación territorial." },
+  ];
+}
+
 const REPRESENTANTES_MOCK: RepresentanteMock[] = [
   {
     id: "maria-teresa-lopez-garcia",
@@ -274,25 +208,16 @@ const REPRESENTANTES_MOCK: RepresentanteMock[] = [
     asistencia: 94,
     inasistencias: 3,
     retardos: 4,
-    votosEmitidos: 87,
     votosAFavor: 58,
     votosEnContra: 21,
     abstenciones: 8,
-    iniciativasApoyadas: 7,
-    propuestasCiudadanasRecibidas: 18,
-    firmasCiudadanasRecibidas: 1246,
-    respuestasACiudadanos: 18,
-    alertasCivicas: 2,
     alineacionTerritorial: 78,
     actividadEnPlataforma: "Activa en la plataforma",
     iniciativas: crearIniciativas("Jalisco"),
     votaciones: crearVotaciones(),
     propuestasCiudadanas: crearPropuestasCiudadanas("Jalisco"),
+    alertas: crearAlertasCivicas("Jalisco"),
     indicadoresParticipacion: { asistencia: 94, alineacionTerritorial: 78, participacionCiudadana: 82, transparenciaLegislativa: 88 },
-    alertas: [
-      { titulo: "Seguimiento de respuesta pendiente", severidad: "media", descripcion: "Una propuesta ciudadana requiere actualización pública de avance." },
-      { titulo: "Diferencia de prioridad territorial", severidad: "baja", descripcion: "Hay temas locales con seguimiento legislativo todavía limitado." },
-    ],
     timeline: [
       { evento: "Perfil creado", fecha: "02 abril 2026", descripcion: "Se abrió ficha pública de seguimiento ciudadano." },
       { evento: "Última actualización", fecha: "12 mayo 2026", descripcion: "Se integraron métricas de votación y asistencia." },
@@ -313,24 +238,16 @@ const REPRESENTANTES_MOCK: RepresentanteMock[] = [
     asistencia: 95,
     inasistencias: 2,
     retardos: 3,
-    votosEmitidos: 52,
     votosAFavor: 38,
     votosEnContra: 9,
     abstenciones: 5,
-    iniciativasApoyadas: 6,
-    propuestasCiudadanasRecibidas: 12,
-    firmasCiudadanasRecibidas: 1690,
-    respuestasACiudadanos: 42,
-    alertasCivicas: 1,
     alineacionTerritorial: 84,
     actividadEnPlataforma: "Activa en la plataforma",
     iniciativas: crearIniciativas("Nuevo León"),
     votaciones: crearVotaciones(),
     propuestasCiudadanas: crearPropuestasCiudadanas("Nuevo León"),
+    alertas: crearAlertasCivicas("Nuevo León"),
     indicadoresParticipacion: { asistencia: 95, alineacionTerritorial: 84, participacionCiudadana: 79, transparenciaLegislativa: 91 },
-    alertas: [
-      { titulo: "Alta participación ciudadana recibida", severidad: "baja", descripcion: "El volumen de propuestas exige seguimiento público constante." },
-    ],
     timeline: [
       { evento: "Perfil creado", fecha: "11 marzo 2026", descripcion: "Ficha inicial de Senado registrada." },
       { evento: "Última actualización", fecha: "06 mayo 2026", descripcion: "Actualización de respuestas ciudadanas." },
@@ -351,24 +268,16 @@ const REPRESENTANTES_MOCK: RepresentanteMock[] = [
     asistencia: 89,
     inasistencias: 4,
     retardos: 5,
-    votosEmitidos: 33,
     votosAFavor: 24,
     votosEnContra: 6,
     abstenciones: 3,
-    iniciativasApoyadas: 5,
-    propuestasCiudadanasRecibidas: 14,
-    firmasCiudadanasRecibidas: 1510,
-    respuestasACiudadanos: 28,
-    alertasCivicas: 1,
     alineacionTerritorial: 81,
     actividadEnPlataforma: "Perfil completado por comité ciudadano",
     iniciativas: crearIniciativas("Jalisco ciudadano"),
     votaciones: crearVotaciones(),
     propuestasCiudadanas: crearPropuestasCiudadanas("Jalisco ciudadano"),
+    alertas: crearAlertasCivicas("Jalisco ciudadano"),
     indicadoresParticipacion: { asistencia: 89, alineacionTerritorial: 81, participacionCiudadana: 86, transparenciaLegislativa: 80 },
-    alertas: [
-      { titulo: "Seguimiento pendiente de compromisos", severidad: "media", descripcion: "Hay compromisos ciudadanos que requieren cierre documental." },
-    ],
     timeline: [
       { evento: "Perfil creado", fecha: "18 marzo 2026", descripcion: "Registro ciudadano territorial inicial." },
       { evento: "Última actualización", fecha: "01 mayo 2026", descripcion: "Integración de propuestas comunitarias." },
@@ -394,6 +303,10 @@ function contarPropuestas(propuestas: PropuestaCiudadana[], estado: EstadoRespue
   return propuestas.filter((propuesta) => propuesta.estadoRespuesta === estado).length;
 }
 
+function contarAlertas(alertas: AlertaCivica[], estado: EstadoAlerta) {
+  return alertas.filter((alerta) => alerta.estado === estado).length;
+}
+
 function sumarFirmas(propuestas: PropuestaCiudadana[]) {
   return propuestas.reduce((total, propuesta) => total + propuesta.firmasCiudadanas, 0);
 }
@@ -407,13 +320,15 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
 
   const tipo = tipoConfig[representante.tipoRepresentacion];
   const propuestas = representante.propuestasCiudadanas;
+  const alertas = representante.alertas;
   const nivelRespuestaCiudadana = 68;
+  const nivelAtencionAlertas = 72;
   const resumenActividad = [
     { label: "Iniciativas apoyadas", valor: contarIniciativas(representante.iniciativas, "apoyada"), color: "bg-[#DCFCE7] text-[#15803D]" },
     { label: "Iniciativas presentadas", valor: contarIniciativas(representante.iniciativas, "presentada"), color: "bg-[#E0F2FE] text-[#0369A1]" },
     { label: "Votos emitidos", valor: representante.votaciones.length, color: "bg-[#EDE9FE] text-[#6D28D9]" },
     { label: "Propuestas ciudadanas", valor: propuestas.length, color: "bg-[#FFF1A8] text-[#0A4E84]" },
-    { label: "Alertas activas", valor: representante.alertas.length, color: "bg-[#FFEDD5] text-[#C2410C]" },
+    { label: "Alertas activas", valor: alertas.filter((alerta) => alerta.estado !== "Atendida").length, color: "bg-[#FFEDD5] text-[#C2410C]" },
   ];
   const metricas = [
     { label: "Calificación ciudadana", valor: `${representante.calificacionCiudadana}/100`, color: "bg-[#FFF1A8] text-[#0A4E84]" },
@@ -430,6 +345,13 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
     { label: "Respuestas emitidas", valor: contarPropuestas(propuestas, "Respondida"), color: "bg-[#DCFCE7] text-[#15803D]" },
     { label: "En revisión", valor: contarPropuestas(propuestas, "En revisión"), color: "bg-[#FEF3C7] text-[#92400E]" },
     { label: "Sin respuesta registrada", valor: contarPropuestas(propuestas, "Sin respuesta registrada"), color: "bg-[#FCE7F3] text-[#BE185D]" },
+  ];
+  const metricasAlertas = [
+    { label: "Alertas activas", valor: alertas.filter((alerta) => alerta.estado !== "Atendida").length, color: "bg-[#FFEDD5] text-[#C2410C]" },
+    { label: "En observación", valor: contarAlertas(alertas, "En observación"), color: "bg-[#E0F2FE] text-[#0369A1]" },
+    { label: "Requieren seguimiento", valor: contarAlertas(alertas, "Requiere seguimiento"), color: "bg-[#FEF3C7] text-[#92400E]" },
+    { label: "Atendidas", valor: contarAlertas(alertas, "Atendida"), color: "bg-[#DCFCE7] text-[#15803D]" },
+    { label: "Última actualización", valor: alertas[0]?.fecha ?? "Sin fecha", color: "bg-[#EDE9FE] text-[#6D28D9]" },
   ];
   const indicadores = [
     { label: "Asistencia", valor: representante.indicadoresParticipacion.asistencia, color: "bg-[#16A34A]" },
@@ -503,6 +425,66 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
             {tabsVisuales.map((tab, index) => (
               <span key={tab} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs font-black ${index === 0 ? "bg-[#E4007C] text-white" : "bg-[#F8FAFC] text-slate-600"}`}>{tab}</span>
             ))}
+          </div>
+        </section>
+
+        <section className="mb-5 overflow-hidden rounded-[24px] bg-white shadow-sm ring-1 ring-[#E5E7EB]">
+          <div className="bg-[#E4007C] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white">Alertas cívicas del representante</div>
+          <div className="grid gap-5 p-5 lg:grid-cols-[0.85fr_1.15fr]">
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                {metricasAlertas.map((metrica) => (
+                  <article key={metrica.label} className="rounded-[18px] bg-[#F8FAFC] p-3 ring-1 ring-slate-100">
+                    <div className={`${metrica.color} rounded-2xl px-3 py-2 text-2xl font-black`}>{metrica.valor}</div>
+                    <div className="mt-2 text-[11px] font-bold uppercase leading-4 text-slate-600">{metrica.label}</div>
+                  </article>
+                ))}
+              </div>
+
+              <article className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
+                <h2 className="text-sm font-black uppercase tracking-[0.12em] text-[#0A4E84]">¿Qué es una alerta cívica?</h2>
+                <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">
+                  Una alerta cívica es un aviso ciudadano y documental para dar seguimiento a actividad pública relevante. No constituye acusación ni sanción; sirve para observar, revisar y pedir claridad.
+                </p>
+              </article>
+
+              <article className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
+                <div className="flex items-center justify-between gap-3 text-sm font-black text-[#111827]">
+                  <span>Nivel de atención a alertas</span>
+                  <span>{nivelAtencionAlertas}%</span>
+                </div>
+                <div className="mt-3 h-3 overflow-hidden rounded-full bg-white">
+                  <div className="h-full rounded-full bg-gradient-to-r from-[#E4007C] via-[#F97316] to-[#16A34A]" style={{ width: `${nivelAtencionAlertas}%` }} />
+                </div>
+              </article>
+            </div>
+
+            <div>
+              <div className="mb-4 flex flex-wrap gap-2">
+                {filtrosAlertas.map((filtro, index) => (
+                  <span key={filtro} className={`rounded-full px-3 py-2 text-xs font-black ${index === 0 ? "bg-[#E4007C] text-white" : "bg-[#F8FAFC] text-slate-600 ring-1 ring-slate-100"}`}>{filtro}</span>
+                ))}
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {alertas.map((alerta) => (
+                  <article key={`${alerta.titulo}-${alerta.fecha}`} className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
+                    <div className="flex flex-wrap gap-2">
+                      <span className={`${alertaConfig[alerta.severidad]} rounded-full px-3 py-1 text-xs font-black`}>{alerta.severidad}</span>
+                      <span className={`${estadoAlertaConfig[alerta.estado]} rounded-full px-3 py-1 text-xs font-black`}>{alerta.estado}</span>
+                    </div>
+                    <h2 className="mt-3 text-base font-black text-[#111827]">{alerta.titulo}</h2>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#0A4E84]">
+                      {alerta.categoria} · {alerta.fecha}
+                    </p>
+                    <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">{alerta.resumenCiudadano}</p>
+                    <div className="mt-4 rounded-2xl bg-white p-3 text-sm font-semibold leading-6 text-slate-700 ring-1 ring-slate-100">
+                      <span className="font-black text-[#E4007C]">Acción sugerida: </span>{alerta.accionSugerida}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -644,19 +626,6 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
                       <div className={`${indicador.color} h-full rounded-full`} style={{ width: `${indicador.valor}%` }} />
                     </div>
                   </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="overflow-hidden rounded-[22px] bg-white shadow-sm ring-1 ring-[#E5E7EB]">
-              <div className="bg-[#E4007C] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white">Alertas cívicas</div>
-              <div className="grid gap-3 p-5">
-                {representante.alertas.map((alerta) => (
-                  <article key={alerta.titulo} className="rounded-2xl bg-[#F8FAFC] p-4">
-                    <span className={`${alertaConfig[alerta.severidad]} rounded-full px-3 py-1 text-xs font-black uppercase`}>{alerta.severidad}</span>
-                    <h2 className="mt-3 font-black text-[#111827]">{alerta.titulo}</h2>
-                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{alerta.descripcion}</p>
-                  </article>
                 ))}
               </div>
             </section>
