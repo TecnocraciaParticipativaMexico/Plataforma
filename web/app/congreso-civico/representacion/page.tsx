@@ -25,8 +25,9 @@ const accesosRepresentacion = [
   {
     titulo: "Buscar mi representante",
     descripcion: "Usa estado, municipio, colonia o codigo postal.",
-    etiqueta: "Buscador pronto",
+    etiqueta: "Disponible ahora",
     clase: "bg-[#F97316] text-white",
+    href: "/congreso-civico/representacion/buscar",
   },
   {
     titulo: "Representacion por estado",
@@ -83,18 +84,38 @@ export default function CongresoCivicoRepresentacionPage() {
         </section>
 
         <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {accesosRepresentacion.map((acceso) => (
-            <article
-              key={acceso.titulo}
-              className={`${acceso.clase} min-h-[190px] rounded-[28px] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
-            >
-              <div className="mb-8 inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-bold">
-                {acceso.etiqueta}
-              </div>
-              <h2 className="text-2xl font-bold leading-tight">{acceso.titulo}</h2>
-              <p className="mt-3 text-sm leading-6 opacity-95">{acceso.descripcion}</p>
-            </article>
-          ))}
+          {accesosRepresentacion.map((acceso) => {
+            const cardContent = (
+              <>
+                <div className="mb-8 inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-bold">
+                  {acceso.etiqueta}
+                </div>
+                <h2 className="text-2xl font-bold leading-tight">{acceso.titulo}</h2>
+                <p className="mt-3 text-sm leading-6 opacity-95">{acceso.descripcion}</p>
+              </>
+            );
+
+            if ("href" in acceso) {
+              return (
+                <Link
+                  key={acceso.titulo}
+                  href={acceso.href}
+                  className={`${acceso.clase} block min-h-[190px] rounded-[28px] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                >
+                  {cardContent}
+                </Link>
+              );
+            }
+
+            return (
+              <article
+                key={acceso.titulo}
+                className={`${acceso.clase} min-h-[190px] rounded-[28px] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+              >
+                {cardContent}
+              </article>
+            );
+          })}
         </section>
 
         <section className="mb-8 grid gap-4 md:grid-cols-4">
