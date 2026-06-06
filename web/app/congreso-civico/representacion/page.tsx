@@ -114,6 +114,12 @@ export default function CongresoCivicoRepresentacionPage() {
             <p className="mt-3 text-sm leading-6 text-slate-700">
               Pronto podras buscar por estado, municipio, colonia o codigo postal.
             </p>
+            <Link
+              href="/congreso-civico/representacion/representantes/maria-teresa-lopez-garcia"
+              className="mt-4 inline-flex rounded-full bg-[#E4007C] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#C9006B]"
+            >
+              Ver perfil completo -&gt;
+            </Link>
           </div>
 
           <div className="rounded-[28px] bg-[#0A4E84] p-6 text-white shadow-sm">
