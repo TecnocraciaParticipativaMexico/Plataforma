@@ -13,7 +13,8 @@ type SeveridadAlerta = "baja" | "media" | "alta";
 type EstadoIniciativa = "En discusión" | "En análisis" | "En votación" | "Aprobada" | "Archivada";
 type TipoIniciativa = "apoyada" | "presentada" | "seguimiento";
 type VotoEmitido = "A favor" | "En contra" | "Abstención";
-type EstadoRespuesta = "Recibida" | "En revisión" | "Respondida";
+type EstadoRespuesta = "Recibida" | "En revisión" | "Respondida" | "Canalizada" | "Sin respuesta registrada";
+type PrioridadCiudadana = "Baja" | "Media" | "Alta";
 
 type IniciativaLegislativa = {
   titulo: string;
@@ -31,10 +32,14 @@ type VotacionReciente = {
   participacionCiudadanaRelacionada: string;
 };
 
-type RespuestaCiudadana = {
-  propuestaRecibida: string;
-  fecha: string;
+type PropuestaCiudadana = {
+  titulo: string;
+  categoria: string;
+  fechaRecepcion: string;
+  firmasCiudadanas: number;
   estadoRespuesta: EstadoRespuesta;
+  prioridadCiudadana: PrioridadCiudadana;
+  resumen: string;
 };
 
 type IndicadoresParticipacion = {
@@ -70,7 +75,7 @@ type RepresentanteMock = {
   actividadEnPlataforma: string;
   iniciativas: IniciativaLegislativa[];
   votaciones: VotacionReciente[];
-  respuestasCiudadanas: RespuestaCiudadana[];
+  propuestasCiudadanas: PropuestaCiudadana[];
   indicadoresParticipacion: IndicadoresParticipacion;
   alertas: Array<{ titulo: string; severidad: SeveridadAlerta; descripcion: string }>;
   timeline: Array<{ evento: string; fecha: string; descripcion: string }>;
@@ -103,18 +108,28 @@ const respuestaConfig: Record<EstadoRespuesta, string> = {
   Recibida: "bg-[#E0F2FE] text-[#0369A1]",
   "En revisión": "bg-[#FEF3C7] text-[#92400E]",
   Respondida: "bg-[#DCFCE7] text-[#15803D]",
+  Canalizada: "bg-[#EDE9FE] text-[#6D28D9]",
+  "Sin respuesta registrada": "bg-[#FCE7F3] text-[#BE185D]",
+};
+
+const prioridadConfig: Record<PrioridadCiudadana, string> = {
+  Baja: "bg-[#DCFCE7] text-[#15803D]",
+  Media: "bg-[#FEF3C7] text-[#92400E]",
+  Alta: "bg-[#FFEDD5] text-[#C2410C]",
 };
 
 const tabsVisuales = [
   "Resumen",
   "Actividad legislativa",
   "Votaciones",
-  "Respuestas ciudadanas",
+  "Propuestas ciudadanas",
   "Transparencia",
   "Alertas cívicas",
   "Alineación territorial",
   "Timeline personal",
 ] as const;
+
+const filtrosPropuestas = ["Todas", "Recibidas", "En revisión", "Respondidas", "Sin respuesta registrada"] as const;
 
 function crearIniciativas(territorio: string): IniciativaLegislativa[] {
   return [
@@ -184,13 +199,63 @@ function crearVotaciones(): VotacionReciente[] {
   ];
 }
 
-function crearRespuestas(): RespuestaCiudadana[] {
+// TODO: reemplazar propuestas mock por datos reales vinculados a representantes y territorio.
+function crearPropuestasCiudadanas(territorio: string): PropuestaCiudadana[] {
   return [
-    { propuestaRecibida: "Cruces seguros cerca de escuelas", fecha: "09 mayo 2026", estadoRespuesta: "Respondida" },
-    { propuestaRecibida: "Reporte abierto de sesiones", fecha: "02 mayo 2026", estadoRespuesta: "En revisión" },
-    { propuestaRecibida: "Semáforo de compromisos públicos", fecha: "25 abril 2026", estadoRespuesta: "Recibida" },
-    { propuestaRecibida: "Audiencias ciudadanas trimestrales", fecha: "18 abril 2026", estadoRespuesta: "Respondida" },
-    { propuestaRecibida: "Mesa territorial de seguimiento", fecha: "10 abril 2026", estadoRespuesta: "En revisión" },
+    {
+      titulo: `Cruces seguros cerca de escuelas en ${territorio}`,
+      categoria: "Movilidad segura",
+      fechaRecepcion: "09 mayo 2026",
+      firmasCiudadanas: 1246,
+      estadoRespuesta: "Respondida",
+      prioridadCiudadana: "Alta",
+      resumen: "Solicita priorizar pasos peatonales, señalética y reducción de velocidad en zonas escolares.",
+    },
+    {
+      titulo: "Reporte abierto de sesiones y votaciones",
+      categoria: "Transparencia",
+      fechaRecepcion: "02 mayo 2026",
+      firmasCiudadanas: 690,
+      estadoRespuesta: "En revisión",
+      prioridadCiudadana: "Media",
+      resumen: "Pide publicar de forma clara asistencia, votaciones y participación en comisiones.",
+    },
+    {
+      titulo: "Semáforo de compromisos públicos",
+      categoria: "Rendición de cuentas",
+      fechaRecepcion: "25 abril 2026",
+      firmasCiudadanas: 438,
+      estadoRespuesta: "Recibida",
+      prioridadCiudadana: "Media",
+      resumen: "Propone dar seguimiento visual a compromisos territoriales y avances documentados.",
+    },
+    {
+      titulo: "Mesa territorial de seguimiento ciudadano",
+      categoria: "Participación ciudadana",
+      fechaRecepcion: "18 abril 2026",
+      firmasCiudadanas: 238,
+      estadoRespuesta: "Canalizada",
+      prioridadCiudadana: "Baja",
+      resumen: "Sugiere abrir reuniones periódicas para revisar propuestas locales con evidencia pública.",
+    },
+    {
+      titulo: "Presupuesto para agua comunitaria",
+      categoria: "Servicios públicos",
+      fechaRecepcion: "10 abril 2026",
+      firmasCiudadanas: 860,
+      estadoRespuesta: "En revisión",
+      prioridadCiudadana: "Alta",
+      resumen: "Solicita revisar inversión prioritaria en infraestructura básica y reportes de avance.",
+    },
+    {
+      titulo: "Informe de respuestas pendientes",
+      categoria: "Seguimiento ciudadano",
+      fechaRecepcion: "03 abril 2026",
+      firmasCiudadanas: 312,
+      estadoRespuesta: "Sin respuesta registrada",
+      prioridadCiudadana: "Alta",
+      resumen: "Busca identificar propuestas recibidas que aún no cuentan con actualización pública.",
+    },
   ];
 }
 
@@ -222,7 +287,7 @@ const REPRESENTANTES_MOCK: RepresentanteMock[] = [
     actividadEnPlataforma: "Activa en la plataforma",
     iniciativas: crearIniciativas("Jalisco"),
     votaciones: crearVotaciones(),
-    respuestasCiudadanas: crearRespuestas(),
+    propuestasCiudadanas: crearPropuestasCiudadanas("Jalisco"),
     indicadoresParticipacion: { asistencia: 94, alineacionTerritorial: 78, participacionCiudadana: 82, transparenciaLegislativa: 88 },
     alertas: [
       { titulo: "Seguimiento de respuesta pendiente", severidad: "media", descripcion: "Una propuesta ciudadana requiere actualización pública de avance." },
@@ -261,7 +326,7 @@ const REPRESENTANTES_MOCK: RepresentanteMock[] = [
     actividadEnPlataforma: "Activa en la plataforma",
     iniciativas: crearIniciativas("Nuevo León"),
     votaciones: crearVotaciones(),
-    respuestasCiudadanas: crearRespuestas(),
+    propuestasCiudadanas: crearPropuestasCiudadanas("Nuevo León"),
     indicadoresParticipacion: { asistencia: 95, alineacionTerritorial: 84, participacionCiudadana: 79, transparenciaLegislativa: 91 },
     alertas: [
       { titulo: "Alta participación ciudadana recibida", severidad: "baja", descripcion: "El volumen de propuestas exige seguimiento público constante." },
@@ -299,7 +364,7 @@ const REPRESENTANTES_MOCK: RepresentanteMock[] = [
     actividadEnPlataforma: "Perfil completado por comité ciudadano",
     iniciativas: crearIniciativas("Jalisco ciudadano"),
     votaciones: crearVotaciones(),
-    respuestasCiudadanas: crearRespuestas(),
+    propuestasCiudadanas: crearPropuestasCiudadanas("Jalisco ciudadano"),
     indicadoresParticipacion: { asistencia: 89, alineacionTerritorial: 81, participacionCiudadana: 86, transparenciaLegislativa: 80 },
     alertas: [
       { titulo: "Seguimiento pendiente de compromisos", severidad: "media", descripcion: "Hay compromisos ciudadanos que requieren cierre documental." },
@@ -325,6 +390,14 @@ function contarIniciativas(iniciativas: IniciativaLegislativa[], tipo: TipoInici
   return iniciativas.filter((iniciativa) => iniciativa.tipo === tipo).length;
 }
 
+function contarPropuestas(propuestas: PropuestaCiudadana[], estado: EstadoRespuesta) {
+  return propuestas.filter((propuesta) => propuesta.estadoRespuesta === estado).length;
+}
+
+function sumarFirmas(propuestas: PropuestaCiudadana[]) {
+  return propuestas.reduce((total, propuesta) => total + propuesta.firmasCiudadanas, 0);
+}
+
 export default function CongresoCivicoRepresentantePerfilPage({ params }: { params: { id: string } }) {
   const representante = obtenerRepresentante(params.id);
 
@@ -333,11 +406,13 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
   }
 
   const tipo = tipoConfig[representante.tipoRepresentacion];
+  const propuestas = representante.propuestasCiudadanas;
+  const nivelRespuestaCiudadana = 68;
   const resumenActividad = [
     { label: "Iniciativas apoyadas", valor: contarIniciativas(representante.iniciativas, "apoyada"), color: "bg-[#DCFCE7] text-[#15803D]" },
     { label: "Iniciativas presentadas", valor: contarIniciativas(representante.iniciativas, "presentada"), color: "bg-[#E0F2FE] text-[#0369A1]" },
     { label: "Votos emitidos", valor: representante.votaciones.length, color: "bg-[#EDE9FE] text-[#6D28D9]" },
-    { label: "Respuestas ciudadanas", valor: representante.respuestasCiudadanas.length, color: "bg-[#FFF1A8] text-[#0A4E84]" },
+    { label: "Propuestas ciudadanas", valor: propuestas.length, color: "bg-[#FFF1A8] text-[#0A4E84]" },
     { label: "Alertas activas", valor: representante.alertas.length, color: "bg-[#FFEDD5] text-[#C2410C]" },
   ];
   const metricas = [
@@ -348,6 +423,13 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
     { label: "Votos a favor", valor: representante.votosAFavor, color: "bg-[#E0F2FE] text-[#0369A1]" },
     { label: "Votos en contra", valor: representante.votosEnContra, color: "bg-[#FEF3C7] text-[#92400E]" },
     { label: "Abstenciones", valor: representante.abstenciones, color: "bg-slate-100 text-slate-600" },
+  ];
+  const metricasPropuestas = [
+    { label: "Propuestas recibidas", valor: propuestas.length, color: "bg-[#E0F2FE] text-[#0369A1]" },
+    { label: "Firmas acumuladas", valor: sumarFirmas(propuestas).toLocaleString("es-MX"), color: "bg-[#FFF1A8] text-[#0A4E84]" },
+    { label: "Respuestas emitidas", valor: contarPropuestas(propuestas, "Respondida"), color: "bg-[#DCFCE7] text-[#15803D]" },
+    { label: "En revisión", valor: contarPropuestas(propuestas, "En revisión"), color: "bg-[#FEF3C7] text-[#92400E]" },
+    { label: "Sin respuesta registrada", valor: contarPropuestas(propuestas, "Sin respuesta registrada"), color: "bg-[#FCE7F3] text-[#BE185D]" },
   ];
   const indicadores = [
     { label: "Asistencia", valor: representante.indicadoresParticipacion.asistencia, color: "bg-[#16A34A]" },
@@ -424,6 +506,71 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
           </div>
         </section>
 
+        <section className="mb-5 overflow-hidden rounded-[24px] bg-white shadow-sm ring-1 ring-[#E5E7EB]">
+          <div className="bg-[#E4007C] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white">Propuestas ciudadanas recibidas</div>
+          <div className="grid gap-5 p-5 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                {metricasPropuestas.map((metrica) => (
+                  <article key={metrica.label} className="rounded-[18px] bg-[#F8FAFC] p-3 ring-1 ring-slate-100">
+                    <div className={`${metrica.color} rounded-2xl px-3 py-2 text-2xl font-black`}>{metrica.valor}</div>
+                    <div className="mt-2 text-[11px] font-bold uppercase leading-4 text-slate-600">{metrica.label}</div>
+                  </article>
+                ))}
+              </div>
+
+              <article className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
+                <h2 className="text-sm font-black uppercase tracking-[0.12em] text-[#0A4E84]">¿Qué significa esto?</h2>
+                <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">
+                  Esta sección muestra las propuestas ciudadanas que han sido registradas para seguimiento territorial. La información es demostrativa y servirá para medir respuesta pública, participación y alineación territorial cuando existan datos reales.
+                </p>
+              </article>
+
+              <article className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
+                <div className="flex items-center justify-between gap-3 text-sm font-black text-[#111827]">
+                  <span>Nivel de respuesta ciudadana</span>
+                  <span>{nivelRespuestaCiudadana}%</span>
+                </div>
+                <div className="mt-3 h-3 overflow-hidden rounded-full bg-white">
+                  <div className="h-full rounded-full bg-gradient-to-r from-[#E4007C] via-[#F97316] to-[#16A34A]" style={{ width: `${nivelRespuestaCiudadana}%` }} />
+                </div>
+              </article>
+            </div>
+
+            <div>
+              <div className="mb-4 flex flex-wrap gap-2">
+                {filtrosPropuestas.map((filtro, index) => (
+                  <span key={filtro} className={`rounded-full px-3 py-2 text-xs font-black ${index === 0 ? "bg-[#E4007C] text-white" : "bg-[#F8FAFC] text-slate-600 ring-1 ring-slate-100"}`}>{filtro}</span>
+                ))}
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {propuestas.map((propuesta) => (
+                  <article key={`${propuesta.titulo}-${propuesta.fechaRecepcion}`} className="rounded-[18px] bg-[#F8FAFC] p-4 ring-1 ring-slate-100">
+                    <div className="flex flex-wrap gap-2">
+                      <span className={`${respuestaConfig[propuesta.estadoRespuesta]} rounded-full px-3 py-1 text-xs font-black`}>{propuesta.estadoRespuesta}</span>
+                      <span className={`${prioridadConfig[propuesta.prioridadCiudadana]} rounded-full px-3 py-1 text-xs font-black`}>Prioridad {propuesta.prioridadCiudadana}</span>
+                    </div>
+                    <h2 className="mt-3 text-base font-black text-[#111827]">{propuesta.titulo}</h2>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-[0.08em] text-[#0A4E84]">
+                      {propuesta.categoria} · {propuesta.fechaRecepcion}
+                    </p>
+                    <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">{propuesta.resumen}</p>
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <span className="rounded-2xl bg-white px-3 py-2 text-sm font-black text-[#111827] ring-1 ring-slate-100">
+                        {propuesta.firmasCiudadanas.toLocaleString("es-MX")} firmas
+                      </span>
+                      <Link href="/congreso-civico/iniciativas" className="rounded-full bg-[#E4007C] px-4 py-2 text-center text-xs font-black uppercase text-white shadow-sm">
+                        Ver propuesta
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-5">
             <section className="overflow-hidden rounded-[22px] bg-white shadow-sm ring-1 ring-[#E5E7EB]">
@@ -497,19 +644,6 @@ export default function CongresoCivicoRepresentantePerfilPage({ params }: { para
                       <div className={`${indicador.color} h-full rounded-full`} style={{ width: `${indicador.valor}%` }} />
                     </div>
                   </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="overflow-hidden rounded-[22px] bg-white shadow-sm ring-1 ring-[#E5E7EB]">
-              <div className="bg-[#E4007C] px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-white">Respuestas ciudadanas</div>
-              <div className="grid gap-3 p-5">
-                {representante.respuestasCiudadanas.map((respuesta) => (
-                  <article key={`${respuesta.propuestaRecibida}-${respuesta.fecha}`} className="rounded-2xl bg-[#F8FAFC] p-4">
-                    <span className={`${respuestaConfig[respuesta.estadoRespuesta]} rounded-full px-3 py-1 text-xs font-black`}>{respuesta.estadoRespuesta}</span>
-                    <h2 className="mt-3 font-black text-[#111827]">{respuesta.propuestaRecibida}</h2>
-                    <p className="mt-1 text-sm font-semibold text-slate-600">{respuesta.fecha}</p>
-                  </article>
                 ))}
               </div>
             </section>
