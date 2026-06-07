@@ -13,6 +13,7 @@ type IniciativaCivica = {
   apoyoCiudadano: number;
   fechaActualizacion: string;
   resumen: string;
+  alertasCivicas: string[];
   color: string;
 };
 
@@ -27,6 +28,7 @@ const iniciativasCivicas: IniciativaCivica[] = [
     apoyoCiudadano: 84,
     fechaActualizacion: "2 junio 2026",
     resumen: "Propone seguimiento ciudadano a servicios de agua, mantenimiento y reportes territoriales.",
+    alertasCivicas: ["Seguimiento territorial", "Evidencia documental"],
     color: "bg-[#0EA5E9] text-white",
   },
   {
@@ -39,6 +41,7 @@ const iniciativasCivicas: IniciativaCivica[] = [
     apoyoCiudadano: 91,
     fechaActualizacion: "29 mayo 2026",
     resumen: "Busca explicar votaciones públicas con fichas claras, trazabilidad y lenguaje ciudadano.",
+    alertasCivicas: ["Trazabilidad de voto", "Explicación pública"],
     color: "bg-[#E4007C] text-white",
   },
   {
@@ -51,6 +54,7 @@ const iniciativasCivicas: IniciativaCivica[] = [
     apoyoCiudadano: 76,
     fechaActualizacion: "24 mayo 2026",
     resumen: "Plantea formatos simples para consultar propuestas ciudadanas por colonia y comunidad.",
+    alertasCivicas: ["Accesibilidad", "Protección de datos"],
     color: "bg-[#16A34A] text-white",
   },
   {
@@ -63,6 +67,7 @@ const iniciativasCivicas: IniciativaCivica[] = [
     apoyoCiudadano: 88,
     fechaActualizacion: "18 mayo 2026",
     resumen: "Ordena información presupuestal por territorio para facilitar revisión ciudadana.",
+    alertasCivicas: ["Comparabilidad territorial", "Actualización de fuentes"],
     color: "bg-[#F97316] text-white",
   },
 ];
@@ -164,6 +169,13 @@ export default function CongresoCivicoIniciativasPage() {
                   <div className="rounded-2xl bg-[#F8FAFC] p-3 text-sm"><strong>Apoyo:</strong> {iniciativa.apoyoCiudadano}%</div>
                   <div className="rounded-2xl bg-[#F8FAFC] p-3 text-sm"><strong>Actualización:</strong> {iniciativa.fechaActualizacion}</div>
                   <div className="rounded-2xl bg-[#F8FAFC] p-3 text-sm"><strong>Revisores:</strong> {iniciativa.expertosRevisores.join(", ")}</div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {iniciativa.alertasCivicas.map((alerta) => (
+                    <span key={alerta} className="rounded-full bg-[#FFF8F0] px-3 py-1 text-xs font-bold text-[#0A4E84] ring-1 ring-[#F7C9DD]">
+                      Alerta cívica: {alerta}
+                    </span>
+                  ))}
                 </div>
                 <Link href={`/congreso-civico/iniciativas/${iniciativa.id}`} className="mt-5 inline-flex rounded-full bg-[#E4007C] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#C9006B]">
                   Ver iniciativa -&gt;
