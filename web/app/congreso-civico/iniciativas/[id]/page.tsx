@@ -6,6 +6,7 @@ type EstadoIniciativa = "Recibida" | "En análisis" | "Con observaciones" | "Lis
 
 type IniciativaCivicaDetalle = {
   id: string;
+  legacyIds?: string[];
   titulo: string;
   tema: string;
   estado: EstadoIniciativa;
@@ -16,9 +17,11 @@ type IniciativaCivicaDetalle = {
   comiteTecnico: string;
   expertosRevisores: string[];
   observacionesTecnicas: string[];
+  alertasCivicas: string[];
   apoyoCiudadano: number;
   estadoLegislativoCivico: string;
   historialActividad: Array<{ fecha: string; actividad: string }>;
+  rutaSeguimiento: Array<{ fase: string; descripcion: string }>;
   color: string;
 };
 
@@ -37,6 +40,7 @@ const iniciativasCivicas: IniciativaCivicaDetalle[] = [
     comiteTecnico: "Comité de Presupuesto Territorial",
     expertosRevisores: ["Mariana Soto", "Rocío Padilla"],
     observacionesTecnicas: ["Definir fuente de reportes territoriales.", "Separar evidencia ciudadana de respuesta institucional.", "Evitar publicar datos personales sensibles."],
+    alertasCivicas: ["Seguimiento territorial", "Evidencia documental"],
     apoyoCiudadano: 84,
     estadoLegislativoCivico: "Revisión técnica ciudadana inicial",
     historialActividad: [
@@ -44,10 +48,16 @@ const iniciativasCivicas: IniciativaCivicaDetalle[] = [
       { fecha: "26 mayo 2026", actividad: "Asignación a comité técnico relacionado." },
       { fecha: "18 mayo 2026", actividad: "Recepción de propuesta demostrativa." },
     ],
+    rutaSeguimiento: [
+      { fase: "Recepción", descripcion: "La propuesta fue registrada para lectura ciudadana." },
+      { fase: "Revisión técnica", descripcion: "El comité relacionado revisa alcance, evidencia y cuidado de datos." },
+      { fase: "Seguimiento", descripcion: "La ciudadanía podrá observar avances y actualizaciones territoriales." },
+    ],
     color: "bg-[#0EA5E9] text-white",
   },
   {
     id: "votaciones-legislativas-abiertas",
+    legacyIds: ["ini-001", "ini-003"],
     titulo: "Votaciones legislativas abiertas",
     tema: "Transparencia",
     estado: "Con observaciones",
@@ -58,12 +68,18 @@ const iniciativasCivicas: IniciativaCivicaDetalle[] = [
     comiteTecnico: "Comité de Transparencia Legislativa",
     expertosRevisores: ["Ana Paula Rivera", "Luis Fernando Mora"],
     observacionesTecnicas: ["Precisar alcance de cada ficha.", "Incluir fecha y fuente verificable.", "Mantener lenguaje descriptivo y no acusatorio."],
+    alertasCivicas: ["Trazabilidad de voto", "Explicación pública", "Memoria cívica"],
     apoyoCiudadano: 91,
     estadoLegislativoCivico: "Con observaciones técnicas preliminares",
     historialActividad: [
       { fecha: "29 mayo 2026", actividad: "Carga de observaciones técnicas." },
       { fecha: "21 mayo 2026", actividad: "Revisión de lenguaje ciudadano." },
       { fecha: "12 mayo 2026", actividad: "Registro de iniciativa cívica." },
+    ],
+    rutaSeguimiento: [
+      { fase: "Registro", descripcion: "La iniciativa mantiene ficha ciudadana para consulta pública." },
+      { fase: "Observaciones", descripcion: "Los revisores sugieren fuente verificable, fecha y explicación breve." },
+      { fase: "Publicación", descripcion: "La ruta cívica prepara una versión clara para seguimiento legislativo." },
     ],
     color: "bg-[#E4007C] text-white",
   },
@@ -79,6 +95,7 @@ const iniciativasCivicas: IniciativaCivicaDetalle[] = [
     comiteTecnico: "Comité de Derechos y Participación",
     expertosRevisores: ["Daniela Chávez", "Mateo Núñez"],
     observacionesTecnicas: ["Probar lenguaje con usuarios no especializados.", "Agregar criterios de privacidad.", "Separar opinión ciudadana de dictamen técnico."],
+    alertasCivicas: ["Accesibilidad", "Protección de datos"],
     apoyoCiudadano: 76,
     estadoLegislativoCivico: "Recibida para revisión inicial",
     historialActividad: [
@@ -86,10 +103,16 @@ const iniciativasCivicas: IniciativaCivicaDetalle[] = [
       { fecha: "20 mayo 2026", actividad: "Registro de tema y comité sugerido." },
       { fecha: "14 mayo 2026", actividad: "Carga de resumen ciudadano." },
     ],
+    rutaSeguimiento: [
+      { fase: "Consulta", descripcion: "Se revisa que el formato sea comprensible para ciudadanía no especializada." },
+      { fase: "Privacidad", descripcion: "La propuesta separa participación pública de datos personales sensibles." },
+      { fase: "Piloto", descripcion: "Se prepara una lectura demostrativa por colonia o comunidad." },
+    ],
     color: "bg-[#16A34A] text-white",
   },
   {
     id: "presupuesto-visible-distrito",
+    legacyIds: ["ini-002"],
     titulo: "Presupuesto visible por distrito",
     tema: "Presupuesto público",
     estado: "Lista para seguimiento",
@@ -100,12 +123,18 @@ const iniciativasCivicas: IniciativaCivicaDetalle[] = [
     comiteTecnico: "Comité de Presupuesto Territorial",
     expertosRevisores: ["Mariana Soto", "Ernesto Galván"],
     observacionesTecnicas: ["Estandarizar categorías presupuestales.", "Distinguir presupuesto aprobado y ejercido.", "Agregar fecha de actualización visible."],
+    alertasCivicas: ["Comparabilidad territorial", "Actualización de fuentes"],
     apoyoCiudadano: 88,
     estadoLegislativoCivico: "Lista para seguimiento ciudadano",
     historialActividad: [
       { fecha: "18 mayo 2026", actividad: "Validación de estructura demostrativa." },
       { fecha: "9 mayo 2026", actividad: "Revisión de criterios presupuestales." },
       { fecha: "1 mayo 2026", actividad: "Recepción de propuesta demostrativa." },
+    ],
+    rutaSeguimiento: [
+      { fase: "Normalización", descripcion: "Se preparan categorías comunes para comparar distritos." },
+      { fase: "Fuentes", descripcion: "La ficha distingue presupuesto aprobado, ejercido y fecha de actualización." },
+      { fase: "Seguimiento", descripcion: "La vista queda lista para observación ciudadana periódica." },
     ],
     color: "bg-[#F97316] text-white",
   },
@@ -130,11 +159,13 @@ const estadosVisuales: Record<EstadoVisual, { titulo: string; descripcion: strin
 };
 
 export function generateStaticParams() {
-  return iniciativasCivicas.map((iniciativa) => ({ id: iniciativa.id }));
+  return iniciativasCivicas.flatMap((iniciativa) =>
+    [iniciativa.id, ...(iniciativa.legacyIds ?? [])].map((id) => ({ id })),
+  );
 }
 
 function obtenerIniciativa(id: string) {
-  return iniciativasCivicas.find((iniciativa) => iniciativa.id === id);
+  return iniciativasCivicas.find((iniciativa) => iniciativa.id === id || iniciativa.legacyIds?.includes(id));
 }
 
 function EstadoDetalle({ tipo }: { tipo: EstadoVisual }) {
@@ -246,6 +277,34 @@ export default function CongresoCivicoIniciativaDetallePage({ params }: { params
                 <div key={`${evento.fecha}-${evento.actividad}`} className="rounded-2xl bg-[#F8FAFC] p-4">
                   <div className="text-xs font-bold uppercase text-slate-500">{evento.fecha}</div>
                   <p className="mt-2 text-sm leading-6 text-slate-700">{evento.actividad}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+        </section>
+
+        <section className="mb-8 grid gap-5 lg:grid-cols-2">
+          <article className="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-[#F7C9DD]">
+            <h2 className="text-2xl font-bold text-[#E4007C]">Alertas cívicas relacionadas</h2>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {iniciativa.alertasCivicas.map((alerta) => (
+                <span key={alerta} className="rounded-full bg-[#FCE7F3] px-3 py-2 text-xs font-bold text-[#BE185D]">
+                  {alerta}
+                </span>
+              ))}
+            </div>
+            <p className="mt-5 text-sm leading-6 text-slate-600">
+              Las alertas sirven para observar temas que requieren seguimiento ciudadano, sin emitir juicios ni sanciones.
+            </p>
+          </article>
+
+          <article className="rounded-[28px] bg-white p-6 shadow-sm ring-1 ring-[#F7C9DD]">
+            <h2 className="text-2xl font-bold text-[#E4007C]">Ruta de seguimiento</h2>
+            <div className="mt-5 space-y-3">
+              {iniciativa.rutaSeguimiento.map((paso) => (
+                <div key={paso.fase} className="rounded-2xl bg-[#F8FAFC] p-4">
+                  <div className="text-sm font-bold text-[#0A4E84]">{paso.fase}</div>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">{paso.descripcion}</p>
                 </div>
               ))}
             </div>
