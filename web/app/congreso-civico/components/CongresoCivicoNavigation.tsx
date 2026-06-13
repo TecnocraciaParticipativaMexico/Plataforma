@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const rutasCongresoCivico = [
   { href: "/congreso-civico", label: "Inicio" },
   { href: "/congreso-civico/dashboard", label: "Dashboard" },
+  { href: "/congreso-civico/actividad", label: "Actividad" },
   { href: "/congreso-civico/representacion", label: "Representación" },
   { href: "/congreso-civico/comites", label: "Comités" },
   { href: "/congreso-civico/comites/expertos", label: "Expertos" },

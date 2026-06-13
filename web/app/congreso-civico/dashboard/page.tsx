@@ -89,6 +89,7 @@ const actividadReciente: ActividadCiudadana[] = [
 ];
 
 const proximosPasos = [
+  { titulo: "Ver actividad ciudadana", descripcion: "Consulta apoyos, alertas e historial de participación.", href: "/congreso-civico/actividad" },
   { titulo: "Buscar mi representante", descripcion: "Ubica perfiles por estado, municipio, colonia o código postal.", href: "/congreso-civico/representacion/buscar" },
   { titulo: "Revisar iniciativas", descripcion: "Consulta propuestas ciudadanas y su avance cívico.", href: "/congreso-civico/iniciativas" },
   { titulo: "Explorar comités", descripcion: "Conoce equipos ciudadanos de revisión técnica.", href: "/congreso-civico/comites" },
