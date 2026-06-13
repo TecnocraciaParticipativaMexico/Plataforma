@@ -19,6 +19,13 @@ const accesosPortal: AccesoPortal[] = [
     color: "bg-[#E4007C] text-white",
   },
   {
+    href: "/congreso-civico/actividad",
+    titulo: "Actividad ciudadana",
+    descripcion: "Consulta apoyos, seguimientos, alertas e historial de participación.",
+    etiqueta: "Participación",
+    color: "bg-[#14B8A6] text-white",
+  },
+  {
     href: "/congreso-civico/representacion",
     titulo: "Mapa de Representación",
     descripcion: "Encuentra quién te representa, cómo participa y qué ha votado.",
@@ -95,6 +102,11 @@ const proximosPasos = [
     titulo: "Empieza por el dashboard",
     descripcion: "Obtén una vista rápida del seguimiento ciudadano.",
     href: "/congreso-civico/dashboard",
+  },
+  {
+    titulo: "Revisa tu actividad",
+    descripcion: "Consulta apoyos, alertas e historial de participación.",
+    href: "/congreso-civico/actividad",
   },
   {
     titulo: "Busca representación",
@@ -174,7 +186,7 @@ export default function CongresoCivicoPage() {
               <div className="text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">Accesos principales</div>
               <h2 className="mt-1 text-2xl font-bold">Explora el Congreso Cívico</h2>
             </div>
-            <span className="rounded-full bg-[#E0F2FE] px-3 py-1 text-xs font-bold text-[#0369A1]">7 rutas conectadas</span>
+            <span className="rounded-full bg-[#E0F2FE] px-3 py-1 text-xs font-bold text-[#0369A1]">8 rutas conectadas</span>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
