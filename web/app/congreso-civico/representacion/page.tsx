@@ -3,9 +3,43 @@ import {
   alertasRepresentacionCongresoCivico,
   curulesDiputadosCongresoCivico,
   escanosSenadoCongresoCivico,
-  estadosRepresentacionCongresoCivico,
   representantesMapaCongresoCivico,
 } from "../../lib/congresoCivicoRepresentacion";
+
+const estadosMexico = [
+  "Aguascalientes",
+  "Baja California",
+  "Baja California Sur",
+  "Campeche",
+  "Chiapas",
+  "Chihuahua",
+  "Ciudad de México",
+  "Coahuila",
+  "Colima",
+  "Durango",
+  "Guanajuato",
+  "Guerrero",
+  "Hidalgo",
+  "Jalisco",
+  "Estado de México",
+  "Michoacán",
+  "Morelos",
+  "Nayarit",
+  "Nuevo León",
+  "Oaxaca",
+  "Puebla",
+  "Querétaro",
+  "Quintana Roo",
+  "San Luis Potosí",
+  "Sinaloa",
+  "Sonora",
+  "Tabasco",
+  "Tamaulipas",
+  "Tlaxcala",
+  "Veracruz",
+  "Yucatán",
+  "Zacatecas",
+] as const;
 
 const totalAsientos = curulesDiputadosCongresoCivico.length + escanosSenadoCongresoCivico.length;
 
@@ -34,7 +68,7 @@ const accesosRepresentacion = [
   {
     titulo: "Representación por estado",
     descripcion: "Explora los 32 estados disponibles.",
-    etiqueta: `${estadosRepresentacionCongresoCivico.length} estados`,
+    etiqueta: `${estadosMexico.length} estados`,
     clase: "bg-[#16A34A] text-white",
     href: "/congreso-civico/representacion/estados",
   },
@@ -53,7 +87,7 @@ const resumenRepresentacion = [
   },
   {
     label: "Estados disponibles",
-    valor: estadosRepresentacionCongresoCivico.length,
+    valor: estadosMexico.length,
     clase: "bg-[#F2C300] text-[#1F2937]",
   },
   {
@@ -131,9 +165,9 @@ export default function CongresoCivicoRepresentacionPage() {
           <div className="rounded-[24px] bg-[#0A4E84] p-5 text-white shadow-sm">
             <h2 className="text-xl font-bold">Estados disponibles</h2>
             <div className="mt-4 flex max-h-56 flex-wrap gap-2 overflow-y-auto pr-1">
-              {estadosRepresentacionCongresoCivico.map((estado) => (
-                <span key={estado.clave} className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#0A4E84]">
-                  {estado.nombre}
+              {estadosMexico.map((estado) => (
+                <span key={estado} className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#0A4E84]">
+                  {estado}
                 </span>
               ))}
             </div>
