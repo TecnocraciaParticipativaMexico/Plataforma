@@ -6,10 +6,10 @@ import { useMemo, useState } from "react";
 const modulosPrioritarios = [
   {
     id: "03",
-    nombre: "Congreso Civico",
+    nombre: "Congreso Cívico",
     ruta: "/congreso-civico",
     descripcion:
-      "Seguimiento ciudadano de iniciativas, representantes, alertas civicas y alineacion territorial.",
+      "Seguimiento ciudadano de iniciativas, representantes, alertas cívicas y alineación territorial.",
     estado: "MVP visual disponible",
     color: "#E6007E",
   },
@@ -33,21 +33,21 @@ export default function ModulosComitesPage() {
           href="/comites"
           className="mb-4 inline-block text-sm font-semibold"
         >
-          ← Volver a comites
+          ← Volver a comités
         </Link>
 
         <div className="mb-6 rounded-[30px] bg-white p-6 shadow-sm">
           <div className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-[#E6007E]">
-            Directorio de modulos
+            Directorio de módulos
           </div>
 
           <h1 className="mb-3 text-3xl font-extrabold leading-tight">
-            Modulos de Tecnocracia Participativa
+            Módulos de Tecnocracia Participativa
           </h1>
 
           <p className="text-sm leading-6 text-slate-600">
-            Este directorio prepara la estructura para publicar los 30 modulos.
-            Por ahora, Congreso Civico queda visible como prioridad para entrar
+            Este directorio prepara la estructura para publicar los 30 módulos.
+            Por ahora, Congreso Cívico queda visible como prioridad para entrar
             al MVP ciudadano.
           </p>
         </div>
@@ -57,14 +57,14 @@ export default function ModulosComitesPage() {
             htmlFor="buscar-modulo"
             className="mb-2 block text-sm font-bold uppercase tracking-[0.15em] text-[#C2187A]"
           >
-            Buscar modulo
+            Buscar módulo
           </label>
 
           <input
             id="buscar-modulo"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Ej. Congreso Civico"
+            placeholder="Ej. Congreso Cívico"
             className="w-full rounded-2xl border border-[#0A4E84] bg-white px-4 py-3 text-base outline-none focus:border-[#E6007E]"
           />
         </div>
@@ -82,7 +82,7 @@ export default function ModulosComitesPage() {
 
               <div className="p-5">
                 <div className="mb-2 text-sm font-extrabold text-[#E6007E]">
-                  Modulo {modulo.id}
+                  Módulo {modulo.id}
                 </div>
 
                 <h2 className="mb-3 text-2xl font-extrabold leading-tight text-[#0A4E84]">
@@ -101,7 +101,7 @@ export default function ModulosComitesPage() {
                     Frontend ciudadano
                   </span>
                   <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-                    Navegacion disponible
+                    Navegación disponible
                   </span>
                 </div>
 
@@ -109,7 +109,7 @@ export default function ModulosComitesPage() {
                   href={modulo.ruta}
                   className="block rounded-2xl bg-[#E6007E] px-5 py-4 text-center text-base font-extrabold text-white shadow-[0_6px_0_0_#9B0057]"
                 >
-                  Entrar a Congreso Civico
+                  Entrar a Congreso Cívico
                 </Link>
               </div>
             </article>
@@ -118,13 +118,13 @@ export default function ModulosComitesPage() {
 
         {modulos.length === 0 ? (
           <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm leading-6 text-slate-600">
-            No encontramos un modulo con esa busqueda. Prueba con Congreso
-            Civico.
+            No encontramos un módulo con esa búsqueda. Prueba con Congreso
+            Cívico.
           </div>
         ) : null}
 
         <div className="mt-6 rounded-2xl bg-blue-50 p-4 text-sm leading-6 text-blue-900">
-          La lista completa de 30 modulos podra incorporarse por etapas sin
+          La lista completa de 30 módulos podrá incorporarse por etapas sin
           cambiar la estructura del directorio.
         </div>
       </div>
