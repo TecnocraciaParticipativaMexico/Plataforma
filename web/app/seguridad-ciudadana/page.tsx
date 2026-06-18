@@ -52,23 +52,27 @@ export default function SeguridadCiudadanaPage() {
   }, []);
 
   useEffect(() => {
-    const savedDraft = readLocalDraft();
+    const timeout = window.setTimeout(() => {
+      const savedDraft = readLocalDraft();
 
-    if (savedDraft) {
-      setFolio(savedDraft.folio);
-      setReport(savedDraft.report);
-      setEvidence(savedDraft.evidence);
-      setTrace(savedDraft.trace);
-      setDossierHash(savedDraft.dossierHash);
-      setLastSavedAt(savedDraft.updatedAt);
-      setRestored(true);
-    } else {
-      const initialFolio = createLocalFolio();
-      setFolio(initialFolio);
-      setTrace([createTraceEvent("draft_created", "Se inició un borrador local en este navegador.")]);
-    }
+      if (savedDraft) {
+        setFolio(savedDraft.folio);
+        setReport(savedDraft.report);
+        setEvidence(savedDraft.evidence);
+        setTrace(savedDraft.trace);
+        setDossierHash(savedDraft.dossierHash);
+        setLastSavedAt(savedDraft.updatedAt);
+        setRestored(true);
+      } else {
+        const initialFolio = createLocalFolio();
+        setFolio(initialFolio);
+        setTrace([createTraceEvent("draft_created", "Se inició un borrador local en este navegador.")]);
+      }
 
-    setIsReady(true);
+      setIsReady(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
