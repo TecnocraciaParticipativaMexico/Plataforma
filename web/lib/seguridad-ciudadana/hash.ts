@@ -2,7 +2,7 @@ import type { EvidenceItem, SecurityReport } from "./types";
 
 const encoder = new TextEncoder();
 
-export async function sha256ArrayBuffer(buffer: ArrayBuffer): Promise<string> {
+export async function sha256Buffer(buffer: BufferSource): Promise<string> {
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
   return Array.from(new Uint8Array(hashBuffer))
     .map((byte) => byte.toString(16).padStart(2, "0"))
@@ -10,11 +10,11 @@ export async function sha256ArrayBuffer(buffer: ArrayBuffer): Promise<string> {
 }
 
 export async function sha256Text(value: string): Promise<string> {
-  return sha256ArrayBuffer(encoder.encode(value));
+  return sha256Buffer(encoder.encode(value));
 }
 
 export async function sha256File(file: File): Promise<string> {
-  return sha256ArrayBuffer(await file.arrayBuffer());
+  return sha256Buffer(await file.arrayBuffer());
 }
 
 export function sanitizeLocation(value: string): string {
