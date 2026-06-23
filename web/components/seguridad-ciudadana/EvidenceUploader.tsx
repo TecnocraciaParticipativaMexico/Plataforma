@@ -28,7 +28,7 @@ function formatTimestamp(value: string): string {
 
 export function EvidenceUploader({ evidence, onEvidenceAdded, onEvidenceRemoved, onEvidenceUpdated }: EvidenceUploaderProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [isHashing, setIsHashing] = useState(false);
+  const iisHashing, setIsHashing] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [defaultSourceContext, setDefaultSourceContext] = useState("");
 
@@ -104,7 +104,7 @@ export function EvidenceUploader({ evidence, onEvidenceAdded, onEvidenceRemoved,
           className="mt-4 block w-full text-sm text-slate-700 file:mr-4 file:rounded-full file:border-0 file:bg-[#0A4E84] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-[#083E69]"
         />
         <p className="mt-3 text-xs leading-5 text-slate-600">
-          Máximo {MAX_FILES} archivos, 15 MB por archivo. El contenido se lee únicamente para calcular SHA-256 local. No se lee EXIF ni geolocalización.
+          Máximo {MAX_FILES} archivos, 15 MB por archivo. El contenido se lee únicamente para calcular SHA-256 local. No se leen metadatos internos de imagen ni ubicación automática.
         </p>
         {isHashing ? <p className="mt-3 text-sm font-bold text-[#E4007C]">Calculando hashes locales...</p> : null}
         {notice ? <p className="mt-3 text-sm font-semibold text-[#0A4E84]">{notice}</p> : null}

@@ -78,3 +78,38 @@ export type ValidationResult = {
   isValid: boolean;
   missingFields: string[];
 };
+
+export type PrivacyRisk = {
+  id: string;
+  label: string;
+  severity: "baja" | "media" | "alta";
+  message: string;
+};
+
+export type LocalAssistantResult = {
+  resumenCiudadano: string;
+  hechosDetectados: string[];
+  posiblesFechas: string[];
+  posiblesLugares: string[];
+  riesgosPrivacidad: PrivacyRisk[];
+  datosSensiblesDetectados: string[];
+  evidenciasSugeridas: string[];
+  preguntasParaMejorarReporte: string[];
+  nivelCompletitud: number;
+  advertenciasPrudentes: string[];
+};
+
+export type AbuseGuardResult = {
+  id: string;
+  label: string;
+  severity: "suave" | "media";
+  message: string;
+};
+
+export type LocalVerificationRoot = {
+  evidenceCount: number;
+  evidenceCombinedHash: string;
+  rootHash: string;
+  calculatedAt: string;
+  method: "merkle_simplificada_local";
+};

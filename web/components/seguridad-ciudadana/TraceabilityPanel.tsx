@@ -1,9 +1,10 @@
-import type { TraceEvent } from "@/lib/seguridad-ciudadana/types";
+import type { LocalVerificationRoot, TraceEvent } from "@/lib/seguridad-ciudadana/types";
 
 type TraceabilityPanelProps = {
   folio: string;
   dossierHash: string;
   previousDossierHash: string;
+  verificationRoot: LocalVerificationRoot | null;
   trace: TraceEvent[];
 };
 
@@ -14,7 +15,7 @@ function formatTimestamp(value: string): string {
   }).format(new Date(value));
 }
 
-export function TraceabilityPanel({ folio, dossierHash, previousDossierHash, trace }: TraceabilityPanelProps) {
+export function TraceabilityPanel({ folio, dossierHash, previousDossierHash, verificationRoot, trace }: TraceabilityPanelProps) {
   return (
     <section className="rounded-[24px] bg-white p-5 shadow-sm ring-1 ring-[#F7C9DD]">
       <div className="mb-3 inline-flex rounded-full bg-[#CEF7FA] px-3 py-1 text-xs font-bold uppercase text-[#006C73]">
@@ -38,6 +39,27 @@ export function TraceabilityPanel({ folio, dossierHash, previousDossierHash, tra
           <div className="text-xs font-bold uppercase text-slate-500">Hash previo local</div>
           <div className="mt-1 break-all font-mono text-xs font-bold leading-5 text-[#0A4E84]">{previousDossierHash || "Sin hash previo"}</div>
         </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="rounded-2xl bg-[#F8FAFC] p-4">
+          <div className="text-xs font-bold uppercase text-slate-500">Raíz local de evidencias</div>
+          <div className="mt-1 break-all font-mono text-xs font-bold leading-5 text-[#0A4E84]">{verificationRoot?.rootHash || "Calculando..."}</div>
+        </div>
+        <div className="rounded-2xl bg-[#F8FAFC] p-4">
+          <div className="text-xs font-bold uppercase text-slate-500">Evidencias</div>
+          <div className="mt-1 text-sm font-bold text-[#0A4E84]">{verificationRoot?.evidenceCount ?? 0}</div>
+        </div>
+        <div className="rounded-2xl bg-[#F8FAFC] p-4">
+          <div className="text-xs font-bold uppercase text-slate-500">Fecha de cálculo</div>
+          <div className="mt-1 text-sm font-bold text-[#0A4E84]">
+            {verificationRoot ? formatTimestamp(verificationRoot.calculatedAt) : "Pendiente"}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-2xl bg-[#E0F2FE] p-4 text-sm leading-6 text-slate-700">
+        Preparado para anclaje público futuro sin exponer datos personales. Esta raíz local de verificación no envía información fuera del navegador.
       </div>
 
       <ol className="mt-5 space-y-3">
