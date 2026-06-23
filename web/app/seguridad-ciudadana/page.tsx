@@ -5,11 +5,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CommitteeReviewMock } from "@/components/seguridad-ciudadana/CommitteeReviewMock";
 import { EvidenceUploader } from "@/components/seguridad-ciudadana/EvidenceUploader";
 import { ForensicPreview } from "@/components/seguridad-ciudadana/ForensicPreview";
+import { LocalAssistantPanel } from "@/components/seguridad-ciudadana/LocalAssistantPanel";
 import { LocalDraftStatus } from "@/components/seguridad-ciudadana/LocalDraftStatus";
 import { PrivacyConsentBox } from "@/components/seguridad-ciudadana/PrivacyConsentBox";
 import { SecurityReportForm } from "@/components/seguridad-ciudadana/SecurityReportForm";
 import { TraceabilityPanel } from "@/components/seguridad-ciudadana/TraceabilityPanel";
+import { analyzeAbuseGuards, detectRapidLocalSubmission, registerLocalCompileAttempt } from "@/lib/seguridad-ciudadana/abuseGuards";
 import { calculateDossierHash } from "@/lib/seguridad-ciudadana/hash";
+import { analyzeCitizenNarrative } from "@/lib/seguridad-ciudadana/localAssistant";
 import {
   clearLocalDraft,
   createLocalFolio,
@@ -18,8 +21,10 @@ import {
   readLocalDraft,
   saveLocalDraft,
 } from "@/lib/seguridad-ciudadana/localDrafts";
+import { createLocalVerificationRoot } from "@/lib/seguridad-ciudadana/merkle";
 import type {
   EvidenceItem,
+  LocalVerificationRoot,
   PrintableSectionId,
   SecurityReport,
   SecurityTab,
@@ -58,6 +63,7 @@ export default function SeguridadCiudadanaPage() {
   const [trace, setTrace] = useState<TraceEvent[]>([]);
   const [dossierHash, setDossierHash] = useState("");
   const [previousDossierHash, setPreviousDossierHash] = useState("");
+  const [verificationRoot, setVerificationRoot] = useState<LocalVerificationRoot | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [restored, setRestored] = useState(false);
@@ -66,6 +72,17 @@ export default function SeguridadCiudadanaPage() {
   const lastDraftToastAtRef = useRef(0);
 
   const validation = useMemo(() => validateReport(report), [report]);
+  const localAssistantResult = useMemo(
+    () =>
+      analyzeCitizenNarrative({
+        narrative: report.narrative,
+        category: report.category,
+        language: report.originalLanguage,
+        evidenceCount: evidence.length,
+      }),
+    [evidence.length, report.category, report.narrative, report.originalLanguage],
+  );
+  const abuseWarnings = useMemo(() => analyzeAbuseGuards(report.narrative), [report.narrative]);
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -120,6 +137,19 @@ export default function SeguridadCiudadanaPage() {
   }, [evidence, isReady, report]);
 
   useEffect(() => {
+    if (!isReady) return;
+
+    let cancelled = false;
+    void createLocalVerificationRoot(evidence).then((root) => {
+      if (!cancelled) setVerificationRoot(root);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [evidence, isReady]);
+
+  useEffect(() => {
     if (!isReady || !folio) return;
 
     const timeout = window.setTimeout(() => {
@@ -167,10 +197,16 @@ export default function SeguridadCiudadanaPage() {
   }
 
   function handleCompile() {
+    const rapidSubmissionWarning = detectRapidLocalSubmission();
+    if (rapidSubmissionWarning) {
+      showToast(rapidSubmissionWarning.message);
+    }
+
     if (!validation.isValid) {
       showToast("Faltan campos mínimos para compilar el reporte.");
       return;
     }
+    registerLocalCompileAttempt();
     registerEvent("report_compiled", "Se compiló la vista imprimible del registro ciudadano auxiliar.");
     setActiveTab("impresion");
     showToast("Reporte compilado localmente.");
@@ -191,6 +227,7 @@ export default function SeguridadCiudadanaPage() {
     setTrace([createTraceEvent("draft_created", "Se limpió el borrador anterior y se inició uno nuevo.")]);
     setDossierHash("");
     setPreviousDossierHash("");
+    setVerificationRoot(null);
     setLastSavedAt(null);
     setRestored(false);
     showToast("Borrador local limpiado.");
@@ -259,7 +296,16 @@ export default function SeguridadCiudadanaPage() {
               />
             </div>
             <div className="space-y-6">
-              {folio ? <TraceabilityPanel folio={folio} dossierHash={dossierHash} previousDossierHash={previousDossierHash} trace={trace} /> : null}
+              <LocalAssistantPanel result={localAssistantResult} abuseWarnings={abuseWarnings} />
+              {folio ? (
+                <TraceabilityPanel
+                  folio={folio}
+                  dossierHash={dossierHash}
+                  previousDossierHash={previousDossierHash}
+                  verificationRoot={verificationRoot}
+                  trace={trace}
+                />
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -267,7 +313,13 @@ export default function SeguridadCiudadanaPage() {
         {activeTab === "comites" ? <CommitteeReviewMock /> : null}
 
         {activeTab === "trazabilidad" && folio ? (
-          <TraceabilityPanel folio={folio} dossierHash={dossierHash} previousDossierHash={previousDossierHash} trace={trace} />
+          <TraceabilityPanel
+            folio={folio}
+            dossierHash={dossierHash}
+            previousDossierHash={previousDossierHash}
+            verificationRoot={verificationRoot}
+            trace={trace}
+          />
         ) : null}
 
         {activeTab === "impresion" && folio ? (

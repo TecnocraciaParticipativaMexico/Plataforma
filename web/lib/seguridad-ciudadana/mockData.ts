@@ -13,7 +13,7 @@ export const committeeReviews: CommitteeReview[] = [
     name: "Comité de Análisis Tecnológico",
     status: "orientacion",
     description: "Orientación sobre integridad digital local, hashes SHA-256 y conservación de archivos originales en el dispositivo.",
-    nextStep: "Recomendar resguardo local y evitar lectura de metadata sensible como EXIF o geolocalización.",
+    nextStep: "Recomendar resguardo local y evitar lectura de metadatos internos de imagen o ubicación automática.",
   },
   {
     level: "derechos_humanos",
