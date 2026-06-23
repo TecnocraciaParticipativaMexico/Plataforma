@@ -3,6 +3,7 @@ import type { TraceEvent } from "@/lib/seguridad-ciudadana/types";
 type TraceabilityPanelProps = {
   folio: string;
   dossierHash: string;
+  previousDossierHash: string;
   trace: TraceEvent[];
 };
 
@@ -13,25 +14,29 @@ function formatTimestamp(value: string): string {
   }).format(new Date(value));
 }
 
-export function TraceabilityPanel({ folio, dossierHash, trace }: TraceabilityPanelProps) {
+export function TraceabilityPanel({ folio, dossierHash, previousDossierHash, trace }: TraceabilityPanelProps) {
   return (
     <section className="rounded-[24px] bg-white p-5 shadow-sm ring-1 ring-[#F7C9DD]">
       <div className="mb-3 inline-flex rounded-full bg-[#CEF7FA] px-3 py-1 text-xs font-bold uppercase text-[#006C73]">
-        Sello local verificable
+        Bitácora local verificable
       </div>
-      <h2 className="text-xl font-bold text-[#0A4E84]">Trazabilidad local</h2>
+      <h2 className="text-xl font-bold text-[#0A4E84]">Trazabilidad local del expediente</h2>
       <p className="mt-2 text-sm leading-6 text-slate-700">
-        Este sello es un hash local del expediente. No es blockchain real, no es certificación oficial y no acredita cadena de custodia oficial.
+        Estos hashes son sellos locales calculados en este navegador. No son blockchain ni sustituyen revisiones o resguardos institucionales.
       </p>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
+      <div className="mt-5 grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl bg-[#F8FAFC] p-4">
           <div className="text-xs font-bold uppercase text-slate-500">Folio cívico local</div>
           <div className="mt-1 break-words font-mono text-sm font-bold text-[#0A4E84]">{folio}</div>
         </div>
         <div className="rounded-2xl bg-[#F8FAFC] p-4">
-          <div className="text-xs font-bold uppercase text-slate-500">Hash del expediente</div>
+          <div className="text-xs font-bold uppercase text-slate-500">Hash actual del expediente</div>
           <div className="mt-1 break-all font-mono text-xs font-bold leading-5 text-[#0A4E84]">{dossierHash || "Calculando..."}</div>
+        </div>
+        <div className="rounded-2xl bg-[#F8FAFC] p-4">
+          <div className="text-xs font-bold uppercase text-slate-500">Hash previo local</div>
+          <div className="mt-1 break-all font-mono text-xs font-bold leading-5 text-[#0A4E84]">{previousDossierHash || "Sin hash previo"}</div>
         </div>
       </div>
 

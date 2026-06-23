@@ -1,35 +1,46 @@
-import type { CommitteeReview } from "./types";
+import type { CommitteeReview, PrintableSectionId } from "./types";
 
 export const committeeReviews: CommitteeReview[] = [
   {
-    level: "colonia",
-    name: "Comité de colonia",
+    level: "auditoria",
+    name: "Comité de Auditoría Administrativa",
+    status: "revision_civica",
+    description: "Revisión cívica de bitácoras, fechas, montos narrados y posibles patrones administrativos sin emitir dictamen oficial.",
+    nextStep: "Priorizar preguntas de seguimiento y ordenar documentos para una aportación organizada.",
+  },
+  {
+    level: "tecnologico",
+    name: "Comité de Análisis Tecnológico",
     status: "orientacion",
-    description: "Revisión vecinal inicial para ordenar hechos, ubicar riesgos comunitarios y sugerir rutas de apoyo.",
-    nextStep: "Orientar a la persona reportante para conservar evidencias y acudir ante la autoridad competente.",
+    description: "Orientación sobre integridad digital local, hashes SHA-256 y conservación de archivos originales en el dispositivo.",
+    nextStep: "Recomendar resguardo local y evitar lectura de metadata sensible como EXIF o geolocalización.",
   },
   {
-    level: "municipal",
-    name: "Comité municipal",
-    status: "pendiente",
-    description: "Mesa cívica demostrativa para identificar patrones locales y necesidades de seguimiento institucional.",
-    nextStep: "Canalizar el registro ciudadano auxiliar a instancias municipales cuando la persona decida presentarlo.",
+    level: "derechos_humanos",
+    name: "Comité de Derechos Humanos",
+    status: "priorizacion",
+    description: "Priorización cívica de riesgos para personas reportantes, víctimas u ofendidos, sin sustituir asesoría legal.",
+    nextStep: "Sugerir lenguaje prudente, minimización de datos personales y orientación ante autoridad competente.",
   },
   {
-    level: "estatal",
-    name: "Comité estatal",
-    status: "escalamiento",
-    description: "Posible escalamiento cívico para casos con riesgo alto, impacto regional o repetición de hechos.",
-    nextStep: "Preparar una aportación organizada sin sustituir denuncia oficial ni peritaje oficial.",
-  },
-  {
-    level: "federal",
-    name: "Comité federal",
-    status: "pendiente",
-    description: "Vista mock para casos que pudieran requerir coordinación amplia o análisis público agregado futuro.",
-    nextStep: "Mantener trazabilidad local verificable y evitar publicar datos personales innecesarios.",
+    level: "territorial",
+    name: "Comité Territorial Ciudadano",
+    status: "seguimiento",
+    description: "Revisión vecinal o comunitaria de contexto territorial usando solo la información capturada voluntariamente.",
+    nextStep: "Identificar si conviene escalar la orientación a nivel municipal, estatal o federal como flujo mock.",
   },
 ];
+
+export const printableSections: { id: PrintableSectionId; label: string; shortLabel: string }[] = [
+  { id: "all", label: "Ver paquete completo", shortLabel: "Todo" },
+  { id: "section1", label: "Sección 1 · Acta ciudadana de hechos", shortLabel: "Sección 1" },
+  { id: "section2", label: "Sección 2 · Orientación general de derechos", shortLabel: "Sección 2" },
+  { id: "section3", label: "Sección 3 · Inventario local de evidencias", shortLabel: "Sección 3" },
+  { id: "section4", label: "Sección 4 · Resumen descriptivo de consistencia", shortLabel: "Sección 4" },
+  { id: "section5", label: "Sección 5 · Guía de presentación ante autoridad", shortLabel: "Sección 5" },
+];
+
+export const languageQuickOptions = ["Español", "Náhuatl", "Maya", "Otro"] as const;
 
 export const reportCategories = [
   { value: "robo", label: "Robo o despojo" },
