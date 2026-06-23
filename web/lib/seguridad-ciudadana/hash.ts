@@ -37,7 +37,15 @@ export function normalizeReportForHash(report: SecurityReport, evidence: Evidenc
     falseReportWarningAccepted: report.falseReportWarningAccepted,
     thirdPartyPrivacyAccepted: report.thirdPartyPrivacyAccepted,
     evidence: evidence
-      .map((item) => ({ name: item.name, size: item.size, type: item.type, sha256: item.sha256 }))
+      .map((item) => ({
+        localId: item.localId,
+        name: item.name,
+        size: item.size,
+        type: item.type,
+        sha256: item.sha256,
+        sourceContext: item.sourceContext.trim(),
+        localStatus: item.localStatus,
+      }))
       .sort((a, b) => a.sha256.localeCompare(b.sha256)),
   };
 
