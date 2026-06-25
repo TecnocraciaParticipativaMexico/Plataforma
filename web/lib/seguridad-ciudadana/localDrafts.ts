@@ -6,7 +6,9 @@ export const emptySecurityReport: SecurityReport = {
   category: "",
   approximateDate: "",
   location: "",
+  relatedPeopleInstitutions: "",
   narrative: "",
+  evidenceAbsenceExplanation: "",
   originalLanguage: "Español",
   riskLevel: "",
   consentAccepted: false,
@@ -24,7 +26,7 @@ export function createLocalFolio(): string {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const dd = String(date.getDate()).padStart(2, "0");
-  return `CFC-${yyyy}${mm}${dd}-${createId("LOCAL").slice(-8)}`;
+  return `CCI-${yyyy}${mm}${dd}-${createId("LOCAL").slice(-8)}`;
 }
 
 export function createTraceEvent(type: TraceEventType, detail: string): TraceEvent {
@@ -33,7 +35,7 @@ export function createTraceEvent(type: TraceEventType, detail: string): TraceEve
     draft_saved: "Borrador guardado",
     evidence_added: "Evidencia agregada",
     evidence_removed: "Evidencia eliminada",
-    report_compiled: "Reporte compilado",
+    report_compiled: "Expediente compilado",
     export_generated: "Exportación generada",
   };
 

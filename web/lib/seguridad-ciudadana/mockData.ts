@@ -2,42 +2,43 @@ import type { CommitteeReview, PrintableSectionId } from "./types";
 
 export const committeeReviews: CommitteeReview[] = [
   {
-    level: "auditoria",
-    name: "Comité de Auditoría Administrativa",
+    level: "colonia",
+    name: "Comité ciudadano de colonia",
     status: "revision_civica",
-    description: "Revisión cívica de bitácoras, fechas, montos narrados y posibles patrones administrativos sin emitir dictamen oficial.",
-    nextStep: "Priorizar preguntas de seguimiento y ordenar documentos para una aportación organizada.",
+    description: "Revisión cívica inicial de consistencia, contexto barrial y datos mínimos sin acusar ni sustituir a la autoridad.",
+    nextStep: "Sugerir preguntas de seguimiento, proteger datos personales y ordenar ampliaciones futuras.",
   },
   {
-    level: "tecnologico",
-    name: "Comité de Análisis Tecnológico",
+    level: "municipal",
+    name: "Comité municipal",
     status: "orientacion",
-    description: "Orientación sobre integridad digital local, hashes SHA-256 y conservación de archivos originales en el dispositivo.",
-    nextStep: "Recomendar resguardo local y evitar lectura de metadata sensible como EXIF o geolocalización.",
+    description: "Orientación futura para detectar patrones locales y sugerir rutas institucionales disponibles.",
+    nextStep: "Priorizar privacidad, consistencia temporal y conservación de evidencias originales.",
   },
   {
-    level: "derechos_humanos",
-    name: "Comité de Derechos Humanos",
+    level: "estatal",
+    name: "Comité estatal",
     status: "priorizacion",
-    description: "Priorización cívica de riesgos para personas reportantes, víctimas u ofendidos, sin sustituir asesoría legal.",
-    nextStep: "Sugerir lenguaje prudente, minimización de datos personales y orientación ante autoridad competente.",
+    description: "Priorización mock de riesgos, posibles recurrencias y necesidades de acompañamiento ciudadano.",
+    nextStep: "Sugerir rutas de orientación y escalamiento cívico sin emitir conclusiones oficiales.",
   },
   {
-    level: "territorial",
-    name: "Comité Territorial Ciudadano",
+    level: "federal",
+    name: "Comité federal",
     status: "seguimiento",
-    description: "Revisión vecinal o comunitaria de contexto territorial usando solo la información capturada voluntariamente.",
-    nextStep: "Identificar si conviene escalar la orientación a nivel municipal, estatal o federal como flujo mock.",
+    description: "Vista futura de coordinación cívica para patrones amplios, protección de privacidad y rutas institucionales.",
+    nextStep: "No acusa, no radica y no sustituye autoridades; solo organiza criterios de revisión ciudadana.",
   },
 ];
 
 export const printableSections: { id: PrintableSectionId; label: string; shortLabel: string }[] = [
   { id: "all", label: "Ver paquete completo", shortLabel: "Todo" },
-  { id: "section1", label: "Sección 1 · Acta ciudadana de hechos", shortLabel: "Sección 1" },
-  { id: "section2", label: "Sección 2 · Orientación general de derechos", shortLabel: "Sección 2" },
-  { id: "section3", label: "Sección 3 · Inventario local de evidencias", shortLabel: "Sección 3" },
-  { id: "section4", label: "Sección 4 · Resumen descriptivo de consistencia", shortLabel: "Sección 4" },
-  { id: "section5", label: "Sección 5 · Guía de presentación ante autoridad", shortLabel: "Sección 5" },
+  { id: "cover", label: "Portada del expediente", shortLabel: "Portada" },
+  { id: "narrative", label: "Narrativa de hechos", shortLabel: "Narrativa" },
+  { id: "evidence", label: "Evidencias aportadas", shortLabel: "Evidencias" },
+  { id: "trace", label: "Registro de trazabilidad local", shortLabel: "Trazabilidad" },
+  { id: "committees", label: "Revisión preliminar de comités ciudadanos mock", shortLabel: "Comités" },
+  { id: "privacy", label: "Aviso de privacidad y límites legales", shortLabel: "Límites" },
 ];
 
 export const languageQuickOptions = ["Español", "Náhuatl", "Maya", "Otro"] as const;
