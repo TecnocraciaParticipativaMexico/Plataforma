@@ -11,22 +11,22 @@ export function SecurityReportForm({ report, onChange }: SecurityReportFormProps
   return (
     <section className="rounded-[24px] bg-white p-5 shadow-sm ring-1 ring-[#F7C9DD]">
       <div className="mb-3 inline-flex rounded-full bg-[#E0F2FE] px-3 py-1 text-xs font-bold uppercase text-[#0369A1]">
-        Registro ciudadano auxiliar
+        Reporte inicial del expediente
       </div>
-      <h2 className="text-xl font-bold text-[#0A4E84]">Reporte de hechos</h2>
+      <h2 className="text-xl font-bold text-[#0A4E84]">Reporte inicial y hechos narrados</h2>
       <p className="mt-2 text-sm leading-6 text-slate-700">
         Describe lo ocurrido con lenguaje claro. No se recolecta IP, no se usa geolocalización automática y no se envía información a servidores.
       </p>
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm font-bold text-[#0A4E84]">Categoría</span>
+          <span className="text-sm font-bold text-[#0A4E84]">Tipo de hecho</span>
           <select
             value={report.category}
             onChange={(event) => onChange({ category: event.target.value as SecurityReport["category"] })}
             className="mt-2 w-full rounded-2xl border border-[#BFC8CF] bg-white px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#E4007C]"
           >
-            <option value="">Seleccionar categoría</option>
+            <option value="">Seleccionar tipo de hecho</option>
             {reportCategories.map((category) => (
               <option key={category.value} value={category.value}>
                 {category.label}
@@ -46,7 +46,7 @@ export function SecurityReportForm({ report, onChange }: SecurityReportFormProps
         </label>
 
         <label className="block">
-          <span className="text-sm font-bold text-[#0A4E84]">Ubicación opcional</span>
+          <span className="text-sm font-bold text-[#0A4E84]">Ubicación aproximada</span>
           <input
             value={report.location}
             onChange={(event) => onChange({ location: sanitizeLocation(event.target.value) })}
@@ -99,6 +99,17 @@ export function SecurityReportForm({ report, onChange }: SecurityReportFormProps
         </label>
 
         <label className="block md:col-span-2">
+          <span className="text-sm font-bold text-[#0A4E84]">Personas o instituciones relacionadas, si aplica</span>
+          <textarea
+            value={report.relatedPeopleInstitutions}
+            onChange={(event) => onChange({ relatedPeopleInstitutions: event.target.value.slice(0, 1200) })}
+            rows={3}
+            placeholder="Incluye solo datos necesarios. Puedes usar descripciones generales si ayuda a proteger privacidad."
+            className="mt-2 w-full resize-y rounded-2xl border border-[#BFC8CF] bg-white px-4 py-3 text-sm leading-6 text-slate-800 outline-none focus:border-[#E4007C]"
+          />
+        </label>
+
+        <label className="block md:col-span-2">
           <span className="text-sm font-bold text-[#0A4E84]">Narrativa de hechos</span>
           <textarea
             value={report.narrative}
@@ -108,6 +119,18 @@ export function SecurityReportForm({ report, onChange }: SecurityReportFormProps
             className="mt-2 w-full resize-y rounded-2xl border border-[#BFC8CF] bg-white px-4 py-3 text-sm leading-6 text-slate-800 outline-none focus:border-[#E4007C]"
           />
           <span className="mt-1 block text-xs text-slate-500">{report.narrative.length}/6000 caracteres</span>
+        </label>
+
+        <label className="block md:col-span-2">
+          <span className="text-sm font-bold text-[#0A4E84]">Explicación si aún no hay evidencia adjunta</span>
+          <textarea
+            value={report.evidenceAbsenceExplanation}
+            onChange={(event) => onChange({ evidenceAbsenceExplanation: event.target.value.slice(0, 1200) })}
+            rows={3}
+            placeholder="Ej. La evidencia está en otro dispositivo, se solicitará copia, o por seguridad se agregará después."
+            className="mt-2 w-full resize-y rounded-2xl border border-[#BFC8CF] bg-white px-4 py-3 text-sm leading-6 text-slate-800 outline-none focus:border-[#E4007C]"
+          />
+          <p className="mt-1 text-xs leading-5 text-slate-500">Este campo ayuda a evaluar completitud si decides imprimir antes de adjuntar archivos.</p>
         </label>
       </div>
     </section>
