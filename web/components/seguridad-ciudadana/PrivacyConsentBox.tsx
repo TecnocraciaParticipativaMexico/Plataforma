@@ -13,7 +13,10 @@ export function PrivacyConsentBox({ report, onChange }: PrivacyConsentBoxProps) 
       </div>
       <h2 className="text-xl font-bold text-[#0A4E84]">Consentimiento informado</h2>
       <p className="mt-2 text-sm leading-6 text-slate-700">
-        Este MVP crea un registro ciudadano auxiliar en este dispositivo. No sustituye denuncia oficial, no sustituye peritaje oficial y no constituye asesoría legal.
+        Esta carpeta se guarda localmente en este navegador. No se envían datos a servidor, no se usan APIs externas, geolocalización automática ni micrófono.
+      </p>
+      <p className="mt-2 text-sm leading-6 text-slate-700">
+        La persona conserva control del expediente. No se pide nombre obligatorio y el material no sustituye denuncia oficial, peritaje oficial ni asesoría legal.
       </p>
 
       <div className="mt-4 space-y-3">

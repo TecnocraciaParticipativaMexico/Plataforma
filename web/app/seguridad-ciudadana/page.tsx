@@ -19,6 +19,7 @@ import {
   saveLocalDraft,
 } from "@/lib/seguridad-ciudadana/localDrafts";
 import type {
+  DossierQualityLevel,
   EvidenceItem,
   PrintableSectionId,
   SecurityReport,
@@ -28,25 +29,86 @@ import type {
 } from "@/lib/seguridad-ciudadana/types";
 
 const tabs: { id: SecurityTab; label: string; description: string }[] = [
-  { id: "reporte", label: "Reporte ciudadano", description: "Captura hechos, consentimiento y evidencias locales." },
-  { id: "comites", label: "Comités", description: "Revisión cívica mock por especialidad." },
+  { id: "reporte", label: "Expediente", description: "Reporte inicial, hechos, lugar, fecha y evidencias." },
+  { id: "comites", label: "Comités", description: "Revisión cívica mock por niveles ciudadanos." },
   { id: "trazabilidad", label: "Trazabilidad", description: "Bitácora local verificable y hashes." },
-  { id: "impresion", label: "Impresión", description: "Paquete ciudadano imprimible por secciones." },
+  { id: "impresion", label: "Impresión", description: "Expediente imprimible por secciones." },
 ];
 
-function validateReport(report: SecurityReport): ValidationResult {
-  const missingFields = [
-    !report.category ? "categoría" : "",
-    !report.approximateDate ? "fecha aproximada" : "",
-    report.narrative.trim().length < 40 ? "narrativa mínima" : "",
-    !report.originalLanguage.trim() ? "idioma original" : "",
-    !report.riskLevel ? "riesgo percibido" : "",
-    !report.consentAccepted ? "consentimiento informado" : "",
-    !report.falseReportWarningAccepted ? "advertencia contra denuncias falsas" : "",
-    !report.thirdPartyPrivacyAccepted ? "privacidad de terceros" : "",
-  ].filter(Boolean);
+function getQualityLabel(level: DossierQualityLevel): string {
+  const labels: Record<DossierQualityLevel, string> = {
+    borrador: "Borrador",
+    basico: "Básico",
+    completo: "Completo",
+    listo_revision: "Listo para revisión ciudadana",
+  };
+  return labels[level];
+}
 
-  return { isValid: missingFields.length === 0, missingFields };
+function validateReport(report: SecurityReport, evidence: EvidenceItem[], trace: TraceEvent[]): ValidationResult {
+  const fieldChecks = [
+    { label: "tipo de hecho", complete: Boolean(report.category) },
+    { label: "narrativa mínima", complete: report.narrative.trim().length >= 80 },
+    { label: "fecha aproximada", complete: Boolean(report.approximateDate) },
+    { label: "ubicación aproximada", complete: Boolean(report.location.trim()) },
+    {
+      label: "evidencia adjunta o explicación de ausencia",
+      complete: evidence.length > 0 || report.evidenceAbsenceExplanation.trim().length >= 20,
+    },
+    { label: "consentimiento de privacidad", complete: report.consentAccepted },
+  ];
+
+  const missingFields = fieldChecks.filter((field) => !field.complete).map((field) => field.label);
+  const completedFields = fieldChecks.filter((field) => field.complete).map((field) => field.label);
+  let qualityLevel: DossierQualityLevel = "borrador";
+
+  if (completedFields.length >= 3) qualityLevel = "basico";
+  if (missingFields.length <= 1 && report.falseReportWarningAccepted && report.thirdPartyPrivacyAccepted) qualityLevel = "completo";
+  if (missingFields.length === 0 && evidence.length > 0 && trace.length >= 3 && report.falseReportWarningAccepted && report.thirdPartyPrivacyAccepted) {
+    qualityLevel = "listo_revision";
+  }
+
+  return {
+    isValid: missingFields.length === 0,
+    missingFields,
+    completedFields,
+    qualityLevel,
+    qualityLabel: getQualityLabel(qualityLevel),
+    integrityLevel: evidence.length > 0 && trace.length >= 3 ? "Alto" : missingFields.length <= 1 ? "Medio" : "Pendiente",
+  };
+}
+
+function QualityPanel({ validation }: { validation: ValidationResult }) {
+  return (
+    <section className="rounded-[24px] bg-white p-5 shadow-sm ring-1 ring-[#F7C9DD]">
+      <div className="mb-3 inline-flex rounded-full bg-[#FFF1A8] px-3 py-1 text-xs font-bold uppercase text-[#7A4B00]">
+        Calidad del expediente
+      </div>
+      <h2 className="text-xl font-bold text-[#0A4E84]">{validation.qualityLabel}</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-700">
+        La completitud se calcula localmente con tipo de hecho, narrativa, fecha, ubicación, evidencia o explicación y consentimiento de privacidad.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl bg-[#F8FAFC] p-4">
+          <div className="text-xs font-bold uppercase text-slate-500">Campos completos</div>
+          <div className="mt-1 text-2xl font-bold text-[#0A4E84]">{validation.completedFields.length}/6</div>
+        </div>
+        <div className="rounded-2xl bg-[#F8FAFC] p-4">
+          <div className="text-xs font-bold uppercase text-slate-500">Nivel de integridad</div>
+          <div className="mt-1 text-2xl font-bold text-[#0A4E84]">{validation.integrityLevel}</div>
+        </div>
+      </div>
+      {validation.missingFields.length ? (
+        <p className="mt-4 rounded-2xl bg-[#FFF8F0] p-4 text-sm leading-6 text-slate-700">
+          Pendiente: {validation.missingFields.join(", ")}.
+        </p>
+      ) : (
+        <p className="mt-4 rounded-2xl bg-[#D8F3DC] p-4 text-sm font-semibold leading-6 text-[#1F5F24]">
+          Campos mínimos completos. El expediente puede imprimirse como Expediente Técnico Ciudadano.
+        </p>
+      )}
+    </section>
+  );
 }
 
 export default function SeguridadCiudadanaPage() {
@@ -65,7 +127,7 @@ export default function SeguridadCiudadanaPage() {
   const toastTimeoutRef = useRef<number | null>(null);
   const lastDraftToastAtRef = useRef(0);
 
-  const validation = useMemo(() => validateReport(report), [report]);
+  const validation = useMemo(() => validateReport(report, evidence, trace), [evidence, report, trace]);
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -93,7 +155,7 @@ export default function SeguridadCiudadanaPage() {
       } else {
         const initialFolio = createLocalFolio();
         setFolio(initialFolio);
-        setTrace([createTraceEvent("draft_created", "Se inició un borrador local en este navegador.")]);
+        setTrace([createTraceEvent("draft_created", "Se inició una carpeta ciudadana local en este navegador.")]);
       }
 
       setIsReady(true);
@@ -167,13 +229,9 @@ export default function SeguridadCiudadanaPage() {
   }
 
   function handleCompile() {
-    if (!validation.isValid) {
-      showToast("Faltan campos mínimos para compilar el reporte.");
-      return;
-    }
-    registerEvent("report_compiled", "Se compiló la vista imprimible del registro ciudadano auxiliar.");
+    registerEvent("report_compiled", validation.isValid ? "Se compiló el Expediente Técnico Ciudadano." : "Se compiló una impresión con marca BORRADOR INCOMPLETO.");
     setActiveTab("impresion");
-    showToast("Reporte compilado localmente.");
+    showToast(validation.isValid ? "Expediente compilado localmente." : "Impresión preparada como borrador incompleto.");
   }
 
   function handlePrint() {
@@ -188,7 +246,7 @@ export default function SeguridadCiudadanaPage() {
     setFolio(nextFolio);
     setReport(emptySecurityReport);
     setEvidence([]);
-    setTrace([createTraceEvent("draft_created", "Se limpió el borrador anterior y se inició uno nuevo.")]);
+    setTrace([createTraceEvent("draft_created", "Se limpió el borrador anterior y se inició una carpeta ciudadana nueva.")]);
     setDossierHash("");
     setPreviousDossierHash("");
     setLastSavedAt(null);
@@ -214,13 +272,16 @@ export default function SeguridadCiudadanaPage() {
             <div className="h-3 bg-gradient-to-r from-[#E4007C] via-[#F2C300] via-[#00A6B2] to-[#0A4E84]" />
             <div className="grid gap-6 p-6 lg:grid-cols-[1.25fr_0.75fr] lg:p-8">
               <div>
-                <div className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">MVP frontend-first</div>
-                <h1 className="max-w-4xl text-4xl font-bold leading-tight md:text-5xl">Seguridad Ciudadana</h1>
+                <div className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">Módulo 01 · Seguridad Ciudadana</div>
+                <h1 className="max-w-4xl text-4xl font-bold leading-tight md:text-5xl">Carpeta Ciudadana de Investigación Cívica</h1>
                 <p className="mt-4 max-w-3xl text-base leading-7 text-slate-700">
-                  Carpeta Forense Cívica para ordenar hechos, evidencias locales y trazabilidad verificable desde el navegador.
+                  Expediente técnico ciudadano de hechos, evidencia y trazabilidad.
                 </p>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-                  Es un registro ciudadano auxiliar: no sustituye denuncia oficial, peritaje oficial, asesoría legal ni resguardo institucional de evidencias.
+                  La persona conserva control del expediente. No se envían datos a servidor, no se usan APIs externas, geolocalización automática ni micrófono.
+                </p>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                  Es un registro ciudadano auxiliar: no sustituye denuncia oficial, peritaje oficial, asesoría legal ni actuación de autoridad competente.
                 </p>
               </div>
               {folio ? <LocalDraftStatus folio={folio} lastSavedAt={lastSavedAt} restored={restored} onClearDraft={handleClearDraft} /> : null}
@@ -259,6 +320,7 @@ export default function SeguridadCiudadanaPage() {
               />
             </div>
             <div className="space-y-6">
+              <QualityPanel validation={validation} />
               {folio ? <TraceabilityPanel folio={folio} dossierHash={dossierHash} previousDossierHash={previousDossierHash} trace={trace} /> : null}
             </div>
           </div>

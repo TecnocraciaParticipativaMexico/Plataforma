@@ -22,7 +22,7 @@ export function TraceabilityPanel({ folio, dossierHash, previousDossierHash, tra
       </div>
       <h2 className="text-xl font-bold text-[#0A4E84]">Trazabilidad local del expediente</h2>
       <p className="mt-2 text-sm leading-6 text-slate-700">
-        Estos hashes son sellos locales calculados en este navegador. No son blockchain ni sustituyen revisiones o resguardos institucionales.
+        Este registro prueba integridad local del expediente, no equivale a certificación oficial ni blockchain pública.
       </p>
 
       <div className="mt-5 grid gap-3 md:grid-cols-3">

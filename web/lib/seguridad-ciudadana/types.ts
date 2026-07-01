@@ -12,7 +12,11 @@ export type RiskLevel = "bajo" | "medio" | "alto" | "critico";
 
 export type SecurityTab = "reporte" | "comites" | "trazabilidad" | "impresion";
 
-export type PrintableSectionId = "all" | "section1" | "section2" | "section3" | "section4" | "section5";
+export type PrintableSectionId = "all" | "cover" | "narrative" | "evidence" | "trace" | "committees" | "privacy";
+
+export type DossierQualityLevel = "borrador" | "basico" | "completo" | "listo_revision";
+
+export type SectionStatus = "Completa" | "Incompleta" | "Pendiente";
 
 export type TraceEventType =
   | "draft_created"
@@ -22,13 +26,15 @@ export type TraceEventType =
   | "report_compiled"
   | "export_generated";
 
-export type CommitteeLevel = "auditoria" | "tecnologico" | "derechos_humanos" | "territorial";
+export type CommitteeLevel = "colonia" | "municipal" | "estatal" | "federal";
 
 export type SecurityReport = {
   category: ReportCategory | "";
   approximateDate: string;
   location: string;
+  relatedPeopleInstitutions: string;
   narrative: string;
+  evidenceAbsenceExplanation: string;
   originalLanguage: string;
   riskLevel: RiskLevel | "";
   consentAccepted: boolean;
@@ -77,4 +83,8 @@ export type CommitteeReview = {
 export type ValidationResult = {
   isValid: boolean;
   missingFields: string[];
+  completedFields: string[];
+  qualityLevel: DossierQualityLevel;
+  qualityLabel: string;
+  integrityLevel: "Pendiente" | "Medio" | "Alto";
 };
