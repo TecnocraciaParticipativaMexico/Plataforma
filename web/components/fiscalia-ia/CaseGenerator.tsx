@@ -14,12 +14,6 @@ type CaseGeneratorProps = {
   structuredCase: StructuredCase | null;
 };
 
-function formatBytes(size: number): string {
-  if (size < 1024) return `${size} B`;
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 export function CaseGenerator({ form, evidence, loading, onFormChange, onEvidenceAdd, onGenerate, structuredCase }: CaseGeneratorProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [fileNotice, setFileNotice] = useState("");
@@ -100,7 +94,7 @@ export function CaseGenerator({ form, evidence, loading, onFormChange, onEvidenc
 
             <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Autoridades/cargos involucrados
-              <input value={form.involvedRoles} onChange={(event) => onFormChange({ involvedRoles: event.target.value.slice(0, 500) })} className="mt-1 w-full rounded-xl border border-zinc-800 bg-[#090a0f] px-3 py-2 text-sm text-slate-100 outline-none focus:border-[#E5007D]" placeholder="Describe roles sin imputar culpabilidad" />
+              <input value={form.involvedRoles} onChange={(event) => onFormChange({ involvedRoles: event.target.value.slice(0, 500) })} className="mt-1 w-full rounded-xl border border-zinc-800 bg-[#090a0f] px-3 py-2 text-sm text-slate-100 outline-none focus:border-[#E5007D]" placeholder="Describe roles de forma neutral" />
             </label>
 
             <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
