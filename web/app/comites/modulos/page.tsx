@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 const modulosTecnocracia = [
   { id: 1, nombre: "Seguridad Ciudadana (Cero Corrupción)", ruta: "/seguridad-ciudadana" },
-  { id: 2, nombre: "Fiscalía Forense con Inteligencia Artificial" },
+  { id: 2, nombre: "Fiscalía Forense Ciudadana con IA", ruta: "/fiscalia-ia" },
   { id: 3, nombre: "Congreso Cívico de Evaluación Legislativa", ruta: "/congreso-civico" },
   { id: 4, nombre: "Derechos Humanos y Contrapeso Institucional" },
   { id: 5, nombre: "Madres Buscadoras y Búsqueda Forense" },
@@ -78,7 +78,7 @@ export default function ModulosComitesPage() {
 
           <p className="text-sm leading-6 text-slate-600">
             Consulta el índice de los 30 módulos de Tecnocracia Participativa.
-            Por ahora, los Módulos 01 y 03 están disponibles.
+            Por ahora, los Módulos 01, 02 y 03 están disponibles.
           </p>
         </section>
 
