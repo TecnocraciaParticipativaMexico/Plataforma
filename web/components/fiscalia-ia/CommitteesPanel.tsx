@@ -6,7 +6,7 @@ export function CommitteesPanel() {
       <div className="mb-5">
         <h2 className="text-lg font-black uppercase text-white">Comités territoriales y acompañamiento cívico</h2>
         <p className="mt-1 text-xs leading-5 text-slate-400">
-          Los comités son una preparación visual para revisión comunitaria futura. No tienen autoridad oficial, no acusan y no sustituyen instituciones.
+          Los comités son una preparación visual para revisión comunitaria futura. No tienen facultades institucionales, no acusan y no sustituyen instituciones.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
