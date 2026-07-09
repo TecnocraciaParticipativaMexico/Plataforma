@@ -4,6 +4,24 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { modulosTecnocracia } from "../../lib/modulosTecnocracia";
 
+const modulosDisponibles: Record<number, { href: string; cta: string; descripcion: string }> = {
+  1: {
+    href: "/seguridad-ciudadana",
+    cta: "Entrar a Seguridad Ciudadana",
+    descripcion: "Carpeta Ciudadana de Investigación Cívica con evidencia local, trazabilidad y documento de apoyo.",
+  },
+  2: {
+    href: "/fiscalia-ia",
+    cta: "Entrar a Fiscalía Forense con IA",
+    descripcion: "Asistente ciudadano para estructurar expedientes, evidencia, cronologías y trazabilidad local.",
+  },
+  3: {
+    href: "/congreso-civico",
+    cta: "Entrar a Congreso Cívico",
+    descripcion: "Seguimiento ciudadano de iniciativas, representantes, alertas cívicas y alineación territorial.",
+  },
+};
+
 export default function ModulosComitesPage() {
   const [busqueda, setBusqueda] = useState("");
 
@@ -33,6 +51,9 @@ export default function ModulosComitesPage() {
           Cada comité corresponde a uno de los 30 módulos de Tecnocracia
           Participativa. Puedes explorar módulos y solicitar participación
           según tu experiencia técnica.
+          <span className="mt-2 block font-semibold text-[#0A4E84]">
+            Por ahora, los Módulos 01, 02 y 03 están disponibles.
+          </span>
         </p>
 
         <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm">
@@ -64,66 +85,78 @@ export default function ModulosComitesPage() {
         </section>
 
         <div className="space-y-4">
-          {modulos.map((modulo) => (
-            <div
-              key={modulo.id}
-              className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm"
-            >
-              <div className="mb-2 text-sm font-bold text-[#C2187A]">
-                Módulo {modulo.id}
-              </div>
+          {modulos.map((modulo) => {
+            const moduloDisponible = modulosDisponibles[modulo.id];
 
-              <h2 className="mb-3 text-2xl font-bold leading-tight">
-                {modulo.nombre}
-              </h2>
-
-              <p className="mb-4 text-sm leading-6 text-slate-600">
-                Comité experto ciudadano orientado a revisión técnica,
-                trazabilidad, evidencia verificable y protección
-                anti-captura política.
-              </p>
-
-              <div className="mb-4 flex flex-wrap gap-2">
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
-                  Municipal
-                </span>
-
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
-                  Estatal
-                </span>
-
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
-                  Federal
-                </span>
-              </div>
-
-              <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
-                <div>
-                  <strong>Mínimo operativo:</strong> 3 integrantes.
-                </div>
-
-                <div>
-                  <strong>Máximo:</strong> 15 integrantes.
-                </div>
-
-                <div>
-                  <strong>Entrada:</strong> examen técnico + revisión ética.
-                </div>
-
-                <div>
-                  <strong>Participación:</strong> pública, protegida o
-                  colectiva.
-                </div>
-              </div>
-
-              <Link
-                href={`/comites/solicitar?modulo=${modulo.id}`}
-                className="mt-5 block w-full rounded-2xl bg-[#0A4E84] px-4 py-3 text-center text-sm font-bold text-white"
+            return (
+              <div
+                key={modulo.id}
+                className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm"
               >
-                Solicitar participación
-              </Link>
-            </div>
-          ))}
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm font-bold text-[#C2187A]">
+                  <span>Módulo {modulo.id.toString().padStart(2, "0")}</span>
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${moduloDisponible ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                    {moduloDisponible ? "Disponible" : "Próximamente"}
+                  </span>
+                </div>
+
+                <h2 className="mb-3 text-2xl font-bold leading-tight">
+                  {modulo.nombre}
+                </h2>
+
+                <p className="mb-4 text-sm leading-6 text-slate-600">
+                  {moduloDisponible?.descripcion ??
+                    "Comité experto ciudadano orientado a revisión técnica, trazabilidad, evidencia verificable y protección anti-captura política."}
+                </p>
+
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
+                    Municipal
+                  </span>
+
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
+                    Estatal
+                  </span>
+
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
+                    Federal
+                  </span>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                  <div>
+                    <strong>Mínimo operativo:</strong> 3 integrantes.
+                  </div>
+
+                  <div>
+                    <strong>Máximo:</strong> 15 integrantes.
+                  </div>
+
+                  <div>
+                    <strong>Entrada:</strong> examen técnico + revisión ética.
+                  </div>
+
+                  <div>
+                    <strong>Participación:</strong> pública, protegida o
+                    colectiva.
+                  </div>
+                </div>
+
+                {moduloDisponible ? (
+                  <Link
+                    href={moduloDisponible.href}
+                    className="mt-5 block w-full rounded-2xl bg-[#0A4E84] px-4 py-3 text-center text-sm font-bold text-white"
+                  >
+                    {moduloDisponible.cta}
+                  </Link>
+                ) : (
+                  <div className="mt-5 block w-full rounded-2xl bg-slate-100 px-4 py-3 text-center text-sm font-bold text-slate-500">
+                    Próximamente
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </main>

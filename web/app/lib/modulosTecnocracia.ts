@@ -1,6 +1,6 @@
 export const modulosTecnocracia = [
   { id: 1, nombre: "Seguridad Ciudadana (Cero Corrupción)" },
-  { id: 2, nombre: "Fiscalía Forense con Inteligencia Artificial" },
+  { id: 2, nombre: "Fiscalía Forense Ciudadana con IA" },
   { id: 3, nombre: "Congreso Cívico de Evaluación Legislativa" },
   { id: 4, nombre: "Derechos Humanos y Contrapeso Institucional" },
   { id: 5, nombre: "Madres Buscadoras y Búsqueda Forense" },
