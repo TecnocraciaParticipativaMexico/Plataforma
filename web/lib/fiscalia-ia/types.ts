@@ -2,7 +2,7 @@ export type FiscaliaTab = "generador" | "expedientes" | "comites" | "trazabilida
 
 export type IdentityMode = "anonimo" | "nombre_opcional";
 
-export type RiskLevel = "bajo" | "medio" | "alto" | "critico";
+export type RiskLevel = "" | "bajo" | "medio" | "alto" | "critico";
 
 export type ReviewStatus = "borrador" | "en_revision" | "observaciones" | "presentable";
 

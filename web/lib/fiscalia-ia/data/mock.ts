@@ -3,16 +3,15 @@ import type { CommitteeLevelInfo, FiscaliaFormState, MockCase } from "../types";
 export const initialFiscaliaForm: FiscaliaFormState = {
   identityMode: "anonimo",
   optionalName: "",
-  factType: "Abuso de autoridad",
-  date: "2026-07-09",
-  time: "10:30",
-  state: "Oaxaca",
-  municipality: "Oaxaca de Juarez",
-  involvedRoles: "Personal de inspeccion municipal y enlace comunitario",
-  narrative:
-    "Durante una reunion vecinal se reporto presion para firmar documentos sin lectura previa. Varias personas indicaron que se condicionaria la atencion administrativa si no se aceptaba el formato. Se cuenta con capturas de mensajes y una lista de asistentes.",
-  evidenceReference: "capturas_mensajes.png, lista_asistentes.pdf",
-  riskLevel: "medio",
+  factType: "",
+  date: "",
+  time: "",
+  state: "",
+  municipality: "",
+  involvedRoles: "",
+  narrative: "",
+  evidenceReference: "",
+  riskLevel: "",
   privacyConsent: false,
 };
 
