@@ -6,9 +6,10 @@ type Props = {
   selectedCase: SearchCase;
   dataset: SearchCaseDataset;
   onPrint: () => void;
+  onRequestReview: () => void;
 };
 
-export function CaseDetail({ selectedCase, dataset, onPrint }: Props) {
+export function CaseDetail({ selectedCase, dataset, onPrint, onRequestReview }: Props) {
   const events = dataset.events.filter((item) => item.caseId === selectedCase.id).sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
   const evidence = dataset.evidence.filter((item) => item.caseId === selectedCase.id);
   const actions = dataset.institutionalActions.filter((item) => item.caseId === selectedCase.id);
@@ -35,7 +36,7 @@ export function CaseDetail({ selectedCase, dataset, onPrint }: Props) {
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={onPrint} className="min-h-11 rounded-full bg-[#E4007C] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#B00061] focus:outline-none focus:ring-2 focus:ring-[#E4007C]">Imprimir documento</button>
-            <button type="button" className="min-h-11 rounded-full bg-[#0A4E84] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#083E69] focus:outline-none focus:ring-2 focus:ring-[#E4007C]">Solicitar revision</button>
+            <button type="button" onClick={onRequestReview} className="min-h-11 rounded-full bg-[#0A4E84] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#083E69] focus:outline-none focus:ring-2 focus:ring-[#E4007C]">Solicitar revision</button>
           </div>
         </div>
 
@@ -65,7 +66,7 @@ export function CaseDetail({ selectedCase, dataset, onPrint }: Props) {
           <h3 className="text-xl font-black text-[#0A4E84]">Privacidad por seccion</h3>
           <div className="mt-4 space-y-3">
             {["Datos de contacto", "Narrativa", "Evidencias", "Resumen publico"].map((label, index) => (
-              <label key={label} className="flex items-center justify-between gap-3 rounded-2xl bg-[#F8FAFC] p-4">
+              <label key={`${selectedCase.id}-${label}`} className="flex items-center justify-between gap-3 rounded-2xl bg-[#F8FAFC] p-4">
                 <span className="font-bold text-slate-700">{label}</span>
                 <select defaultValue={index === 3 ? "public_summary" : selectedCase.privacyLevel} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm">
                   {Object.entries(privacyLabels).map(([value, optionLabel]) => <option key={value} value={value}>{optionLabel}</option>)}

@@ -97,7 +97,15 @@ export default function MadresBuscadorasPage() {
   function handleAssignReview(review: CommitteeReview) {
     setDataset((current) =>
       appendAudit(
-        { ...current, reviews: [review, ...current.reviews] },
+        {
+          ...current,
+          cases: current.cases.map((item) =>
+            item.id === review.caseId
+              ? { ...item, committeeId: review.committeeId, status: "committee_review", updatedAt: review.updatedAt }
+              : item,
+          ),
+          reviews: [review, ...current.reviews],
+        },
         {
           actorRole: "Acompanamiento civico",
           action: "Revision ciudadana solicitada",
@@ -138,7 +146,15 @@ export default function MadresBuscadorasPage() {
         {activeTab === "cases" ? (
           <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
             <CasesList cases={dataset.cases} dataset={dataset} selectedCaseId={selectedCase.id} onSelectCase={setSelectedCaseId} />
-            <CaseDetail selectedCase={selectedCase} dataset={dataset} onPrint={printDocument} />
+            <CaseDetail
+              selectedCase={selectedCase}
+              dataset={dataset}
+              onPrint={printDocument}
+              onRequestReview={() => {
+                setActiveTab("committees");
+                setNotice("Selecciona el expediente y comite para agregarlo a la cola de revision ciudadana.");
+              }}
+            />
           </div>
         ) : null}
 

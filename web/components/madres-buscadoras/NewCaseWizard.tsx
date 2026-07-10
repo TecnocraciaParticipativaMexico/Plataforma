@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { EvidenceItem, SearchCase } from "@/lib/madres-buscadoras/types";
 import { clearDraft, createCaseFromDraft, emptyDraft, filesToEvidence, readDraft, saveDraft, type NewCaseDraft } from "@/lib/madres-buscadoras/localService";
 import { extractMentionedDates, privacyLabels, summarizeLocally, suggestTags } from "@/lib/madres-buscadoras/utils";
@@ -25,10 +25,13 @@ export function NewCaseWizard({ caseCount, onCreated }: Props) {
   const [files, setFiles] = useState<FileList | null>(null);
   const [message, setMessage] = useState("");
   const [creating, setCreating] = useState(false);
+  const draftReadyRef = useRef(false);
+  const skipNextSaveRef = useRef(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       const saved = readDraft();
+      draftReadyRef.current = true;
       if (saved) {
         setDraft(saved);
         setMessage("Borrador local restaurado desde este navegador.");
@@ -39,6 +42,11 @@ export function NewCaseWizard({ caseCount, onCreated }: Props) {
   }, []);
 
   useEffect(() => {
+    if (!draftReadyRef.current) return;
+    if (skipNextSaveRef.current) {
+      skipNextSaveRef.current = false;
+      return;
+    }
     saveDraft(draft);
   }, [draft]);
 
@@ -76,6 +84,7 @@ export function NewCaseWizard({ caseCount, onCreated }: Props) {
       const newCase = await createCaseFromDraft(draft, caseCount);
       const evidence = await filesToEvidence(files, newCase.id, draft.privacyLevel);
       clearDraft();
+      skipNextSaveRef.current = true;
       setDraft(emptyDraft);
       setFiles(null);
       setMessage(`Expediente ${newCase.folio} creado en estado local.`);
