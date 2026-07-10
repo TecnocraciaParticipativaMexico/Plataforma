@@ -28,11 +28,25 @@ import type {
   ValidationResult,
 } from "@/lib/seguridad-ciudadana/types";
 
-const tabs: { id: SecurityTab; label: string; description: string }[] = [
-  { id: "reporte", label: "Expediente", description: "Reporte inicial, hechos, lugar, fecha y evidencias." },
-  { id: "comites", label: "Comités", description: "Revisión cívica mock por niveles ciudadanos." },
-  { id: "trazabilidad", label: "Trazabilidad", description: "Bitácora local verificable y hashes." },
-  { id: "impresion", label: "Impresión", description: "Expediente imprimible por secciones." },
+const tabs: { id: SecurityTab; label: string; description: string; accent: string }[] = [
+  {
+    id: "reporte",
+    label: "Carpeta Ciudadana",
+    description: "Captura, evidencias locales y carpeta imprimible.",
+    accent: "#E5007D",
+  },
+  {
+    id: "comites",
+    label: "Comités Ciudadanos",
+    description: "Revisión ciudadana mock por colonia, municipio, estado y federación.",
+    accent: "#0054A6",
+  },
+  {
+    id: "trazabilidad",
+    label: "Trazabilidad",
+    description: "Hash local, bitácora verificable y eventos del expediente.",
+    accent: "#702F8A",
+  },
 ];
 
 function getQualityLabel(level: DossierQualityLevel): string {
@@ -80,30 +94,30 @@ function validateReport(report: SecurityReport, evidence: EvidenceItem[], trace:
 
 function QualityPanel({ validation }: { validation: ValidationResult }) {
   return (
-    <section className="rounded-[24px] bg-white p-5 shadow-sm ring-1 ring-[#F7C9DD]">
-      <div className="mb-3 inline-flex rounded-full bg-[#FFF1A8] px-3 py-1 text-xs font-bold uppercase text-[#7A4B00]">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
+      <div className="mb-3 inline-flex rounded-full bg-[#FFC20E]/25 px-3 py-1 text-xs font-bold uppercase text-[#7A4B00]">
         Calidad del expediente
       </div>
-      <h2 className="text-xl font-bold text-[#0A4E84]">{validation.qualityLabel}</h2>
+      <h2 className="text-xl font-bold text-[#0054A6]">{validation.qualityLabel}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-700">
         La completitud se calcula localmente con tipo de hecho, narrativa, fecha, ubicación, evidencia o explicación y consentimiento de privacidad.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl bg-[#F8FAFC] p-4">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="text-xs font-bold uppercase text-slate-500">Campos completos</div>
-          <div className="mt-1 text-2xl font-bold text-[#0A4E84]">{validation.completedFields.length}/6</div>
+          <div className="mt-1 text-2xl font-bold text-[#0054A6]">{validation.completedFields.length}/6</div>
         </div>
-        <div className="rounded-2xl bg-[#F8FAFC] p-4">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="text-xs font-bold uppercase text-slate-500">Nivel de integridad</div>
-          <div className="mt-1 text-2xl font-bold text-[#0A4E84]">{validation.integrityLevel}</div>
+          <div className="mt-1 text-2xl font-bold text-[#0054A6]">{validation.integrityLevel}</div>
         </div>
       </div>
       {validation.missingFields.length ? (
-        <p className="mt-4 rounded-2xl bg-[#FFF8F0] p-4 text-sm leading-6 text-slate-700">
+        <p className="mt-4 rounded-2xl border-l-4 border-[#F7931E] bg-[#F7931E]/10 p-4 text-sm leading-6 text-slate-700">
           Pendiente: {validation.missingFields.join(", ")}.
         </p>
       ) : (
-        <p className="mt-4 rounded-2xl bg-[#D8F3DC] p-4 text-sm font-semibold leading-6 text-[#1F5F24]">
+        <p className="mt-4 rounded-2xl border-l-4 border-[#39B54A] bg-[#39B54A]/10 p-4 text-sm font-semibold leading-6 text-[#1F5F24]">
           Campos mínimos completos. El expediente puede imprimirse como Expediente Técnico Ciudadano.
         </p>
       )}
@@ -230,7 +244,8 @@ export default function SeguridadCiudadanaPage() {
 
   function handleCompile() {
     registerEvent("report_compiled", validation.isValid ? "Se compiló el Expediente Técnico Ciudadano." : "Se compiló una impresión con marca BORRADOR INCOMPLETO.");
-    setActiveTab("impresion");
+    setSelectedPrintSection("all");
+    setActiveTab("reporte");
     showToast(validation.isValid ? "Expediente compilado localmente." : "Impresión preparada como borrador incompleto.");
   }
 
@@ -255,52 +270,82 @@ export default function SeguridadCiudadanaPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FFF8F0] text-[#0A4E84] print:bg-white print:text-black">
+    <main className="min-h-screen bg-slate-50 text-slate-900 print:bg-white print:text-black">
       {toast ? (
-        <div className="fixed right-4 top-4 z-50 max-w-sm rounded-2xl bg-white p-4 text-sm font-bold text-[#0A4E84] shadow-lg ring-1 ring-[#F7C9DD] print:hidden">
-          {toast}
+        <div className="fixed right-4 top-4 z-50 max-w-sm rounded-r-2xl border-l-4 border-[#E5007D] bg-white p-4 text-sm shadow-xl ring-1 ring-slate-200 print:hidden">
+          <div className="text-xs font-bold uppercase tracking-[0.16em] text-[#E5007D]">Aviso local</div>
+          <div className="mt-1 font-semibold text-slate-800">{toast}</div>
         </div>
       ) : null}
 
-      <div className="mx-auto max-w-7xl px-4 py-8 print:max-w-none print:px-0 print:py-0">
-        <div className="print:hidden">
-          <Link href="/" className="mb-5 inline-block text-sm font-semibold text-[#E4007C]">
-            {"<-"} Volver al inicio
-          </Link>
-
-          <section className="mb-6 overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-[#F7C9DD]">
-            <div className="h-3 bg-gradient-to-r from-[#E4007C] via-[#F2C300] via-[#00A6B2] to-[#0A4E84]" />
-            <div className="grid gap-6 p-6 lg:grid-cols-[1.25fr_0.75fr] lg:p-8">
-              <div>
-                <div className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">Módulo 01 · Seguridad Ciudadana</div>
-                <h1 className="max-w-4xl text-4xl font-bold leading-tight md:text-5xl">Carpeta Ciudadana de Investigación Cívica</h1>
-                <p className="mt-4 max-w-3xl text-base leading-7 text-slate-700">
-                  Expediente técnico ciudadano de hechos, evidencia y trazabilidad.
-                </p>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-                  La persona conserva control del expediente. No se envían datos a servidor, no se usan APIs externas, geolocalización automática ni micrófono.
-                </p>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-                  Es un registro ciudadano auxiliar: no sustituye denuncia oficial, peritaje oficial, asesoría legal ni actuación de autoridad competente.
-                </p>
+      <div className="print:hidden">
+        <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <Link href="/" className="flex min-w-0 items-center gap-3">
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white shadow-inner">
+                <span className="absolute inset-0 rounded-full border-2 border-b-[#F7931E] border-l-[#0054A6] border-r-[#39B54A] border-t-[#E5007D]" />
+                <span className="text-sm font-black text-[#0054A6]">TP</span>
               </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-1 text-[11px] font-black uppercase tracking-[0.18em]">
+                  <span className="text-[#0054A6]">Tecnocracia</span>
+                  <span className="text-[#E5007D]">Participativa</span>
+                </div>
+                <div className="truncate text-sm font-black tracking-tight text-slate-950">México 2030</div>
+              </div>
+            </Link>
+            <div className="hidden items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500 sm:flex">
+              <span className="h-2 w-2 rounded-full bg-[#39B54A]" />
+              Registro ciudadano
+            </div>
+          </div>
+        </header>
+
+        <section className="bg-slate-950 px-4 py-5 text-center text-white shadow-md sm:px-6 lg:px-8">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#FFC20E]">Módulo 01 · Seguridad Ciudadana</p>
+          <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">Carpeta Ciudadana de Investigación Cívica</h1>
+          <p className="mx-auto mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-200">
+            Expediente técnico ciudadano de hechos, evidencia y trazabilidad. Documento cívico de apoyo; no sustituye autoridades.
+          </p>
+        </section>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 print:max-w-none print:px-0 print:py-0">
+        <div className="print:hidden">
+          <section className="mb-6 grid gap-4 lg:grid-cols-12">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md lg:col-span-8">
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full bg-[#E5007D]/10 px-3 py-1 text-xs font-bold uppercase text-[#B00061]">Hash local</span>
+                <span className="rounded-full bg-[#0054A6]/10 px-3 py-1 text-xs font-bold uppercase text-[#0054A6]">Trazabilidad local</span>
+                <span className="rounded-full bg-[#39B54A]/10 px-3 py-1 text-xs font-bold uppercase text-[#1F5F24]">Control ciudadano</span>
+              </div>
+              <h2 className="mt-4 text-2xl font-black text-slate-950">Expediente local, prudente y verificable</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
+                La persona conserva control del expediente. No se envían datos a servidor, no se usan APIs externas, geolocalización automática ni micrófono.
+              </p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
+                No equivale a aval institucional ni produce efectos legales automáticos.
+              </p>
+            </div>
+            <div className="lg:col-span-4">
               {folio ? <LocalDraftStatus folio={folio} lastSavedAt={lastSavedAt} restored={restored} onClearDraft={handleClearDraft} /> : null}
             </div>
           </section>
 
-          <nav className="mb-6 grid gap-3 md:grid-cols-4" aria-label="Secciones de Seguridad Ciudadana">
+          <nav className="mb-6 flex gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-md" aria-label="Secciones de Seguridad Ciudadana">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`rounded-[22px] p-4 text-left shadow-sm ring-1 transition ${
+                className={`min-w-[210px] flex-1 rounded-xl border px-4 py-3 text-left transition ${
                   activeTab === tab.id
-                    ? "bg-[#0A4E84] text-white ring-[#0A4E84]"
-                    : "bg-white text-[#0A4E84] ring-[#F7C9DD] hover:bg-[#E0F2FE]"
+                    ? "border-transparent bg-slate-950 text-white shadow-sm"
+                    : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-white"
                 }`}
               >
-                <span className="block text-sm font-bold">{tab.label}</span>
+                <span className="mb-2 block h-1.5 w-12 rounded-full" style={{ backgroundColor: tab.accent }} />
+                <span className="block text-sm font-black">{tab.label}</span>
                 <span className={`mt-1 block text-xs leading-5 ${activeTab === tab.id ? "text-white/80" : "text-slate-600"}`}>{tab.description}</span>
               </button>
             ))}
@@ -308,8 +353,8 @@ export default function SeguridadCiudadanaPage() {
         </div>
 
         {activeTab === "reporte" ? (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] print:block">
-            <div className="space-y-6 print:hidden">
+          <div className="grid gap-6 lg:grid-cols-12 print:block">
+            <div className="space-y-6 print:hidden lg:col-span-5">
               <SecurityReportForm report={report} onChange={updateReport} />
               <PrivacyConsentBox report={report} onChange={updateReport} />
               <EvidenceUploader
@@ -319,9 +364,23 @@ export default function SeguridadCiudadanaPage() {
                 onEvidenceUpdated={handleEvidenceUpdated}
               />
             </div>
-            <div className="space-y-6">
+            <div className="space-y-6 lg:col-span-7">
               <QualityPanel validation={validation} />
-              {folio ? <TraceabilityPanel folio={folio} dossierHash={dossierHash} previousDossierHash={previousDossierHash} trace={trace} /> : null}
+              {folio ? (
+                <ForensicPreview
+                  folio={folio}
+                  report={report}
+                  evidence={evidence}
+                  trace={trace}
+                  dossierHash={dossierHash}
+                  previousDossierHash={previousDossierHash}
+                  selectedSection={selectedPrintSection}
+                  validation={validation}
+                  onSectionChange={setSelectedPrintSection}
+                  onCompile={handleCompile}
+                  onPrint={handlePrint}
+                />
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -330,22 +389,6 @@ export default function SeguridadCiudadanaPage() {
 
         {activeTab === "trazabilidad" && folio ? (
           <TraceabilityPanel folio={folio} dossierHash={dossierHash} previousDossierHash={previousDossierHash} trace={trace} />
-        ) : null}
-
-        {activeTab === "impresion" && folio ? (
-          <ForensicPreview
-            folio={folio}
-            report={report}
-            evidence={evidence}
-            trace={trace}
-            dossierHash={dossierHash}
-            previousDossierHash={previousDossierHash}
-            selectedSection={selectedPrintSection}
-            validation={validation}
-            onSectionChange={setSelectedPrintSection}
-            onCompile={handleCompile}
-            onPrint={handlePrint}
-          />
         ) : null}
       </div>
     </main>
