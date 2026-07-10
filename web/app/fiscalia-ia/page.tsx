@@ -39,12 +39,12 @@ export default function FiscaliaIaPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#090a0f] text-slate-100 print:bg-white print:text-black">
+    <main className="min-h-screen bg-white text-[#0A4E84] print:bg-white print:text-black">
       <ModuleHeader activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <section className="border-b border-pink-500/20 bg-gradient-to-r from-pink-950/40 via-purple-950/30 to-blue-950/40 px-4 py-3 print:hidden">
-        <div className="mx-auto max-w-7xl text-xs leading-6 text-slate-300">
-          <strong className="text-white">Asistente ciudadano:</strong> ayuda a estructurar expedientes ciudadanos, evidencia, cronologías y documentos de apoyo. No envía datos a autoridades ni sustituye asesoría legal.
+      <section className="border-b border-slate-200 bg-[#F8FAFC] px-4 py-3 print:hidden">
+        <div className="mx-auto max-w-7xl text-xs leading-6 text-slate-600">
+          <strong className="text-[#0A4E84]">Asistente ciudadano:</strong> ayuda a estructurar expedientes ciudadanos, evidencia, cronologías y documentos de apoyo. No envía datos a autoridades ni sustituye asesoría legal.
         </div>
       </section>
 
@@ -54,7 +54,7 @@ export default function FiscaliaIaPage() {
         </div>
 
         {error ? (
-          <div className="rounded-2xl border border-red-500/30 bg-red-950/40 p-4 text-sm font-semibold text-red-100 print:hidden">
+          <div className="rounded-2xl border border-[#F97316]/30 bg-[#FFF7ED] p-4 text-sm font-semibold text-[#9A3412] print:hidden">
             {error}
           </div>
         ) : null}
@@ -91,9 +91,9 @@ export default function FiscaliaIaPage() {
               copy: "Los datos de ejemplo no representan envío real a autoridades. El ciudadano decide qué guardar, imprimir o compartir.",
             },
           ].map((item) => (
-            <article key={item.title} className="rounded-2xl border border-zinc-800 bg-[#12141c] p-4 shadow-lg shadow-black/30">
-              <h3 className="font-black uppercase text-white">{item.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-400">{item.copy}</p>
+            <article key={item.title} className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+              <h3 className="font-black uppercase text-[#0A4E84]">{item.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{item.copy}</p>
             </article>
           ))}
         </section>
