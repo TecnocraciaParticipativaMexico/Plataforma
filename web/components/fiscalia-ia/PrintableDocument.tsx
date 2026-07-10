@@ -6,19 +6,19 @@ type PrintableDocumentProps = {
 
 export function PrintableDocument({ structuredCase }: PrintableDocumentProps) {
   return (
-    <section className="rounded-2xl border border-zinc-800 bg-[#12141c] p-5 shadow-xl shadow-black/40 print:border-0 print:bg-white print:p-0 print:shadow-none">
+    <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm print:border-0 print:bg-white print:p-0 print:shadow-none">
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between print:hidden">
         <div>
-          <h2 className="text-lg font-black uppercase text-white">Documento profesional imprimible</h2>
-          <p className="mt-1 text-xs text-slate-400">Documento de apoyo para revisión con autoridades competentes, abogados, comités o acompañantes ciudadanos.</p>
+          <h2 className="text-lg font-black uppercase text-[#0A4E84]">Documento profesional imprimible</h2>
+          <p className="mt-1 text-xs text-slate-500">Documento de apoyo para revisión con autoridades competentes, abogados, comités o acompañantes ciudadanos.</p>
         </div>
-        <button type="button" onClick={() => window.print()} className="rounded-full bg-gradient-to-r from-[#E5007D] to-[#702F8A] px-5 py-2 text-sm font-black text-white shadow-lg shadow-pink-500/20">
+        <button type="button" onClick={() => window.print()} className="rounded-full bg-[#E4007C] px-5 py-2 text-sm font-black text-white shadow-sm transition hover:bg-[#BE185D]">
           Imprimir o guardar PDF
         </button>
       </div>
 
       {!structuredCase ? (
-        <div className="rounded-xl border border-dashed border-zinc-700 bg-zinc-950 p-8 text-center text-sm text-slate-400 print:hidden">Genera un expediente para preparar el documento imprimible.</div>
+        <div className="rounded-xl border border-dashed border-slate-300 bg-[#F8FAFC] p-8 text-center text-sm text-slate-500 print:hidden">Genera un expediente para preparar el documento imprimible.</div>
       ) : (
         <article className="mx-auto max-w-4xl rounded-2xl bg-white p-6 text-slate-950 shadow-2xl print:max-w-none print:rounded-none print:p-0 print:shadow-none">
           <section className="doc-section border-l-8 border-[#E5007D] pl-6 print:break-after-page">
