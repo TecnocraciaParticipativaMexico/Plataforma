@@ -234,7 +234,7 @@ export default function Home() {
             <span className="text-lg">🏠</span>
             <span>Inicio</span>
           </div>
-<a href="/comites" className="flex flex-col items-center text-slate-500">
+<a href="/modulos" className="flex flex-col items-center text-slate-500">
   <span className="text-lg">🧩</span>
   <span>Módulos</span>
 </a>
