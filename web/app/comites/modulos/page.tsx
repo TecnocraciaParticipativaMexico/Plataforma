@@ -20,6 +20,11 @@ const modulosDisponibles: Record<number, { href: string; cta: string; descripcio
     cta: "Entrar a Congreso Cívico",
     descripcion: "Seguimiento ciudadano de iniciativas, representantes, alertas cívicas y alineación territorial.",
   },
+  5: {
+    href: "/madres-buscadoras",
+    cta: "Entrar a Madres Buscadoras",
+    descripcion: "Sistema civico de busqueda, documentacion, seguimiento y acompanamiento para familias y colectivos.",
+  },
 };
 
 export default function ModulosComitesPage() {
@@ -52,7 +57,7 @@ export default function ModulosComitesPage() {
           Participativa. Puedes explorar módulos y solicitar participación
           según tu experiencia técnica.
           <span className="mt-2 block font-semibold text-[#0A4E84]">
-            Por ahora, los Módulos 01, 02 y 03 están disponibles.
+            Por ahora, los Módulos 01, 02, 03 y 05 están disponibles.
           </span>
         </p>
 
