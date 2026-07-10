@@ -19,6 +19,7 @@ export default function FiscaliaIaPage() {
   const [structuredCase, setStructuredCase] = useState<StructuredCase | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const showSummary = activeTab === "generador" || activeTab === "documento";
 
   function updateForm(patch: Partial<FiscaliaFormState>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -49,9 +50,11 @@ export default function FiscaliaIaPage() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 md:py-8 print:max-w-none print:px-0 print:py-0">
-        <div className="print:hidden">
-          <DashboardCards structuredCase={structuredCase} evidenceCount={evidence.length} />
-        </div>
+        {showSummary ? (
+          <div className="print:hidden">
+            <DashboardCards structuredCase={structuredCase} evidenceCount={evidence.length} />
+          </div>
+        ) : null}
 
         {error ? (
           <div className="rounded-2xl border border-[#F97316]/30 bg-[#FFF7ED] p-4 text-sm font-semibold text-[#9A3412] print:hidden">
