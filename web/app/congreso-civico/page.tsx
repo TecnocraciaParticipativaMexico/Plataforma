@@ -142,16 +142,12 @@ export default function CongresoCivicoPage() {
   return (
     <main className="min-h-screen bg-[#FFF8F0] text-[#0A4E84]">
       <div className="mx-auto max-w-7xl px-4 py-8">
-        <Link href="/" className="mb-5 inline-block text-sm font-semibold text-[#E4007C]">
-          {"<-"} Volver al inicio
-        </Link>
-
         <section className="mb-8 overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-[#F7C9DD]">
           <div className="h-3 bg-gradient-to-r from-[#E4007C] via-[#F97316] via-[#F2C300] via-[#16A34A] via-[#0EA5E9] to-[#8B5CF6]" />
           <div className="grid gap-6 p-6 lg:grid-cols-[1.25fr_0.75fr] lg:p-8">
             <div>
               <div className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-[#E4007C]">Módulo 03</div>
-              <h1 className="max-w-3xl text-4xl font-bold leading-tight md:text-5xl">Congreso Cívico</h1>
+              <h2 className="max-w-3xl text-4xl font-bold leading-tight md:text-5xl">Portal de evaluaci�n legislativa</h2>
               <p className="mt-4 max-w-3xl text-base leading-7 text-slate-700">
                 Portal ciudadano para consultar iniciativas, representantes, comités, seguimiento legislativo y alertas cívicas en un solo lugar.
               </p>

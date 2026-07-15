@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ModuleIdentityHeader } from "@/components/branding/ModuleIdentityHeader";
 import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
 import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
-import { PlatformLogoHeader } from "@/components/branding/PlatformLogoHeader";
 import { modulosTecnocracia } from "../lib/modulosTecnocracia";
 
 const modulosDisponibles: Record<number, string> = {
@@ -38,29 +38,16 @@ export default function ModulosPage() {
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
       <div className="mx-auto max-w-2xl px-4 pb-32 pt-6">
-        <PlatformLogoHeader className="mb-4" />
-
-        <Link
-          href="/"
-          className="mb-4 inline-block text-sm font-semibold"
+        <ModuleIdentityHeader
+          label="DIRECTORIO DE M”DULOS"
+          title="MÛdulos oficiales"
+          description="Consulta el Ìndice de los mÛdulos de Tecnocracia Participativa."
+          className="mb-5 overflow-hidden rounded-[28px] border border-slate-200"
         >
-          ‚Üê Volver al inicio
-        </Link>
-
-        <section className="mb-5 rounded-[28px] bg-white p-5 shadow-sm">
-          <div className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#E6007E]">
-            Directorio de m√≥dulos
-          </div>
-
-          <h1 className="mb-3 text-3xl font-extrabold leading-tight">
-            M√≥dulos oficiales
-          </h1>
-
-          <p className="text-sm leading-6 text-slate-600">
-            Consulta el √≠ndice de los 30 m√≥dulos de Tecnocracia Participativa.
-            Por ahora, los M√≥dulos 01, 02, 03 y 05 est√°n disponibles.
-          </p>
-        </section>
+          <Link href="/" className="inline-flex text-sm font-semibold text-[#E4007C]">
+            Volver al inicio
+          </Link>
+        </ModuleIdentityHeader>
 
         <section className="mb-4 rounded-2xl bg-white p-4 shadow-sm">
           <label

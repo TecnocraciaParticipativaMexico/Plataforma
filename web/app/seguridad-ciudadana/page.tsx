@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ModuleIdentityHeader } from "@/components/branding/ModuleIdentityHeader";
 import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
 import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
-import { PlatformLogoHeader } from "@/components/branding/PlatformLogoHeader";
 import { CommitteeReviewMock } from "@/components/seguridad-ciudadana/CommitteeReviewMock";
 import { EvidenceUploader } from "@/components/seguridad-ciudadana/EvidenceUploader";
 import { ForensicPreview } from "@/components/seguridad-ciudadana/ForensicPreview";
@@ -281,32 +281,18 @@ export default function SeguridadCiudadanaPage() {
       ) : null}
 
       <div className="print:hidden">
-        <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-            <div className="flex min-w-0 items-center gap-3">
-              <PlatformLogoHeader />
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-x-1 text-[11px] font-black uppercase tracking-[0.18em]">
-                  <span className="text-[#0054A6]">Tecnocracia</span>
-                  <span className="text-[#E5007D]">Participativa</span>
-                </div>
-                <div className="truncate text-sm font-black tracking-tight text-slate-950">M√©xico 2030</div>
-              </div>
-            </div>
-            <div className="hidden items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500 sm:flex">
+        <ModuleIdentityHeader
+          label="M”DULO 01 ∑ SEGURIDAD CIUDADANA"
+          title="Carpeta Ciudadana de InvestigaciÛn CÌvica"
+          description="Expediente tÈcnico ciudadano de hechos, evidencia y trazabilidad. Documento cÌvico de apoyo; no sustituye autoridades."
+          className="sticky top-0 z-40"
+          badges={
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[#166534]">
               <span className="h-2 w-2 rounded-full bg-[#39B54A]" />
               Registro ciudadano
-            </div>
-          </div>
-        </header>
-
-        <section className="bg-slate-950 px-4 py-5 text-center text-white shadow-md sm:px-6 lg:px-8">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#FFC20E]">M√≥dulo 01 ¬∑ Seguridad Ciudadana</p>
-          <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">Carpeta Ciudadana de Investigaci√≥n C√≠vica</h1>
-          <p className="mx-auto mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-200">
-            Expediente t√©cnico ciudadano de hechos, evidencia y trazabilidad. Documento c√≠vico de apoyo; no sustituye autoridades.
-          </p>
-        </section>
+            </span>
+          }
+        />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 pb-32 pt-6 sm:px-6 lg:px-8 print:max-w-none print:px-0 print:py-0">
