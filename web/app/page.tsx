@@ -233,7 +233,7 @@ export default function Home() {
         )}
       </div>
 
-      <PlatformFooterBanner className="mx-auto max-w-md" />
+      <PlatformFooterBanner />
       <PlatformBottomNav />
     </main>
   );
