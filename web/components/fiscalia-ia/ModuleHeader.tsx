@@ -1,4 +1,5 @@
 import type { FiscaliaTab } from "@/lib/fiscalia-ia/types";
+import { PlatformLogoHeader } from "@/components/branding/PlatformLogoHeader";
 
 type ModuleHeaderProps = {
   activeTab: FiscaliaTab;
@@ -18,6 +19,7 @@ export function ModuleHeader({ activeTab, onTabChange }: ModuleHeaderProps) {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-4 py-4 shadow-sm backdrop-blur print:hidden">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
+          <PlatformLogoHeader />
           <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[#E4007C] font-black text-white shadow-sm">
             02
           </div>

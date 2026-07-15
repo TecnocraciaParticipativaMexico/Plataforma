@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { PlatformLogoHeader } from "@/components/branding/PlatformLogoHeader";
 
 const rutasCongresoCivico = [
   { href: "/congreso-civico", label: "Inicio" },
@@ -29,13 +30,16 @@ export function CongresoCivicoNavigation() {
   return (
     <nav className="sticky top-0 z-30 border-b border-[#F7C9DD] bg-white/95 backdrop-blur" aria-label="Navegación de Congreso Cívico">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-        <Link href="/congreso-civico" className="group inline-flex items-center gap-3 text-[#0A4E84]">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E4007C] text-sm font-black text-white shadow-sm">CC</span>
-          <span>
-            <span className="block text-sm font-black uppercase tracking-[0.12em] text-[#E4007C]">Congreso Cívico</span>
-            <span className="block text-xs font-semibold text-slate-500">Participación, representación y seguimiento</span>
-          </span>
-        </Link>
+        <div className="flex min-w-0 items-center gap-3">
+          <PlatformLogoHeader />
+          <Link href="/congreso-civico" className="group inline-flex min-w-0 items-center gap-3 text-[#0A4E84]">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E4007C] text-sm font-black text-white shadow-sm">CC</span>
+            <span className="min-w-0">
+              <span className="block text-sm font-black uppercase tracking-[0.12em] text-[#E4007C]">Congreso Cívico</span>
+              <span className="block truncate text-xs font-semibold text-slate-500">Participación, representación y seguimiento</span>
+            </span>
+          </Link>
+        </div>
 
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-wrap lg:justify-end lg:overflow-visible lg:pb-0">
           {rutasCongresoCivico.map((ruta) => {

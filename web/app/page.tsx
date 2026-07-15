@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
+import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
+import { PlatformHeroBanner } from "@/components/branding/PlatformHeroBanner";
 
 type AnyJson = any;
 
@@ -48,6 +51,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
+      <PlatformHeroBanner />
+
       <div className="mx-auto max-w-md px-4 pb-28 pt-6">
         <header className="mb-6 flex items-center justify-between">
           <button className="text-2xl text-[#16A34A]">☰</button>
@@ -228,22 +233,8 @@ export default function Home() {
         )}
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-md items-center justify-around px-4 py-3 text-xs">
-          <div className="flex flex-col items-center text-[#0A4E84]">
-            <span className="text-lg">🏠</span>
-            <span>Inicio</span>
-          </div>
-<a href="/modulos" className="flex flex-col items-center text-slate-500">
-  <span className="text-lg">🧩</span>
-  <span>Módulos</span>
-</a>
-         <a href="/mis-denuncias" className="flex flex-col items-center text-slate-500">
-  <span className="text-lg">👤</span>
-  <span>Perfil</span>
-</a>
-        </div>
-      </nav>
+      <PlatformFooterBanner className="mx-auto max-w-md" />
+      <PlatformBottomNav />
     </main>
   );
 }

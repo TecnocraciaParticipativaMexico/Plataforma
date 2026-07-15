@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
+import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
+import { PlatformLogoHeader } from "@/components/branding/PlatformLogoHeader";
 import { modulosTecnocracia } from "../lib/modulosTecnocracia";
 
 const modulosDisponibles: Record<number, string> = {
@@ -34,7 +37,9 @@ export default function ModulosPage() {
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
-      <div className="mx-auto max-w-2xl px-4 py-6">
+      <div className="mx-auto max-w-2xl px-4 pb-32 pt-6">
+        <PlatformLogoHeader className="mb-4" />
+
         <Link
           href="/"
           className="mb-4 inline-block text-sm font-semibold"
@@ -130,7 +135,11 @@ export default function ModulosPage() {
             No encontramos un módulo con esa búsqueda.
           </div>
         ) : null}
+
+        <PlatformFooterBanner />
       </div>
+
+      <PlatformBottomNav />
     </main>
   );
 }
