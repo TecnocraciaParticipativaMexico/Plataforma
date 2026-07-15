@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ModuleIdentityHeader } from "@/components/branding/ModuleIdentityHeader";
+import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
+import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
 import { modulosTecnocracia } from "../lib/modulosTecnocracia";
 
 const modulosDisponibles: Record<number, string> = {
@@ -34,28 +37,17 @@ export default function ModulosPage() {
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
-      <div className="mx-auto max-w-2xl px-4 py-6">
-        <Link
-          href="/"
-          className="mb-4 inline-block text-sm font-semibold"
+      <div className="mx-auto max-w-2xl px-4 pb-32 pt-6">
+        <ModuleIdentityHeader
+          label="DIRECTORIO DE MÓDULOS"
+          title="Módulos oficiales"
+          description="Consulta el índice de los módulos de Tecnocracia Participativa."
+          className="mb-5 overflow-hidden rounded-[28px] border border-slate-200"
         >
-          ← Volver al inicio
-        </Link>
-
-        <section className="mb-5 rounded-[28px] bg-white p-5 shadow-sm">
-          <div className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#E6007E]">
-            Directorio de módulos
-          </div>
-
-          <h1 className="mb-3 text-3xl font-extrabold leading-tight">
-            Módulos oficiales
-          </h1>
-
-          <p className="text-sm leading-6 text-slate-600">
-            Consulta el índice de los 30 módulos de Tecnocracia Participativa.
-            Por ahora, los Módulos 01, 02, 03 y 05 están disponibles.
-          </p>
-        </section>
+          <Link href="/" className="inline-flex text-sm font-semibold text-[#E4007C]">
+            Volver al inicio
+          </Link>
+        </ModuleIdentityHeader>
 
         <section className="mb-4 rounded-2xl bg-white p-4 shadow-sm">
           <label
@@ -130,7 +122,11 @@ export default function ModulosPage() {
             No encontramos un módulo con esa búsqueda.
           </div>
         ) : null}
+
+        <PlatformFooterBanner />
       </div>
+
+      <PlatformBottomNav />
     </main>
   );
 }
