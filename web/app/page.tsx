@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
+import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
+import { PlatformHeroBanner } from "@/components/branding/PlatformHeroBanner";
 
 type AnyJson = any;
 
@@ -48,21 +51,12 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
-      <div className="mx-auto max-w-md px-4 pb-28 pt-6">
-        <header className="mb-6 flex items-center justify-between">
-          <button className="text-2xl text-[#16A34A]">☰</button>
-        <h1 className="text-4xl font-extrabold text-[#0A4E84] leading-tight">
-  Tecnocracia Participativa
-</h1>
-          <button className="text-lg">🌐</button>
-        </header>
+      <PlatformHeroBanner />
 
-        <section className="mb-6 rounded-[28px] bg-gradient-to-br from-[#F472B6] to-[#DB2777] p-6 text-white shadow-lg">
-          <div className="mb-3 inline-block rounded-full bg-[#F2C94C] px-3 py-1 text-xs font-bold tracking-wide text-[#1F2937]">
-            PORTAL CIUDADANO
-          </div>
+      <div className="mx-auto w-full max-w-2xl px-3 pb-4 pt-4 sm:px-4">
 
-          <h2 className="mb-4 text-4xl font-extrabold leading-tight">
+        <section className="mb-5 w-full rounded-[28px] bg-gradient-to-br from-[#F472B6] to-[#DB2777] p-5 text-white shadow-lg sm:p-6">
+          <h2 className="mb-4 text-3xl font-extrabold leading-tight sm:text-4xl">
             Bienvenido,
             <br />
             Ciudadano.
@@ -73,7 +67,7 @@ export default function Home() {
             crea procesos verificables y consulta el avance con transparencia total.
           </p>
 
-<div className="flex gap-3">
+<div className="flex flex-wrap gap-3">
   <a
     href="/mis-denuncias"
     className="rounded-xl bg-[#F97316] px-4 py-2 text-sm font-semibold text-white shadow"
@@ -175,25 +169,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        <section className="mb-6 grid grid-cols-2 gap-4">
-          <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="mb-2 text-4xl font-extrabold text-[#0A4E84]">01</div>
-            <div className="text-lg font-bold text-black">Reportar</div>
-            <p className="mt-2 text-sm text-slate-600">
-              Crear procesos ciudadanos verificables.
-            </p>
-          </div>
-
-          <div className="rounded-[28px] bg-white p-5 shadow-sm">
-            <div className="mb-2 text-4xl font-extrabold text-[#0A4E84]">02</div>
-            <div className="text-lg font-bold text-black">Seguir</div>
-            <p className="mt-2 text-sm text-slate-600">
-              Revisar eventos y evidencia del proceso.
-            </p>
-          </div>
-        </section>
-
         {out && (
           <section className="mb-4 rounded-[24px] bg-white p-4 shadow-sm">
             <h4 className="mb-3 text-lg font-bold text-[#0A4E84]">
@@ -228,22 +203,8 @@ export default function Home() {
         )}
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-md items-center justify-around px-4 py-3 text-xs">
-          <div className="flex flex-col items-center text-[#0A4E84]">
-            <span className="text-lg">🏠</span>
-            <span>Inicio</span>
-          </div>
-<a href="/comites/modulos" className="flex flex-col items-center text-slate-500">
-  <span className="text-lg">🧩</span>
-  <span>Módulos</span>
-</a>
-         <a href="/mis-denuncias" className="flex flex-col items-center text-slate-500">
-  <span className="text-lg">👤</span>
-  <span>Perfil</span>
-</a>
-        </div>
-      </nav>
+      <PlatformFooterBanner />
+      <PlatformBottomNav />
     </main>
   );
 }

@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
+import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
+import { PlatformLogoHeader } from "@/components/branding/PlatformLogoHeader";
 
 type DenunciaGuardada = {
   process_id: string;
@@ -85,7 +88,9 @@ const data = await res.json();
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
-      <div className="mx-auto max-w-md px-4 py-6">
+      <div className="mx-auto max-w-md px-4 pb-32 pt-6">
+        <PlatformLogoHeader className="mb-4" />
+
         <Link href="/" className="mb-4 inline-block text-sm font-semibold">
           ← Volver al inicio
         </Link>
@@ -209,7 +214,11 @@ const data = await res.json();
         >
           Crear nueva denuncia
         </Link>
+
+        <PlatformFooterBanner />
       </div>
+
+      <PlatformBottomNav />
     </main>
   );
 }

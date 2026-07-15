@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
+import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
 import { CaseGenerator } from "@/components/fiscalia-ia/CaseGenerator";
 import { CasesExplorer } from "@/components/fiscalia-ia/CasesExplorer";
 import { CommitteesPanel } from "@/components/fiscalia-ia/CommitteesPanel";
@@ -49,7 +51,7 @@ export default function FiscaliaIaPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 md:py-8 print:max-w-none print:px-0 print:py-0">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 pb-32 pt-6 md:pt-8 print:max-w-none print:px-0 print:py-0">
         {showSummary ? (
           <div className="print:hidden">
             <DashboardCards structuredCase={structuredCase} evidenceCount={evidence.length} />
@@ -100,7 +102,11 @@ export default function FiscaliaIaPage() {
             </article>
           ))}
         </section>
+
+        <PlatformFooterBanner />
       </div>
+
+      <PlatformBottomNav />
     </main>
   );
 }
