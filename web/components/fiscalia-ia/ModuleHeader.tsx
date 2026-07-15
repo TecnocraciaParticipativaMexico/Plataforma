@@ -1,3 +1,5 @@
+"use client";
+
 import { ModuleIdentityHeader } from "@/components/branding/ModuleIdentityHeader";
 import type { FiscaliaTab } from "@/lib/fiscalia-ia/types";
 
