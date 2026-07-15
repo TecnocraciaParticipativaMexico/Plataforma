@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
+import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
 import { AuditLog } from "@/components/madres-buscadoras/AuditLog";
 import { CaseDetail } from "@/components/madres-buscadoras/CaseDetail";
 import { CasesList } from "@/components/madres-buscadoras/CasesList";
@@ -140,7 +142,7 @@ export default function MadresBuscadorasPage() {
         </div>
       ) : null}
 
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 md:py-8 print:hidden">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 pb-32 pt-6 md:pt-8 print:hidden">
         {activeTab === "dashboard" ? <Dashboard dataset={dataset} onOpenCase={openCase} onNewCase={() => setActiveTab("new")} /> : null}
 
         {activeTab === "cases" ? (
@@ -162,9 +164,12 @@ export default function MadresBuscadorasPage() {
         {activeTab === "genetics" ? <GeneticReferencesPanel dataset={dataset} cases={dataset.cases} onAddReference={handleAddReference} /> : null}
         {activeTab === "committees" ? <CommitteesDirectory dataset={dataset} onAssignReview={handleAssignReview} /> : null}
         {activeTab === "audit" ? <AuditLog dataset={dataset} /> : null}
+
+        <PlatformFooterBanner />
       </div>
 
       {selectedCase ? <PrintableDocument selectedCase={selectedCase} dataset={dataset} /> : null}
+      <PlatformBottomNav />
 
       <style jsx global>{`
         @media print {
