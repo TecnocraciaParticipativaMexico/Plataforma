@@ -39,9 +39,9 @@ export default function ModulosPage() {
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
       <div className="mx-auto max-w-2xl px-4 pb-32 pt-6">
         <ModuleIdentityHeader
-          label="DIRECTORIO DE M�DULOS"
-          title="M�dulos oficiales"
-          description="Consulta el �ndice de los m�dulos de Tecnocracia Participativa."
+          label="DIRECTORIO DE MÓDULOS"
+          title="Módulos oficiales"
+          description="Consulta el índice de los módulos de Tecnocracia Participativa."
           className="mb-5 overflow-hidden rounded-[28px] border border-slate-200"
         >
           <Link href="/" className="inline-flex text-sm font-semibold text-[#E4007C]">
@@ -54,14 +54,14 @@ export default function ModulosPage() {
             htmlFor="buscar-modulo"
             className="mb-2 block text-xs font-bold uppercase tracking-[0.15em] text-[#C2187A]"
           >
-            Buscar módulo
+            Buscar mÃ³dulo
           </label>
 
           <input
             id="buscar-modulo"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Ej. Congreso Cívico, salud, agua..."
+            placeholder="Ej. Congreso CÃ­vico, salud, agua..."
             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-[#E6007E]"
           />
         </section>
@@ -88,7 +88,7 @@ export default function ModulosPage() {
                       : "shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500"
                   }
                 >
-                  {disponible ? "Disponible" : "Próximamente"}
+                  {disponible ? "Disponible" : "PrÃ³ximamente"}
                 </span>
               </>
             );
@@ -119,7 +119,7 @@ export default function ModulosPage() {
 
         {modulos.length === 0 ? (
           <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm leading-6 text-slate-600">
-            No encontramos un módulo con esa búsqueda.
+            No encontramos un mÃ³dulo con esa bÃºsqueda.
           </div>
         ) : null}
 
