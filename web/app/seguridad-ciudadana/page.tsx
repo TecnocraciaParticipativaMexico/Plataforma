@@ -39,14 +39,14 @@ const tabs: { id: SecurityTab; label: string; description: string; accent: strin
   },
   {
     id: "comites",
-    label: "ComitÃ©s Ciudadanos",
-    description: "RevisiÃ³n ciudadana mock por colonia, municipio, estado y federaciÃ³n.",
+    label: "Comités Ciudadanos",
+    description: "Revisión ciudadana mock por colonia, municipio, estado y federación.",
     accent: "#0054A6",
   },
   {
     id: "trazabilidad",
     label: "Trazabilidad",
-    description: "Hash local, bitÃ¡cora verificable y eventos del expediente.",
+    description: "Hash local, bitácora verificable y eventos del expediente.",
     accent: "#702F8A",
   },
 ];
@@ -54,9 +54,9 @@ const tabs: { id: SecurityTab; label: string; description: string; accent: strin
 function getQualityLabel(level: DossierQualityLevel): string {
   const labels: Record<DossierQualityLevel, string> = {
     borrador: "Borrador",
-    basico: "BÃ¡sico",
+    basico: "Básico",
     completo: "Completo",
-    listo_revision: "Listo para revisiÃ³n ciudadana",
+    listo_revision: "Listo para revisión ciudadana",
   };
   return labels[level];
 }
@@ -64,11 +64,11 @@ function getQualityLabel(level: DossierQualityLevel): string {
 function validateReport(report: SecurityReport, evidence: EvidenceItem[], trace: TraceEvent[]): ValidationResult {
   const fieldChecks = [
     { label: "tipo de hecho", complete: Boolean(report.category) },
-    { label: "narrativa mÃ­nima", complete: report.narrative.trim().length >= 80 },
+    { label: "narrativa mínima", complete: report.narrative.trim().length >= 80 },
     { label: "fecha aproximada", complete: Boolean(report.approximateDate) },
-    { label: "ubicaciÃ³n aproximada", complete: Boolean(report.location.trim()) },
+    { label: "ubicación aproximada", complete: Boolean(report.location.trim()) },
     {
-      label: "evidencia adjunta o explicaciÃ³n de ausencia",
+      label: "evidencia adjunta o explicación de ausencia",
       complete: evidence.length > 0 || report.evidenceAbsenceExplanation.trim().length >= 20,
     },
     { label: "consentimiento de privacidad", complete: report.consentAccepted },
@@ -102,7 +102,7 @@ function QualityPanel({ validation }: { validation: ValidationResult }) {
       </div>
       <h2 className="text-xl font-bold text-[#0054A6]">{validation.qualityLabel}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-700">
-        La completitud se calcula localmente con tipo de hecho, narrativa, fecha, ubicaciÃ³n, evidencia o explicaciÃ³n y consentimiento de privacidad.
+        La completitud se calcula localmente con tipo de hecho, narrativa, fecha, ubicación, evidencia o explicación y consentimiento de privacidad.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -120,7 +120,7 @@ function QualityPanel({ validation }: { validation: ValidationResult }) {
         </p>
       ) : (
         <p className="mt-4 rounded-2xl border-l-4 border-[#39B54A] bg-[#39B54A]/10 p-4 text-sm font-semibold leading-6 text-[#1F5F24]">
-          Campos mÃ­nimos completos. El expediente puede imprimirse como Expediente TÃ©cnico Ciudadano.
+          Campos mínimos completos. El expediente puede imprimirse como Expediente Técnico Ciudadano.
         </p>
       )}
     </section>
@@ -171,7 +171,7 @@ export default function SeguridadCiudadanaPage() {
       } else {
         const initialFolio = createLocalFolio();
         setFolio(initialFolio);
-        setTrace([createTraceEvent("draft_created", "Se iniciÃ³ una carpeta ciudadana local en este navegador.")]);
+        setTrace([createTraceEvent("draft_created", "Se inició una carpeta ciudadana local en este navegador.")]);
       }
 
       setIsReady(true);
@@ -229,7 +229,7 @@ export default function SeguridadCiudadanaPage() {
     setEvidence((current) => [...current, ...items]);
     setTrace((current) => [
       ...current,
-      ...items.map((item) => createTraceEvent("evidence_added", `${item.localId} Â· ${item.name} fue agregado con hash SHA-256 local.`)),
+      ...items.map((item) => createTraceEvent("evidence_added", `${item.localId} · ${item.name} fue agregado con hash SHA-256 local.`)),
     ]);
     showToast(`${items.length} evidencia(s) agregada(s) localmente.`);
   }
@@ -240,20 +240,20 @@ export default function SeguridadCiudadanaPage() {
 
   function handleEvidenceRemoved(item: EvidenceItem) {
     setEvidence((current) => current.filter((candidate) => candidate.id !== item.id));
-    registerEvent("evidence_removed", `${item.localId} Â· ${item.name} fue retirado del inventario local.`);
+    registerEvent("evidence_removed", `${item.localId} · ${item.name} fue retirado del inventario local.`);
     showToast("Evidencia eliminada del borrador local.");
   }
 
   function handleCompile() {
-    registerEvent("report_compiled", validation.isValid ? "Se compilÃ³ el Expediente TÃ©cnico Ciudadano." : "Se compilÃ³ una impresiÃ³n con marca BORRADOR INCOMPLETO.");
+    registerEvent("report_compiled", validation.isValid ? "Se compiló el Expediente Técnico Ciudadano." : "Se compiló una impresión con marca BORRADOR INCOMPLETO.");
     setSelectedPrintSection("all");
     setActiveTab("reporte");
-    showToast(validation.isValid ? "Expediente compilado localmente." : "ImpresiÃ³n preparada como borrador incompleto.");
+    showToast(validation.isValid ? "Expediente compilado localmente." : "Impresión preparada como borrador incompleto.");
   }
 
   function handlePrint() {
-    registerEvent("export_generated", "Se abriÃ³ el flujo de impresiÃ³n o guardado PDF del navegador.");
-    showToast("ImpresiÃ³n generada desde el navegador.");
+    registerEvent("export_generated", "Se abrió el flujo de impresión o guardado PDF del navegador.");
+    showToast("Impresión generada desde el navegador.");
     window.setTimeout(() => window.print(), 80);
   }
 
@@ -263,7 +263,7 @@ export default function SeguridadCiudadanaPage() {
     setFolio(nextFolio);
     setReport(emptySecurityReport);
     setEvidence([]);
-    setTrace([createTraceEvent("draft_created", "Se limpiÃ³ el borrador anterior y se iniciÃ³ una carpeta ciudadana nueva.")]);
+    setTrace([createTraceEvent("draft_created", "Se limpió el borrador anterior y se inició una carpeta ciudadana nueva.")]);
     setDossierHash("");
     setPreviousDossierHash("");
     setLastSavedAt(null);
@@ -306,11 +306,19 @@ export default function SeguridadCiudadanaPage() {
               </div>
               <h2 className="mt-4 text-2xl font-black text-slate-950">Expediente local, prudente y verificable</h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
-                La persona conserva control del expediente. No se envÃ­an datos a servidor, no se usan APIs externas, geolocalizaciÃ³n automÃ¡tica ni micrÃ³fono.
+                La persona conserva control del expediente. No se envían datos a servidor, no se usan APIs externas, geolocalización automática ni micrófono.
               </p>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
-                No equivale a aval institucional ni produce efectos legales automÃ¡ticos.
+                No equivale a aval institucional ni produce efectos legales automáticos.
               </p>
+              <div className="mt-4 max-w-3xl rounded-xl border-l-4 border-[#FFC20E] bg-[#FFC20E]/10 px-4 py-3">
+                <div className="inline-flex rounded-full bg-[#FFC20E] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-950">
+                  FUNDAMENTO LEGAL
+                </div>
+                <p className="mt-2 text-xs leading-5 text-slate-700 sm:text-sm sm:leading-6">
+                  Se sustenta en los artículos 1°, 6°, 8° y 16 de la Constitución Política de los Estados Unidos Mexicanos y en la Ley Federal de Protección de Datos Personales en Posesión de los Particulares. Permite documentar hechos y riesgos de manera ciudadana. Conforme al artículo 21 constitucional, no ejerce funciones policiales ni sustituye una denuncia o investigación oficial.
+                </p>
+              </div>
             </div>
             <div className="lg:col-span-4">
               {folio ? <LocalDraftStatus folio={folio} lastSavedAt={lastSavedAt} restored={restored} onClearDraft={handleClearDraft} /> : null}
