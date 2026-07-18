@@ -12,6 +12,7 @@ const modulosDisponibles: Record<number, string> = {
   2: "/fiscalia-ia",
   3: "/congreso-civico",
   5: "/madres-buscadoras",
+  10: "/salud-publica",
 };
 
 function formatoModulo(id: number) {
@@ -54,14 +55,14 @@ export default function ModulosPage() {
             htmlFor="buscar-modulo"
             className="mb-2 block text-xs font-bold uppercase tracking-[0.15em] text-[#C2187A]"
           >
-            Buscar mÃ³dulo
+            Buscar módulo
           </label>
 
           <input
             id="buscar-modulo"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Ej. Congreso CÃ­vico, salud, agua..."
+            placeholder="Ej. Congreso Cívico, salud, agua..."
             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-[#E6007E]"
           />
         </section>
@@ -88,7 +89,7 @@ export default function ModulosPage() {
                       : "shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500"
                   }
                 >
-                  {disponible ? "Disponible" : "PrÃ³ximamente"}
+                  {disponible ? "Disponible" : "Próximamente"}
                 </span>
               </>
             );
@@ -119,7 +120,7 @@ export default function ModulosPage() {
 
         {modulos.length === 0 ? (
           <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm leading-6 text-slate-600">
-            No encontramos un mÃ³dulo con esa bÃºsqueda.
+            No encontramos un módulo con esa búsqueda.
           </div>
         ) : null}
 
