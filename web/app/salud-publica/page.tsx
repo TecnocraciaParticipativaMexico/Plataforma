@@ -23,16 +23,15 @@ import {
   TelehealthCenter,
   TimelinePanel,
 } from "@/components/salud-publica/Sections";
-import { LEGAL_BASIS, LEGAL_BASIS_FULL, URGENT_NOTICE } from "@/lib/salud-publica/constants";
+import { LEGAL_BASIS } from "@/lib/salud-publica/constants";
 import { mockHealthDataset } from "@/lib/salud-publica/data/mock";
-import type { GuidanceResult, HealthDataset, HealthTab } from "@/lib/salud-publica/types";
+import type { CitizenTriageResult, GuidanceResult, HealthDataset, HealthTab } from "@/lib/salud-publica/types";
 
 export default function SaludPublicaPage() {
   const [activeTab, setActiveTab] = useState<HealthTab>("dashboard");
   const [dataset, setDataset] = useState<HealthDataset>(mockHealthDataset);
   const [selectedCaseId, setSelectedCaseId] = useState(mockHealthDataset.cases[0].id);
   const [notice, setNotice] = useState("");
-  const [urgentDismissed, setUrgentDismissed] = useState(false);
 
   const selectedCase = useMemo(() => dataset.cases.find((item) => item.id === selectedCaseId) ?? dataset.cases[0], [dataset.cases, selectedCaseId]);
 
@@ -44,7 +43,7 @@ export default function SaludPublicaPage() {
           id: `audit-${Date.now()}`,
           timestamp: result.generatedAt,
           actor: "Motor local",
-          action: "Orientacion generada",
+          action: "Orientación generada",
           entity: "GuidanceResult",
           version: "0.1",
           category: "orientacion",
@@ -55,33 +54,66 @@ export default function SaludPublicaPage() {
         ...current.audit,
       ],
     }));
-    setNotice("Orientacion local generada. No se contacto a ningun servicio externo.");
+    setNotice("Orientación local generada. No se contactó a ningún servicio externo.");
+  }
+
+  function handleSaveTriageResult(result: CitizenTriageResult) {
+    const timestamp = new Date().toISOString();
+    setDataset((current) => ({
+      ...current,
+      cases: current.cases.map((item) =>
+        item.id === selectedCase.id
+          ? {
+              ...item,
+              updatedAt: timestamp,
+              status: result.guidance.level === "posible_emergencia" || result.guidance.level === "consulta_prioritaria" ? "listo_consulta" : "seguimiento",
+              attentionLevel: result.guidance.level,
+              declaredMedications: result.medicationSafety.declaredMedications.map((medication) => medication.name),
+              guidance: [result.guidance, ...item.guidance],
+              timeline: [
+                {
+                  id: `timeline-triage-${Date.now()}`,
+                  caseId: item.id,
+                  timestamp,
+                  actor: "Ciudadanía",
+                  origin: "reglas_locales",
+                  category: "orientacion",
+                  description: `Resultado de triaje guardado: ${result.title}`,
+                  version: "0.2",
+                },
+                ...item.timeline,
+              ],
+            }
+          : item,
+      ),
+      audit: [
+        {
+          id: `audit-triage-${Date.now()}`,
+          caseId: selectedCase.id,
+          timestamp,
+          actor: "Ciudadanía",
+          action: "Resultado de triaje guardado",
+          entity: "CitizenTriageResult",
+          version: "0.2",
+          category: "orientacion",
+          origin: "reglas_locales",
+          detail: result.explanation,
+          hash: "demo-triaje-local",
+        },
+        ...current.audit,
+      ],
+    }));
+    setNotice("Resultado agregado al expediente mock de esta sesión.");
   }
 
   function printDocument() {
-    setNotice("Vista de impresion preparada para documento ciudadano.");
+    setNotice("Vista de impresión preparada para documento ciudadano.");
     window.setTimeout(() => window.print(), 80);
   }
 
   return (
     <main className="min-h-screen bg-[#F6F7F9] text-[#0A4E84] print:bg-white print:text-black">
       <SaludModuleHeader activeTab={activeTab} onTabChange={setActiveTab} />
-
-      <section className="border-b border-slate-200 bg-white px-4 py-3 print:hidden">
-        <div className="mx-auto max-w-7xl text-xs leading-6 text-slate-600">
-          <strong className="text-[#0A4E84]">Alcance del MVP:</strong> sistema ciudadano frontend con datos mock, repositorios locales y reglas deterministas para salud individual, salud comunitaria, vigilancia ciudadana de servicios y politicas publicas, y cooperacion solidaria transparente. Sin API keys, sin backend nuevo, sin llamadas a proveedores externos y sin conexion a sistemas sanitarios oficiales.
-        </div>
-      </section>
-
-      {!urgentDismissed ? (
-        <div className="fixed inset-x-3 bottom-24 z-50 mx-auto max-w-3xl rounded-2xl border-l-4 border-[#E4007C] bg-white p-4 text-sm leading-6 text-slate-700 shadow-xl ring-1 ring-slate-200 print:hidden md:bottom-5">
-          <strong className="text-[#E4007C]">Orientacion urgente:</strong> {URGENT_NOTICE}
-          <div className="mt-2 flex flex-wrap gap-2">
-            <button type="button" onClick={() => setActiveTab("directorio")} className="rounded-xl bg-[#E4007C] px-3 py-2 text-xs font-black uppercase text-white">Ver informacion</button>
-            <button type="button" onClick={() => setUrgentDismissed(true)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-black uppercase text-slate-600">Cerrar</button>
-          </div>
-        </div>
-      ) : null}
 
       {notice ? (
         <div className="fixed right-4 top-24 z-50 max-w-sm rounded-2xl border-l-4 border-[#E4007C] bg-white p-4 text-sm font-semibold text-slate-700 shadow-xl ring-1 ring-slate-200 print:hidden">
@@ -92,17 +124,11 @@ export default function SaludPublicaPage() {
 
       <div className="mx-auto max-w-7xl space-y-6 px-4 pb-32 pt-6 md:pt-8 print:max-w-none print:px-0 print:py-0">
         <section className="max-w-4xl rounded-xl border-l-4 border-[#FFC20E] bg-[#FFC20E]/10 px-4 py-3 print:hidden">
-          <div className="inline-flex rounded-full bg-[#FFC20E] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-950">Fundamento legal orientativo</div>
+          <div className="inline-flex rounded-full bg-[#FFC20E] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-950">FUNDAMENTO LEGAL ORIENTATIVO</div>
           <p className="mt-2 text-xs leading-5 text-slate-700 sm:text-sm sm:leading-6">{LEGAL_BASIS}</p>
-          <details className="mt-3 rounded-xl bg-white/70 p-3 text-xs leading-5 text-slate-700">
-            <summary className="cursor-pointer font-black uppercase text-[#0A4E84]">Ver fundamento ampliado</summary>
-            <div className="mt-2 space-y-2">
-              {LEGAL_BASIS_FULL.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            </div>
-          </details>
         </section>
 
-        {activeTab === "dashboard" ? <HealthDashboard dataset={dataset} selectedCase={selectedCase} onTabChange={setActiveTab} onOpenCase={(caseId) => { setSelectedCaseId(caseId); setActiveTab("expedientes"); }} /> : null}
+        {activeTab === "dashboard" ? <HealthDashboard dataset={dataset} selectedCase={selectedCase} onTabChange={setActiveTab} onOpenCase={(caseId) => { setSelectedCaseId(caseId); setActiveTab("expedientes"); }} onSaveTriageResult={handleSaveTriageResult} onPrint={printDocument} /> : null}
         {activeTab === "expedientes" ? <CasesWorkspace dataset={dataset} selectedCase={selectedCase} onSelectCase={setSelectedCaseId} onPrint={printDocument} /> : null}
         {activeTab === "nueva" ? <NewGuidanceWizard onResult={handleGuidanceResult} /> : null}
         {activeTab === "orientacion" ? <ConversationalGuidance selectedCase={selectedCase} onNote={(note) => setNotice(`Nota local preparada: ${note.slice(0, 90)}...`)} /> : null}

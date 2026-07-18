@@ -4,7 +4,7 @@ export const HEALTH_ROUTE = "/salud-publica";
 export const OFFICIAL_MODULE_NAME = "Módulo 10: Salud y Bienestar Digital";
 
 export const HEALTH_LIMITATION_NOTICE =
-  "Orientacion informativa. No diagnostica, no prescribe, no sustituye a profesionales autorizados y no contacta servicios externos.";
+  "Orientación informativa. No diagnostica, no prescribe, no sustituye a profesionales autorizados y no contacta servicios externos.";
 
 export const OFFICIAL_MODULE_DESCRIPTION =
   "Integración de telemedicina, seguimiento de abasto, evaluación de políticas públicas de salud y análisis de su impacto sobre la población, con soluciones solidarias verificables y mecanismos de seguimiento ciudadano.";
@@ -13,7 +13,7 @@ export const URGENT_NOTICE =
   "Esta información puede corresponder a una situación urgente. Busca ayuda presencial inmediata y utiliza los números oficiales de emergencia disponibles en tu localidad.";
 
 export const LEGAL_BASIS =
-  "Fundamento legal: artículo 4.º de la Constitución Política de los Estados Unidos Mexicanos; derechos de participación ciudadana, libertad de asociación y protección de datos personales; Ley General de Salud y legislación aplicable en materia de privacidad. En el ámbito internacional, se relaciona con el derecho al más alto nivel posible de salud, la no discriminación, la progresividad, la debida diligencia y la cooperación social y comunitaria.";
+  "El módulo se sustenta en el derecho a la protección de la salud reconocido en el artículo 4.º constitucional, así como en los derechos de participación ciudadana, libertad de asociación y protección de datos personales. La canalización solidaria de recursos y esfuerzos es jurídicamente válida cuando es voluntaria, transparente y complementaria, y no sustituye ni invade funciones públicas, sino que fortalece la corresponsabilidad social en la garantía de derechos.";
 
 export const LEGAL_BASIS_FULL = [
   "El módulo se sustenta en el derecho a la protección de la salud reconocido en el artículo 4.º constitucional, así como en los derechos de participación ciudadana, libertad de asociación y protección de datos personales. La canalización solidaria de recursos y esfuerzos es jurídicamente válida cuando es voluntaria, transparente y complementaria, y no sustituye ni invade funciones públicas, sino que fortalece la corresponsabilidad social en la garantía de derechos.",
@@ -36,7 +36,7 @@ export const languageLabels: Record<HealthLanguage, string> = {
 
 export const statusLabels: Record<HealthCaseStatus, string> = {
   borrador: "Borrador",
-  orientacion_iniciada: "Orientacion iniciada",
+  orientacion_iniciada: "Orientación iniciada",
   seguimiento: "Seguimiento",
   listo_consulta: "Listo para consulta",
   cerrado: "Cerrado",
@@ -46,32 +46,32 @@ export const statusLabels: Record<HealthCaseStatus, string> = {
 export const healthTabs: { id: HealthTab; label: string; mark: string }[] = [
   { id: "dashboard", label: "Inicio", mark: "01" },
   { id: "expedientes", label: "Mi salud", mark: "02" },
-  { id: "orientacion", label: "Orientacion", mark: "03" },
+  { id: "orientacion", label: "Orientación", mark: "03" },
   { id: "telemedicina", label: "Telemedicina", mark: "04" },
   { id: "abasto", label: "Abasto", mark: "05" },
-  { id: "politicas", label: "Politicas publicas", mark: "06" },
+  { id: "politicas", label: "Políticas públicas", mark: "06" },
   { id: "impacto", label: "Impacto", mark: "07" },
   { id: "red_solidaria", label: "Red solidaria", mark: "08" },
   { id: "compromisos", label: "Compromisos", mark: "09" },
-  { id: "comites", label: "Comites", mark: "10" },
+  { id: "comites", label: "Comités", mark: "10" },
   { id: "documentos", label: "Documentos", mark: "11" },
-  { id: "auditoria", label: "Auditoria", mark: "12" },
+  { id: "auditoria", label: "Auditoría", mark: "12" },
   { id: "privacidad", label: "Privacidad", mark: "13" },
 ];
 
 export const documentTypeLabels = {
   resumen_ciudadano: "Resumen ciudadano de salud",
   resumen_consulta: "Resumen para consulta",
-  evolucion_sintomas: "Evolucion de sintomas",
+  evolucion_sintomas: "Evolución de síntomas",
   historial_orientaciones: "Historial de orientaciones",
   plan_preventivo: "Plan preventivo",
   reporte_seguimiento: "Reporte de seguimiento",
-  ficha_declarada: "Ficha de informacion declarada",
-  bitacora_integridad: "Bitacora de integridad",
-  resumen_teleorientacion: "Resumen de teleorientacion",
+  ficha_declarada: "Ficha de información declarada",
+  bitacora_integridad: "Bitácora de integridad",
+  resumen_teleorientacion: "Resumen de teleorientación",
   reporte_abasto: "Reporte ciudadano de abasto",
   ficha_incidencia: "Ficha de incidencia",
-  evaluacion_politica: "Evaluacion ciudadana de politica publica",
+  evaluacion_politica: "Evaluación ciudadana de política pública",
   informe_impacto: "Informe de impacto",
   seguimiento_compromiso: "Seguimiento de compromiso",
   ficha_solidaria: "Ficha de iniciativa solidaria",

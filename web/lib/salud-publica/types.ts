@@ -1,6 +1,15 @@
 export type HealthLanguage = "es" | "nah" | "maya" | "zapoteco";
 export type HealthCaseStatus = "borrador" | "orientacion_iniciada" | "seguimiento" | "listo_consulta" | "cerrado" | "archivado";
 export type AttentionLevel = "orientacion_general" | "seguimiento_recomendado" | "consulta_prioritaria" | "posible_emergencia";
+export type CareOrientationLevel = "autocuidado_vigilancia" | "consulta_general" | "consulta_prioritaria" | "urgencias";
+export type CarePlace =
+  | "autocuidado"
+  | "medicina_general"
+  | "consultorio_anexo_farmacia"
+  | "centro_salud"
+  | "teleorientacion"
+  | "urgencias"
+  | "emergencias_911";
 export type InformationOrigin = "ciudadano" | "reglas_locales" | "asistente" | "sin_validar";
 export type HealthTab =
   | "dashboard"
@@ -37,6 +46,74 @@ export type RecommendedAction = {
   description: string;
   priority: "informativa" | "pronta" | "prioritaria" | "urgente";
   origin: InformationOrigin;
+};
+
+export type MedicationEntry = {
+  id: string;
+  name: string;
+  dose?: string;
+  frequency?: string;
+  lastTakenAt?: string;
+  startedAt?: string;
+  reason?: string;
+  source: "prescripcion" | "automedicacion" | "suplemento" | "remedio_tradicional" | "no_especificado";
+};
+
+export type PotentialAdverseEffect = {
+  id: string;
+  trigger: string;
+  explanation: string;
+  cautionLevel: "informativo" | "precaucion" | "revision_prioritaria";
+};
+
+export type PotentialInteractionWarning = {
+  id: string;
+  trigger: string;
+  explanation: string;
+  cautionLevel: "informativo" | "precaucion" | "revision_prioritaria";
+};
+
+export type MedicationSafetyResult = {
+  id: string;
+  declaredMedications: MedicationEntry[];
+  adverseEffects: PotentialAdverseEffect[];
+  interactionWarnings: PotentialInteractionWarning[];
+  missingData: string[];
+  recommendedAction: string;
+  limitation: string;
+  generatedAt: string;
+};
+
+export type MedicationQuestion = {
+  id: string;
+  label: string;
+  helper: string;
+};
+
+export type MedicationSafetyRule = {
+  id: string;
+  trigger: string;
+  explanation: string;
+  cautionLevel: PotentialInteractionWarning["cautionLevel"];
+  categories?: string[];
+};
+
+export interface MedicationSafetyProvider {
+  review(input: { symptoms: string; allergies: string; medications: MedicationEntry[] }): MedicationSafetyResult;
+}
+
+export type CitizenTriageResult = {
+  id: string;
+  level: CareOrientationLevel;
+  title: string;
+  explanation: string;
+  consideredSignals: string[];
+  suggestedPlace: CarePlace;
+  suggestedTimeframe: string;
+  nextSteps: string[];
+  escalationSignals: string[];
+  guidance: GuidanceResult;
+  medicationSafety: MedicationSafetyResult;
 };
 
 export type GuidanceResult = {

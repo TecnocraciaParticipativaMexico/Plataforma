@@ -41,17 +41,17 @@ export function UiState({ kind, title, children }: { kind: StateKind; title: str
 }
 
 export const interfaceStateExamples: { kind: StateKind; title: string; copy: string }[] = [
-  { kind: "carga", title: "Carga", copy: "Preparando informacion local." },
-  { kind: "vacio", title: "Vacio", copy: "Todavia no hay expedientes." },
-  { kind: "error", title: "Error", copy: "No se pudo procesar la accion simulada." },
+  { kind: "carga", title: "Carga", copy: "Preparando información local." },
+  { kind: "vacio", title: "Vacío", copy: "Todavía no hay expedientes." },
+  { kind: "error", title: "Error", copy: "No se pudo procesar la acción simulada." },
   { kind: "sin_resultados", title: "Sin resultados", copy: "Cambia filtros o busqueda." },
-  { kind: "sin_conexion", title: "Sin conexion", copy: "El modulo funciona con reglas y datos locales." },
+  { kind: "sin_conexion", title: "Sin conexión", copy: "El módulo funciona con reglas y datos locales." },
   { kind: "acceso_restringido", title: "Acceso restringido", copy: "Vista preparada para permisos futuros." },
   { kind: "datos_incompletos", title: "Datos incompletos", copy: "Puedes guardar borrador sin campos innecesarios." },
   { kind: "proveedor_no_disponible", title: "Proveedor no disponible", copy: "No hay IA externa configurada." },
   { kind: "documento_no_generado", title: "Documento no generado", copy: "Genera una vista imprimible cuando lo necesites." },
-  { kind: "archivado", title: "Archivado", copy: "Expediente cerrado para consulta historica." },
-  { kind: "cancelado", title: "Accion cancelada", copy: "No se guardaron cambios nuevos." },
-  { kind: "exito", title: "Exito", copy: "Accion local completada." },
-  { kind: "advertencia", title: "Advertencia", copy: "Revisa limites y origen de informacion." },
+  { kind: "archivado", title: "Archivado", copy: "Expediente cerrado para consulta histórica." },
+  { kind: "cancelado", title: "Acción cancelada", copy: "No se guardaron cambios nuevos." },
+  { kind: "exito", title: "Éxito", copy: "Acción local completada." },
+  { kind: "advertencia", title: "Advertencia", copy: "Revisa límites y origen de información." },
 ];

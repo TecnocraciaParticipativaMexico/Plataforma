@@ -42,8 +42,8 @@ export class LocalHealthGuidanceProvider implements HealthGuidanceProvider {
     const actions = matched.map((item) => item.rule.action);
     const fallbackAction = {
       id: "action-general",
-      title: "Organiza informacion para una consulta",
-      description: "Describe sintomas, duracion, cambios, antecedentes, alergias y medicamentos declarados.",
+      title: "Organiza información para una consulta",
+      description: "Describe síntomas, duración, cambios, antecedentes, alergias y medicamentos declarados.",
       priority: "informativa" as const,
       origin: "reglas_locales" as const,
     };
@@ -52,11 +52,11 @@ export class LocalHealthGuidanceProvider implements HealthGuidanceProvider {
       id: `guidance-${Date.now()}`,
       caseId: input.caseId,
       level,
-      title: level === "posible_emergencia" ? "Posible situacion urgente" : level === "consulta_prioritaria" ? "Consulta prioritaria sugerida" : "Orientacion informativa local",
+      title: level === "posible_emergencia" ? "Posible situación urgente" : level === "consulta_prioritaria" ? "Consulta prioritaria sugerida" : "Orientación informativa local",
       summary:
         level === "orientacion_general"
-          ? "No se detectaron palabras asociadas a senales de alarma en las reglas locales. Mantener seguimiento y preparar informacion puede ayudar a una consulta profesional."
-          : "Se detectaron terminos declarados por el ciudadano asociados con senales preventivas. El resultado proviene de reglas locales y no constituye evaluacion clinica.",
+          ? "No se detectaron palabras asociadas a señales de alarma en las reglas locales. Organizar la información puede ayudar a una consulta profesional si hay duda, persistencia o cambios."
+          : "Se detectaron términos declarados por el ciudadano asociados con señales preventivas. El resultado proviene de reglas locales y no constituye evaluación clínica.",
       signals,
       actions: actions.length ? actions : [fallbackAction],
       explanation: `${HEALTH_LIMITATION_NOTICE} Resultado generado mediante reglas locales deterministas sobre texto declarado por el ciudadano.`,

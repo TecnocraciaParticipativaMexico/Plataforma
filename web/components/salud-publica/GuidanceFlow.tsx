@@ -6,7 +6,7 @@ import { localHealthGuidanceProvider } from "@/lib/salud-publica/providers/local
 import type { GuidanceResult, HealthCase, HealthLanguage } from "@/lib/salud-publica/types";
 import { UiState } from "./UiState";
 
-const steps = ["Motivo", "Sintomas", "Duracion", "Senales", "Antecedentes", "Medicamentos", "Accesibilidad", "Revision", "Resultado"];
+const steps = ["Motivo", "Síntomas", "Duración", "Señales", "Antecedentes", "Medicamentos", "Accesibilidad", "Revisión", "Resultado"];
 
 type Draft = {
   reason: string;
@@ -55,8 +55,8 @@ export function NewGuidanceWizard({ onResult }: { onResult: (result: GuidanceRes
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase text-[#E4007C]">Wizard accesible</p>
-          <h2 className="text-2xl font-black text-[#0A4E84]">Nueva orientacion informativa</h2>
-          <p className="mt-1 text-sm leading-6 text-slate-600">No solicita ubicacion, camara, microfono ni datos personales automaticamente.</p>
+          <h2 className="text-2xl font-black text-[#0A4E84]">Nueva orientación informativa</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-600">No solicita ubicación, cámara, micrófono ni datos personales automáticamente.</p>
         </div>
         <button type="button" onClick={() => { setDraft(initialDraft); setStep(0); setResult(null); }} className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-black uppercase text-slate-600">Reiniciar</button>
       </div>
@@ -73,7 +73,7 @@ export function NewGuidanceWizard({ onResult }: { onResult: (result: GuidanceRes
           <WizardField step={step} draft={draft} update={update} />
         ) : step === 7 ? (
           <section className="space-y-3 text-sm leading-6 text-slate-700">
-            <UiState kind="datos_incompletos" title="Revision sin campos obligatorios innecesarios">Puedes finalizar con informacion parcial o guardar borrador local simulado.</UiState>
+            <UiState kind="datos_incompletos" title="Revisión sin campos obligatorios innecesarios">Puedes finalizar con información parcial o guardar borrador local simulado.</UiState>
             {Object.entries(draft).map(([key, value]) => <p key={key} className="rounded-xl bg-slate-50 p-3"><strong>{key}:</strong> {value || "Sin capturar"}</p>)}
           </section>
         ) : (
@@ -85,7 +85,7 @@ export function NewGuidanceWizard({ onResult }: { onResult: (result: GuidanceRes
         <button type="button" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1))} className="min-h-11 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 disabled:opacity-40">Regresar</button>
         <button type="button" onClick={() => { setSaved(true); window.localStorage?.setItem("salud-publica-borrador", JSON.stringify(draft)); }} className="min-h-11 rounded-xl border border-[#0EA5E9] px-4 py-2 text-sm font-bold text-[#0A4E84]">Guardar borrador local</button>
         {step < 7 ? <button type="button" onClick={() => setStep((current) => current + 1)} className="min-h-11 rounded-xl bg-[#E4007C] px-4 py-2 text-sm font-black text-white">Continuar</button> : null}
-        {step === 7 ? <button type="button" onClick={finish} className="min-h-11 rounded-xl bg-[#E4007C] px-4 py-2 text-sm font-black text-white">Finalizar orientacion</button> : null}
+        {step === 7 ? <button type="button" onClick={finish} className="min-h-11 rounded-xl bg-[#E4007C] px-4 py-2 text-sm font-black text-white">Finalizar orientación</button> : null}
         <button type="button" onClick={() => setStep(0)} className="min-h-11 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-600">Cancelar</button>
       </div>
       {saved ? <p className="mt-3 text-xs font-bold text-[#166534]">Borrador guardado localmente en este navegador.</p> : null}
@@ -95,12 +95,12 @@ export function NewGuidanceWizard({ onResult }: { onResult: (result: GuidanceRes
 
 function WizardField({ step, draft, update }: { step: number; draft: Draft; update: (field: keyof Draft, value: string) => void }) {
   const fields: Array<{ key: keyof Draft; label: string; placeholder: string }> = [
-    { key: "reason", label: "Motivo de orientacion", placeholder: "Ej. fiebre alta desde ayer, quiero preparar consulta" },
-    { key: "symptoms", label: "Sintomas declarados", placeholder: "Lista sintomas con tus palabras" },
-    { key: "duration", label: "Duracion y evolucion", placeholder: "Cuando inicio, si mejora, empeora o cambia" },
-    { key: "alarmSignals", label: "Senales de alarma", placeholder: "Dolor de pecho, falta de aire, confusion, etc. si aplica" },
-    { key: "history", label: "Antecedentes relevantes", placeholder: "Antecedentes declarados, condiciones previas o ninguno" },
-    { key: "medications", label: "Medicamentos y alergias declaradas", placeholder: "No indiques dosis si no estas seguro; prepara informacion para consulta" },
+    { key: "reason", label: "Motivo de orientación", placeholder: "Ej. fiebre alta desde ayer, quiero preparar consulta" },
+    { key: "symptoms", label: "Síntomas declarados", placeholder: "Lista síntomas con tus palabras" },
+    { key: "duration", label: "Duración y evolución", placeholder: "Cuándo inició, si mejora, empeora o cambia" },
+    { key: "alarmSignals", label: "Señales de alarma", placeholder: "Dolor de pecho, falta de aire, confusión, etc. si aplica" },
+    { key: "history", label: "Antecedentes relevantes", placeholder: "Antecedentes declarados, condiciones previas o ningún dato" },
+    { key: "medications", label: "Medicamentos y alergias declaradas", placeholder: "No indiques dosis si no estás seguro; prepara información para consulta" },
     { key: "accessibility", label: "Contexto de accesibilidad", placeholder: "Texto grande, lectura simplificada, idioma, apoyo de familiar" },
   ];
   const field = fields[step];
@@ -125,7 +125,7 @@ function WizardField({ step, draft, update }: { step: number; draft: Draft; upda
 }
 
 function GuidanceResultPanel({ result }: { result: GuidanceResult | null }) {
-  if (!result) return <UiState kind="documento_no_generado" title="Resultado pendiente">Finaliza la revision para generar orientacion local.</UiState>;
+  if (!result) return <UiState kind="documento_no_generado" title="Resultado pendiente">Finaliza la revisión para generar orientación local.</UiState>;
   return (
     <section className="space-y-3">
       {result.level === "posible_emergencia" ? <UiState kind="advertencia" title="Posible emergencia">{URGENT_NOTICE}<br /><button type="button" className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-black uppercase text-[#E4007C]">Cerrar advertencia y continuar</button></UiState> : null}
@@ -155,13 +155,13 @@ export function ConversationalGuidance({ selectedCase, onNote }: { selectedCase:
   const [messages, setMessages] = useState<Message[]>([
     { id: "m1", sender: "asistente", text: `Contexto local cargado para ${selectedCase.folio}. ${HEALTH_LIMITATION_NOTICE}` },
   ]);
-  const suggestions = useMemo(() => ["Que informacion llevo a consulta?", "Como reconozco senales de alarma?", "Genera resumen del expediente"], []);
+  const suggestions = useMemo(() => ["Qué información llevo a consulta?", "Cómo reconozco señales de alarma?", "Genera resumen del expediente"], []);
 
   function send(text: string) {
     if (!text.trim()) return;
     setProcessing(true);
     const result = localHealthGuidanceProvider.generate({ caseId: selectedCase.id, text: `${selectedCase.reason} ${text}` });
-    const reply = `${result.title}: ${result.summary} Accion sugerida: ${result.actions[0]?.title ?? "organizar informacion"}.`;
+    const reply = `${result.title}: ${result.summary} Acción sugerida: ${result.actions[0]?.title ?? "organizar información"}.`;
     window.setTimeout(() => {
       setMessages((current) => [...current, { id: `u-${Date.now()}`, sender: "ciudadano", text }, { id: `a-${Date.now()}`, sender: "asistente", text: reply }]);
       setInput("");
@@ -173,8 +173,8 @@ export function ConversationalGuidance({ selectedCase, onNote }: { selectedCase:
     <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 p-4">
-          <h2 className="text-xl font-black text-[#0A4E84]">Centro de orientacion conversacional</h2>
-          <p className="text-sm leading-6 text-slate-600">Conversacion mock local. No consulta guias oficiales en tiempo real y no guarda informacion sensible fuera del estado local.</p>
+          <h2 className="text-xl font-black text-[#0A4E84]">Centro de orientación conversacional</h2>
+          <p className="text-sm leading-6 text-slate-600">Conversación mock local. No consulta guías oficiales en tiempo real y no guarda información sensible fuera del estado local.</p>
         </div>
         <div className="max-h-[520px] space-y-3 overflow-y-auto bg-[#F8FAFC] p-4">
           {messages.map((message) => (
@@ -195,11 +195,11 @@ export function ConversationalGuidance({ selectedCase, onNote }: { selectedCase:
         </div>
       </div>
       <aside className="space-y-3">
-        <UiState kind="sin_conexion" title="Modo sin conexion">Todas las respuestas son locales y predefinidas por reglas.</UiState>
-        <button type="button" onClick={() => onNote(messages.map((item) => `${item.sender}: ${item.text}`).join("\n"))} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-left text-sm font-bold text-slate-700">Convertir conversacion en nota</button>
+        <UiState kind="sin_conexion" title="Modo sin conexión">Todas las respuestas son locales y predefinidas por reglas.</UiState>
+        <button type="button" onClick={() => onNote(messages.map((item) => `${item.sender}: ${item.text}`).join("\n"))} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-left text-sm font-bold text-slate-700">Convertir conversación en nota</button>
         <button type="button" onClick={() => onNote(`Resumen local de ${selectedCase.folio}: ${selectedCase.reason}`)} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-left text-sm font-bold text-slate-700">Generar resumen</button>
-        <button type="button" onClick={() => setMessages([])} className="w-full rounded-xl border border-[#E4007C] bg-white p-3 text-left text-sm font-bold text-[#E4007C]">Limpiar conversacion</button>
-        <UiState kind="error" title="Manejo de error">Si falla el proveedor futuro, se mostrara esta ruta segura.</UiState>
+        <button type="button" onClick={() => setMessages([])} className="w-full rounded-xl border border-[#E4007C] bg-white p-3 text-left text-sm font-bold text-[#E4007C]">Limpiar conversación</button>
+        <UiState kind="error" title="Manejo de error">Si falla el proveedor futuro, se mostrará esta ruta segura.</UiState>
       </aside>
     </section>
   );
