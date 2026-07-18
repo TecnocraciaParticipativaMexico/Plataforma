@@ -56,7 +56,7 @@ export default function MadresBuscadorasPage() {
               caseId: newCase.id,
               type: "report",
               title: "Registro local creado",
-              description: "Se genero un expediente local con datos capturados por la persona usuaria.",
+              description: "Se generó un expediente local con datos capturados por la persona usuaria.",
               occurredAt: newCase.createdAt,
               actorRole: "Familia",
               privacyLevel: newCase.privacyLevel,
@@ -86,7 +86,7 @@ export default function MadresBuscadorasPage() {
         { ...current, geneticReferences: [reference, ...current.geneticReferences] },
         {
           actorRole: "Familia",
-          action: "Referencia genetica registrada",
+          action: "Referencia genética registrada",
           resource: reference.id,
           version: "0.1",
           caseId: reference.caseId,
@@ -109,8 +109,8 @@ export default function MadresBuscadorasPage() {
           reviews: [review, ...current.reviews],
         },
         {
-          actorRole: "Acompanamiento civico",
-          action: "Revision ciudadana solicitada",
+          actorRole: "Acompañamiento cívico",
+          action: "Revisión ciudadana solicitada",
           resource: review.id,
           version: "0.1",
           caseId: review.caseId,
@@ -121,7 +121,7 @@ export default function MadresBuscadorasPage() {
   }
 
   function printDocument() {
-    setNotice("Impresion preparada: solo se mostrara el documento civico de apoyo.");
+    setNotice("Impresión preparada: solo se mostrará el documento cívico de apoyo.");
     window.setTimeout(() => window.print(), 80);
   }
 
@@ -130,8 +130,8 @@ export default function MadresBuscadorasPage() {
       <ModuleHeader activeTab={activeTab} onTabChange={setActiveTab} />
       <section className="border-b border-slate-200 bg-white px-4 py-3 print:hidden">
         <div className="mx-auto max-w-7xl text-xs leading-6 text-slate-600">
-          <strong className="text-[#0A4E84]">Alcance del MVP:</strong> sistema frontend con datos mock y estado local para busqueda,
-          documentacion, seguimiento y acompanamiento. No realiza llamadas externas ni activa permisos del dispositivo.
+          <strong className="text-[#0A4E84]">Alcance del MVP:</strong> sistema frontend con datos mock y estado local para búsqueda,
+          documentación, seguimiento y acompañamiento. No realiza llamadas externas ni activa permisos del dispositivo.
         </div>
       </section>
 
@@ -143,6 +143,15 @@ export default function MadresBuscadorasPage() {
       ) : null}
 
       <div className="mx-auto max-w-7xl space-y-6 px-4 pb-32 pt-6 md:pt-8 print:hidden">
+        <section className="max-w-3xl rounded-xl border-l-4 border-[#FFC20E] bg-[#FFC20E]/10 px-4 py-3">
+          <div className="inline-flex rounded-full bg-[#FFC20E] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-950">
+            FUNDAMENTO LEGAL
+          </div>
+          <p className="mt-2 text-xs leading-5 text-slate-700 sm:text-sm sm:leading-6">
+            Se sustenta en los artículos 1°, 17 y 20 de la Constitución Política de los Estados Unidos Mexicanos, la Ley General en Materia de Desaparición Forzada de Personas y la Ley General de Víctimas. Fortalece el derecho a la verdad, la búsqueda y la justicia mediante documentación ciudadana. No sustituye las obligaciones legales de las autoridades responsables de la búsqueda e investigación.
+          </p>
+        </section>
+
         {activeTab === "dashboard" ? <Dashboard dataset={dataset} onOpenCase={openCase} onNewCase={() => setActiveTab("new")} /> : null}
 
         {activeTab === "cases" ? (
@@ -154,7 +163,7 @@ export default function MadresBuscadorasPage() {
               onPrint={printDocument}
               onRequestReview={() => {
                 setActiveTab("committees");
-                setNotice("Selecciona el expediente y comite para agregarlo a la cola de revision ciudadana.");
+                setNotice("Selecciona el expediente y comité para agregarlo a la cola de revisión ciudadana.");
               }}
             />
           </div>
