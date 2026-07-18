@@ -52,6 +52,15 @@ export default function FiscaliaIaPage() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-6 px-4 pb-32 pt-6 md:pt-8 print:max-w-none print:px-0 print:py-0">
+        <section className="max-w-3xl rounded-xl border-l-4 border-[#FFC20E] bg-[#FFC20E]/10 px-4 py-3 print:hidden">
+          <div className="inline-flex rounded-full bg-[#FFC20E] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-950">
+            FUNDAMENTO LEGAL
+          </div>
+          <p className="mt-2 text-xs leading-5 text-slate-700 sm:text-sm sm:leading-6">
+            Se sustenta en los artículos 6°, 8°, 17, 20 y 21 de la Constitución Política de los Estados Unidos Mexicanos, el Código Nacional de Procedimientos Penales y la Ley General de Víctimas. Permite estructurar información con fines ciudadanos conforme al derecho de acceso a la justicia, el derecho de petición, el derecho a la verdad y el acceso a la información. No sustituye autoridades ministeriales, periciales ni judiciales.
+          </p>
+        </section>
+
         {showSummary ? (
           <div className="print:hidden">
             <DashboardCards structuredCase={structuredCase} evidenceCount={evidence.length} />
