@@ -116,6 +116,19 @@ export type CitizenTriageResult = {
   medicationSafety: MedicationSafetyResult;
 };
 
+export type HealthChatMessage = {
+  id: string;
+  sender: "citizen" | "assistant";
+  text: string;
+  timestamp: string;
+  level?: "general" | "priority" | "urgent";
+  metadata?: {
+    detectedSignals?: string[];
+    medicationWarnings?: string[];
+    recommendedCare?: string;
+  };
+};
+
 export type GuidanceResult = {
   id: string;
   caseId?: string;
