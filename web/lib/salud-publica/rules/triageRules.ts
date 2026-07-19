@@ -3,7 +3,7 @@ import type { TriageRule } from "../types";
 export const triageRules: TriageRule[] = [
   {
     id: "dolor-pecho",
-    terms: ["dolor de pecho", "pecho opresivo", "opresión en el pecho", "opresion en el pecho", "dolor torácico", "dolor toracico"],
+    terms: ["dolor de pecho", "dolor fuerte en el pecho", "dolor intenso en el pecho", "pecho opresivo", "opresión en el pecho", "opresion en el pecho", "dolor torácico", "dolor toracico"],
     signal: {
       id: "signal-dolor-pecho",
       label: "Posible señal de alarma cardiopulmonar",

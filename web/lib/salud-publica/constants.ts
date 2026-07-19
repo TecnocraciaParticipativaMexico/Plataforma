@@ -13,7 +13,7 @@ export const URGENT_NOTICE =
   "Esta información puede corresponder a una situación urgente. Busca ayuda presencial inmediata y utiliza los números oficiales de emergencia disponibles en tu localidad.";
 
 export const LEGAL_BASIS =
-  "El módulo se sustenta en el derecho a la protección de la salud reconocido en el artículo 4.º constitucional, así como en los derechos de participación ciudadana, libertad de asociación y protección de datos personales. La canalización solidaria de recursos y esfuerzos es jurídicamente válida cuando es voluntaria, transparente y complementaria, y no sustituye ni invade funciones públicas, sino que fortalece la corresponsabilidad social en la garantía de derechos.";
+  "Fundamento legal: artículo 4.º de la Constitución Política de los Estados Unidos Mexicanos; derecho a la salud, participación ciudadana, libertad de asociación y protección de datos personales; Ley General de Salud y legislación aplicable en materia de privacidad. En el ámbito internacional, se relaciona con la no discriminación, la progresividad, la debida diligencia y la cooperación social y comunitaria. No implica certificación sanitaria ni vinculación automática con autoridades.";
 
 export const LEGAL_BASIS_FULL = [
   "El módulo se sustenta en el derecho a la protección de la salud reconocido en el artículo 4.º constitucional, así como en los derechos de participación ciudadana, libertad de asociación y protección de datos personales. La canalización solidaria de recursos y esfuerzos es jurídicamente válida cuando es voluntaria, transparente y complementaria, y no sustituye ni invade funciones públicas, sino que fortalece la corresponsabilidad social en la garantía de derechos.",

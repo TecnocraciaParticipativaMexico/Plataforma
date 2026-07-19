@@ -44,6 +44,16 @@ type Props = {
   onPrint: () => void;
 };
 
+type ConversationContext = {
+  mainSymptom?: string;
+  duration?: string;
+  intensity?: string;
+  accompanyingSignals?: string;
+  medications?: string;
+  allergies?: string;
+  stage: number;
+};
+
 const languageOptions: Array<{ id: HealthLanguage; label: string; helper: string }> = [
   { id: "es", label: "Español", helper: "Respuesta principal" },
   { id: "nah", label: "Náhuatl", helper: "Demostración" },
@@ -53,21 +63,21 @@ const languageOptions: Array<{ id: HealthLanguage; label: string; helper: string
 
 const quickQuestions = [
   {
-    title: "Reportar dolor de pecho",
+    title: "Reportar dolor de pecho o dificultad para respirar",
     subtitle: "Orientación urgente",
-    prompt: "Tengo dolor intenso en el pecho que se extiende al brazo izquierdo, ¿qué debo hacer?",
+    prompt: "Tengo dolor fuerte en el pecho o dificultad para respirar. ¿Qué debo hacer?",
     tone: "rose",
   },
   {
-    title: "Guía de dengue en zonas rurales",
-    subtitle: "Prevención comunitaria",
-    prompt: "¿Cómo puedo reconocer señales de alarma por dengue y preparar información para una consulta?",
+    title: "Orientación sobre dengue y fiebre",
+    subtitle: "Fiebre y señales de alarma",
+    prompt: "Tengo fiebre y me preocupa dengue. ¿Qué señales debo observar y qué información preparo para consulta?",
     tone: "emerald",
   },
   {
-    title: "Vacunación de temporada",
-    subtitle: "Información preventiva",
-    prompt: "¿Qué información debo revisar sobre vacunación de temporada antes de acudir a mi centro de salud?",
+    title: "Revisar posible reacción a medicamentos",
+    subtitle: "Medicamentos y alergias",
+    prompt: "Creo que tengo una posible reacción a medicamentos. Quiero revisar qué datos debo compartir con un profesional.",
     tone: "blue",
   },
 ] as const;
@@ -154,21 +164,56 @@ function extractMedications(text: string): MedicationEntry[] {
   }));
 }
 
+function updateConversationContext(current: ConversationContext, text: string): ConversationContext {
+  const source = normalize(text);
+  const medications = extractMedications(text);
+  return {
+    ...current,
+    mainSymptom: current.mainSymptom ?? text,
+    duration: current.duration ?? (/(desde|hace|ayer|hoy|dias|días|semana|horas)/.test(source) ? text : undefined),
+    intensity: current.intensity ?? (/(leve|moderad|intens|fuerte|insoportable|\b[1-9]\b|10)/.test(source) ? text : undefined),
+    accompanyingSignals: current.accompanyingSignals ?? (/(fiebre|tos|vomit|vómit|diarrea|mareo|debilidad|sangrado|roncha|hinchazon|hinchazón|dificultad)/.test(source) ? text : undefined),
+    medications: current.medications ?? (medications.length || source.includes("medicamento") || source.includes("suplemento") || source.includes("remedio") ? text : undefined),
+    allergies: current.allergies ?? (/(alergia|alergico|alérgico|roncha|hinchazon|hinchazón)/.test(source) ? text : undefined),
+    stage: current.stage + 1,
+  };
+}
+
+function buildProgressiveQuestions(context: ConversationContext, result: CitizenTriageResult) {
+  if (result.level === "urgencias") {
+    return [
+      "Si puedes hacerlo sin retrasar la atención, prepara edad aproximada, inicio de los síntomas, medicamentos tomados y alergias conocidas para compartirlo con personal de salud.",
+    ];
+  }
+  const questions: string[] = [];
+  if (!context.duration) questions.push("¿Desde cuándo comenzó y ha cambiado desde entonces?");
+  if (!context.intensity) questions.push("¿Qué intensidad tiene y qué lo mejora o empeora?");
+  if (!context.accompanyingSignals) questions.push("¿Hay fiebre, dificultad para respirar, mareo, vómito, diarrea, ronchas, sangrado u otros síntomas acompañantes?");
+  if (context.medications) {
+    questions.push("Sobre medicamentos: ¿cuál es el nombre, dosis conocida, frecuencia, última toma, fecha de inicio, motivo, si fue prescrito, otros productos y alergias?");
+  } else {
+    questions.push("¿Tomas medicamentos, suplementos o remedios, o tienes alergias conocidas?");
+  }
+  return questions.slice(0, context.stage <= 1 ? 3 : 2);
+}
+
 function buildAssistantText(
   result: CitizenTriageResult,
   language: HealthLanguage,
+  context: ConversationContext,
 ) {
   const warningIntro =
     result.level === "urgencias"
-      ? "Lo que describes puede corresponder a una situación urgente. Busca atención presencial inmediata o llama al 911. Esta plataforma no ha contactado a ningún servicio externo.\n\n"
+      ? "Lo que describes puede corresponder a una situación urgente.\n\nBusca atención presencial inmediata o llama al 911.\n\nEsta plataforma no ha contactado a ningún servicio externo.\n\n"
       : "";
   const translationNotice =
     language === "es"
       ? ""
       : "\n\nNota de idioma: esta respuesta se mantiene en español con apoyo demostrativo de idioma seleccionado. Las traducciones demostrativas deben revisarse por hablantes y especialistas antes de utilizarse para decisiones de salud.\n";
   const medicationText = result.medicationSafety.declaredMedications.length
-    ? `\n\nMedicamentos o productos mencionados:\n${result.medicationSafety.declaredMedications.map((item) => `- ${item.name}`).join("\n")}\n\n${result.medicationSafety.recommendedAction}`
-    : "\n\nSi tomas medicamentos, suplementos o remedios, lleva la lista a consulta. No cambies ni suspendas tratamientos sin indicación médica.";
+    ? `\n\nMedicamentos o productos mencionados:\n${result.medicationSafety.declaredMedications.map((item) => `- ${item.name}`).join("\n")}\n\n${result.medicationSafety.recommendedAction}\n\nPrecaución: con la información disponible solo puede señalarse una posible relación. La información es insuficiente para confirmar causa, interacción o seguridad; requiere revisión profesional.\n\nNo suspendas, combines ni cambies medicamentos sin consultar a un médico o profesional farmacéutico.`
+    : "\n\nSi tomas medicamentos, suplementos o remedios, lleva la lista a consulta. Precaución: la información es insuficiente para valorar productos no declarados y requiere revisión profesional. No suspendas, combines ni cambies medicamentos sin consultar a un médico o profesional farmacéutico.";
+  const progressiveQuestions = buildProgressiveQuestions(context, result);
 
   return `${warningIntro}Nivel orientativo: ${levelLabels[result.level]}.
 
@@ -182,6 +227,9 @@ ${result.explanation}
 Señales consideradas:
 ${result.consideredSignals.map((item) => `- ${item}`).join("\n")}
 ${medicationText}
+
+Para continuar con una orientación más completa:
+${progressiveQuestions.map((item) => `- ${item}`).join("\n")}
 
 Próximos pasos:
 ${result.nextSteps.map((item, index) => `${index + 1}. ${item}`).join("\n")}
@@ -249,6 +297,8 @@ export function HealthTriageAssistant({ selectedCase, onSaveResult, onOpenDirect
   const [speechNotice, setSpeechNotice] = useState("");
   const [lastResult, setLastResult] = useState<CitizenTriageResult | null>(null);
   const [savedResultId, setSavedResultId] = useState("");
+  const [speaking, setSpeaking] = useState(false);
+  const [conversationContext, setConversationContext] = useState<ConversationContext>({ stage: 0 });
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -269,13 +319,14 @@ export function HealthTriageAssistant({ selectedCase, onSaveResult, onOpenDirect
     scrollToEnd();
 
     window.setTimeout(() => {
-      const fullContext = [...messages, citizenMessage].map((message) => message.text).join(" ");
+      const fullContext = [...messages, citizenMessage].filter((message) => message.sender === "citizen").map((message) => message.text).join(" ");
+      const nextContext = updateConversationContext(conversationContext, cleaned);
       const result = makeTriageResult(fullContext, selectedCase);
       const medicationWarnings = [
         ...result.medicationSafety.adverseEffects.map((item) => item.trigger),
         ...result.medicationSafety.interactionWarnings.map((item) => item.trigger),
       ];
-      const assistantText = buildAssistantText(result, language);
+      const assistantText = buildAssistantText(result, language, nextContext);
       const assistantLevel: HealthChatMessage["level"] = result.level === "urgencias" ? "urgent" : result.level === "consulta_prioritaria" ? "priority" : "general";
       const assistantMessage = createMessage("assistant", assistantText, {
         level: assistantLevel,
@@ -285,6 +336,7 @@ export function HealthTriageAssistant({ selectedCase, onSaveResult, onOpenDirect
           recommendedCare: `${levelLabels[result.level]} / ${carePlaces[result.suggestedPlace]}`,
         },
       });
+      setConversationContext(nextContext);
       setLastResult(result);
       setSavedResultId("");
       setMessages((current) => [...current, assistantMessage]);
@@ -339,11 +391,20 @@ export function HealthTriageAssistant({ selectedCase, onSaveResult, onOpenDirect
       setSpeechNotice("La lectura en voz alta no está disponible en este navegador.");
       return;
     }
+    if (speaking) {
+      browserWindow.speechSynthesis.cancel();
+      setSpeaking(false);
+      setSpeechNotice("Lectura en voz alta detenida.");
+      return;
+    }
     browserWindow.speechSynthesis.cancel();
     const utterance = new browserWindow.SpeechSynthesisUtterance(lastAssistant.text);
     utterance.lang = "es-MX";
     utterance.rate = 0.92;
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
     browserWindow.speechSynthesis.speak(utterance);
+    setSpeaking(true);
     setSpeechNotice("Lectura en voz alta iniciada en el navegador. No se envía audio a servidores externos.");
   }
 
@@ -359,13 +420,15 @@ export function HealthTriageAssistant({ selectedCase, onSaveResult, onOpenDirect
     setLoading(false);
     setLastResult(null);
     setSavedResultId("");
+    setSpeaking(false);
+    setConversationContext({ stage: 0 });
     setSpeechNotice("");
   }
 
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm">
-      <div className="flex min-h-[680px] flex-col bg-[#F8FAFC]">
-        <div className="border-b border-slate-100 bg-white px-4 py-3 sm:px-6">
+      <div className="flex min-h-[680px] flex-col bg-[#F8FAFC] print:min-h-0 print:bg-white">
+        <div className="border-b border-slate-100 bg-white px-4 py-3 sm:px-6 print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="grid size-10 place-items-center rounded-2xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
@@ -395,7 +458,7 @@ export function HealthTriageAssistant({ selectedCase, onSaveResult, onOpenDirect
         </div>
 
         {hasMessages && lastResult ? (
-          <div className="border-t border-slate-100 bg-white px-4 py-3 sm:px-6">
+          <div className="border-t border-slate-100 bg-white px-4 py-3 sm:px-6 print:hidden">
             <div className="mx-auto flex max-w-3xl flex-wrap gap-2">
               <button type="button" onClick={saveLastResult} className="rounded-xl bg-[#0A4E84] px-3 py-2 text-xs font-black uppercase text-white">
                 {savedResultId === lastResult.id ? "Guardado en expediente mock" : "Guardar en expediente mock"}
@@ -407,13 +470,15 @@ export function HealthTriageAssistant({ selectedCase, onSaveResult, onOpenDirect
           </div>
         ) : null}
 
-        <LanguageBar language={language} onLanguageChange={setLanguage} onSpeak={speakLastResponse} canSpeak={Boolean(lastAssistant)} />
+        <LanguageBar language={language} onLanguageChange={setLanguage} onSpeak={speakLastResponse} canSpeak={Boolean(lastAssistant)} speaking={speaking} />
 
-        <div className="border-t border-slate-100 bg-white p-4 shadow-sm sm:p-5">
+        <div className="border-t border-slate-100 bg-white p-4 shadow-sm sm:p-5 print:hidden">
           <form onSubmit={handleSubmit} className="mx-auto flex max-w-3xl gap-3">
             <button
               type="button"
               onClick={startVoiceInput}
+              aria-label={voiceState === "listening" ? "Detener entrada por voz" : "Iniciar entrada por voz"}
+              aria-pressed={voiceState === "listening"}
               className="grid min-h-14 w-14 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-400 transition hover:bg-slate-100 hover:text-emerald-600"
               title="Entrada por voz"
             >
@@ -422,12 +487,14 @@ export function HealthTriageAssistant({ selectedCase, onSaveResult, onOpenDirect
             <input
               value={input}
               onChange={(event) => setInput(event.target.value)}
+              aria-label="Describa sus síntomas o situación de salud"
               placeholder={language === "es" ? "Describa detalladamente sus síntomas o su situación..." : "Escriba aquí. La traducción es demostrativa y requiere revisión."}
               className="min-h-14 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 shadow-inner outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
+              aria-label="Enviar mensaje al asistente"
               className="grid min-h-14 w-14 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-emerald-600 text-white shadow-lg shadow-emerald-100 transition hover:bg-emerald-700 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
               title="Enviar"
             >
@@ -436,9 +503,9 @@ export function HealthTriageAssistant({ selectedCase, onSaveResult, onOpenDirect
           </form>
           <div className="mt-3 flex flex-col items-center justify-center gap-1 text-center text-[11px] leading-5 text-slate-400 sm:flex-row">
             <ShieldIcon />
-            <span>Tus respuestas permanecen en esta sesión demostrativa hasta que elijas agregarlas a un expediente. No se almacena audio.</span>
+            <span>Esta sesión demostrativa procesa la información localmente y no contacta servicios externos. Revisa y confirma antes de agregar información a un expediente. No se almacena audio.</span>
           </div>
-          {speechNotice ? <p className="mt-2 text-center text-xs font-bold text-[#0A4E84]">{speechNotice}</p> : null}
+          {speechNotice ? <p className="mt-2 text-center text-xs font-bold text-[#0A4E84]" aria-live="polite">{speechNotice}</p> : null}
         </div>
       </div>
     </section>
@@ -484,6 +551,8 @@ function HealthChatBubble({ message }: { message: HealthChatMessage }) {
   return (
     <div className={`flex ${isCitizen ? "justify-end" : "justify-start"}`}>
       <article
+        role={urgent ? "alert" : undefined}
+        aria-live={urgent ? "assertive" : undefined}
         className={`max-w-[88%] rounded-3xl border p-4 shadow-sm sm:max-w-[82%] sm:p-5 ${
           isCitizen
             ? "rounded-tr-md border-blue-600 bg-gradient-to-br from-blue-600 to-blue-700 text-white"
@@ -497,6 +566,9 @@ function HealthChatBubble({ message }: { message: HealthChatMessage }) {
           <span>{isCitizen ? "Tú" : "Asistente ciudadano"}</span>
         </div>
         <div className="whitespace-pre-wrap text-sm leading-7">{formatResponseText(message.text)}</div>
+        <time className={`mt-3 block text-[10px] font-bold ${isCitizen ? "text-blue-100" : "text-slate-400"}`} dateTime={message.timestamp}>
+          {new Date(message.timestamp).toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" })}
+        </time>
         {!isCitizen && message.metadata ? (
           <div className="mt-4 rounded-2xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">
             {message.metadata.recommendedCare ? <p><strong>Nivel:</strong> {message.metadata.recommendedCare}</p> : null}
@@ -511,7 +583,7 @@ function HealthChatBubble({ message }: { message: HealthChatMessage }) {
 function ProcessingBubble() {
   return (
     <div className="flex justify-start">
-      <div className="flex items-center gap-3 rounded-3xl rounded-tl-md border border-slate-100 bg-white p-5 text-sm font-bold text-slate-500 shadow-sm">
+      <div className="flex items-center gap-3 rounded-3xl rounded-tl-md border border-slate-100 bg-white p-5 text-sm font-bold text-slate-500 shadow-sm" aria-live="polite">
         <span className="flex gap-1.5">
           <span className="size-2.5 animate-bounce rounded-full bg-emerald-500 [animation-delay:-0.3s]" />
           <span className="size-2.5 animate-bounce rounded-full bg-emerald-500 [animation-delay:-0.15s]" />
@@ -528,14 +600,16 @@ function LanguageBar({
   onLanguageChange,
   onSpeak,
   canSpeak,
+  speaking,
 }: {
   language: HealthLanguage;
   onLanguageChange: (language: HealthLanguage) => void;
   onSpeak: () => void;
   canSpeak: boolean;
+  speaking: boolean;
 }) {
   return (
-    <div className="border-t border-slate-100 bg-white px-4 py-3 sm:px-6">
+    <div className="border-t border-slate-100 bg-white px-4 py-3 sm:px-6 print:hidden">
       <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2">
         <span className="mr-1 flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.18em] text-slate-400">
           <LanguageIcon /> Idioma de atención:
@@ -545,6 +619,7 @@ function LanguageBar({
             key={item.id}
             type="button"
             onClick={() => onLanguageChange(item.id)}
+            aria-pressed={language === item.id}
             className={`rounded-full border px-3 py-1.5 text-xs font-black transition ${
               language === item.id ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm" : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
             }`}
@@ -557,11 +632,15 @@ function LanguageBar({
           type="button"
           onClick={onSpeak}
           disabled={!canSpeak}
+          aria-label={speaking ? "Detener lectura en voz alta" : "Escuchar última respuesta del asistente"}
           className="ml-auto rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-black text-slate-500 transition hover:text-emerald-700 disabled:opacity-50"
         >
-          Escuchar respuestas
+          {speaking ? "Detener lectura" : "Escuchar respuestas"}
         </button>
       </div>
+      <p className="mx-auto mt-2 max-w-3xl text-xs leading-5 text-slate-500">
+        Las traducciones demostrativas deben ser revisadas por hablantes y especialistas antes de utilizarse para decisiones de salud.
+      </p>
     </div>
   );
 }

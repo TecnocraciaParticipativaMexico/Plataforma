@@ -16,6 +16,17 @@ function normalize(value: string) {
     .toLowerCase();
 }
 
+function removeNegatedAlarmPhrases(value: string) {
+  return value
+    .replace(/\bsin dificultad para respirar\b/g, "")
+    .replace(/\bsin fiebre ni dificultad para respirar\b/g, "")
+    .replace(/\bni dificultad para respirar\b/g, "")
+    .replace(/\bno tengo dificultad para respirar\b/g, "")
+    .replace(/\bno hay dificultad para respirar\b/g, "")
+    .replace(/\bsin falta de aire\b/g, "")
+    .replace(/\bno tengo falta de aire\b/g, "");
+}
+
 function pickLevel(signals: RiskSignal[]): AttentionLevel {
   return signals.reduce<AttentionLevel>(
     (highest, signal) => (levelRank[signal.severity] > levelRank[highest] ? signal.severity : highest),
@@ -25,7 +36,7 @@ function pickLevel(signals: RiskSignal[]): AttentionLevel {
 
 export class LocalHealthGuidanceProvider implements HealthGuidanceProvider {
   generate(input: { caseId?: string; text: string; answers?: string[] }): GuidanceResult {
-    const source = normalize([input.text, ...(input.answers ?? [])].join(" "));
+    const source = removeNegatedAlarmPhrases(normalize([input.text, ...(input.answers ?? [])].join(" ")));
     const matched = triageRules
       .map((rule) => {
         const matchedTerms = rule.terms.filter((term) => source.includes(normalize(term)));
