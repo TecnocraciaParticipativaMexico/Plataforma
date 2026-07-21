@@ -14,6 +14,7 @@ const modulosDisponibles: Record<number, string> = {
   5: "/madres-buscadoras",
   6: "/sistema-judicial-carrera",
   10: "/salud-publica",
+  21: "/observacion-electoral",
 };
 
 function formatoModulo(id: number) {
