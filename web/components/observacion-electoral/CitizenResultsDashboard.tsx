@@ -6,6 +6,9 @@ import type { ConsolidatedPollingStation, Evidence, VerificationStatus } from "@
 import { aggregateVotes, coverage, isEligibleForResults } from "@/lib/observacion-electoral/consolidation";
 import { localDemonstrativeResultsAdapter } from "@/lib/observacion-electoral/resultsAdapter";
 import { sha256File } from "@/lib/observacion-electoral/merkle";
+import { createLocalElectoralCatalogProvider, pollingCatalogAvailable } from "@/lib/observacion-electoral/catalogProvider";
+import { INITIAL_CATALOG_SELECTION, updateCatalogSelection } from "@/lib/observacion-electoral/catalogFilters";
+import type { CatalogSelection, ElectoralCatalogProvider } from "@/lib/observacion-electoral/catalogTypes";
 
 const statusLabels: Record<VerificationStatus, string> = {
   recibida: "Recibida", pendiente_revision: "Pendiente de revisión", coincidencia_multiple: "Coincidencia múltiple",
@@ -13,30 +16,40 @@ const statusLabels: Record<VerificationStatus, string> = {
   ilegible: "Ilegible", excluida: "Excluida del cálculo", cotejada_fuente_publica: "Cotejada con fuente pública",
 };
 
-type Filters = { election: string; state: string; district: string; municipality: string; section: string; polling: string; candidate: string; status: string };
-const emptyFilters: Filters = { election: "", state: "", district: "", municipality: "", section: "", polling: "", candidate: "", status: "" };
-const unique = (values: string[]) => [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
-
 export function CitizenResultsDashboard({ records }: { records: ElectionRecord[] }) {
   const source = useMemo(() => localDemonstrativeResultsAdapter.load(records), [records]);
-  const [filters, setFilters] = useState(emptyFilters);
+  const provider = useMemo(() => createLocalElectoralCatalogProvider(source.records), [source.records]);
+  const [filters, setFilters] = useState(INITIAL_CATALOG_SELECTION);
   const [selectedCandidate, setSelectedCandidate] = useState("Partido A");
   const [selectedEvidence, setSelectedEvidence] = useState<Evidence>();
   const [verification, setVerification] = useState("");
 
-  const filtered = useMemo(() => source.records.filter((record) =>
-    (!filters.election || record.electionType === filters.election) && (!filters.state || record.state === filters.state) &&
-    (!filters.district || record.district === filters.district) && (!filters.municipality || record.municipality === filters.municipality) &&
-    (!filters.section || record.section === filters.section) && (!filters.polling || `${record.pollingPlaceType} ${record.pollingPlaceNumber}` === filters.polling) &&
-    (!filters.status || record.status === filters.status)
-  ), [filters, source.records]);
-  const results = useMemo(() => aggregateVotes(filtered).filter((item) => !filters.candidate || item.name === filters.candidate), [filtered, filters.candidate]);
+  const states = provider.getStates();
+  const districts = provider.getDistricts(filters);
+  const municipalities = provider.getMunicipalities(filters.stateId, filters.processId);
+  const sections = provider.getSections(filters);
+  const pollingStations = provider.getPollingStations(filters);
+  const contestants = provider.getContestants(filters);
+  const selectedState = states.find((item) => item.id === filters.stateId)?.name;
+  const selectedDistrict = districts.find((item) => item.id === filters.districtId)?.officialCode;
+  const selectedMunicipality = municipalities.find((item) => item.id === filters.municipalityId)?.name;
+  const selectedSection = sections.find((item) => item.id === filters.sectionId)?.number;
+  const selectedPollingStation = pollingStations.find((item) => item.id === filters.pollingStationId)?.number;
+  const selectedContestant = contestants.find((item) => item.id === filters.contestantId)?.name;
+  const selectedElection = provider.getElectionTypes(filters.processId).find((item) => item.id === filters.electionTypeId)?.name;
+  const filtered = useMemo(() => filters.mode === "demo" ? source.records.filter((record) =>
+    (!selectedElection || record.electionType === selectedElection) && (!selectedState || record.state === selectedState) &&
+    (!selectedDistrict || record.district === selectedDistrict) && (!selectedMunicipality || record.municipality === selectedMunicipality) &&
+    (!selectedSection || record.section === selectedSection) && (!selectedPollingStation || `${record.pollingPlaceType} ${record.pollingPlaceNumber}` === selectedPollingStation) &&
+    (!filters.verificationStatus || record.status === filters.verificationStatus)
+  ) : [], [filters.mode, filters.verificationStatus, selectedDistrict, selectedElection, selectedMunicipality, selectedPollingStation, selectedSection, selectedState, source.records]);
+  const results = useMemo(() => aggregateVotes(filtered).filter((item) => !selectedContestant || item.name === selectedContestant), [filtered, selectedContestant]);
   const documentaryCoverage = coverage(filtered, source.expectedPollingStations);
   const maxVotes = Math.max(...results.map((item) => item.votes), 1);
   const eligible = filtered.filter((record) => isEligibleForResults(record.status));
   const selectedRecords = eligible.filter((record) => record.votes[selectedCandidate as keyof typeof record.votes] > 0);
 
-  function setFilter(key: keyof Filters, value: string) { setFilters((current) => ({ ...current, [key]: value })); }
+  function setFilter(key: keyof CatalogSelection, value: string) { setFilters((current) => updateCatalogSelection(current, key, value)); }
   async function verify(file?: File) {
     if (!file || !selectedEvidence) return;
     try {
@@ -56,7 +69,7 @@ export function CitizenResultsDashboard({ records }: { records: ElectionRecord[]
         Resultados ciudadanos parciales y no oficiales. Se calculan únicamente con las actas incorporadas y verificadas en esta plataforma. No constituyen PREP, conteo rápido, declaración de ganador ni resultado definitivo. La cobertura disponible puede no ser estadísticamente representativa. Consulte siempre los resultados publicados por la autoridad electoral competente.
       </div>
 
-      <FiltersPanel records={source.records} filters={filters} onChange={setFilter} onClear={() => setFilters(emptyFilters)} />
+      <FiltersPanel provider={provider} filters={filters} onChange={setFilter} onClear={() => setFilters(INITIAL_CATALOG_SELECTION)} />
 
       <div className="grid gap-5 xl:grid-cols-[1.35fr_.65fr]">
         <article className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6">
@@ -79,14 +92,31 @@ export function CitizenResultsDashboard({ records }: { records: ElectionRecord[]
   );
 }
 
-function FiltersPanel({ records, filters, onChange, onClear }: { records: ConsolidatedPollingStation[]; filters: Filters; onChange: (key: keyof Filters, value: string) => void; onClear: () => void }) {
-  const fields: { key: keyof Filters; label: string; options: string[] }[] = [
-    { key: "election", label: "Tipo de elección", options: unique(records.map((r) => r.electionType)) }, { key: "state", label: "Entidad federativa", options: unique(records.map((r) => r.state)) },
-    { key: "district", label: "Distrito electoral", options: unique(records.map((r) => r.district)) }, { key: "municipality", label: "Municipio o alcaldía", options: unique(records.map((r) => r.municipality)) },
-    { key: "section", label: "Sección electoral", options: unique(records.map((r) => r.section)) }, { key: "polling", label: "Casilla", options: unique(records.map((r) => `${r.pollingPlaceType} ${r.pollingPlaceNumber}`)) },
-    { key: "candidate", label: "Candidatura o partido", options: ["Partido A", "Partido B", "Partido C"] }, { key: "status", label: "Estado de verificación", options: Object.keys(statusLabels) },
+function FiltersPanel({ provider, filters, onChange, onClear }: { provider: ElectoralCatalogProvider; filters: CatalogSelection; onChange: (key: keyof CatalogSelection, value: string) => void; onClear: () => void }) {
+  const processes = provider.getProcesses(filters.mode);
+  const elections = provider.getElectionTypes(filters.processId);
+  const states = provider.getStates();
+  const districtTypes = provider.getDistrictTypes(filters.processId, filters.electionTypeId);
+  const districts = provider.getDistricts(filters);
+  const municipalities = provider.getMunicipalities(filters.stateId, filters.processId);
+  const sections = provider.getSections(filters);
+  const pollingStations = provider.getPollingStations(filters);
+  const contestants = provider.getContestants(filters);
+  const metadata = provider.getCatalogMetadata().find((item) => item.geographicLevel.includes("entidad"));
+  const fields: { key: keyof CatalogSelection; label: string; disabled?: boolean; options: { value: string; label: string }[] }[] = [
+    { key: "mode", label: "Modo de catálogo", options: [{ value: "demo", label: "Demostrativo local" }, { value: "national", label: "Estructura nacional" }, { value: "configured", label: "Proceso configurado" }] },
+    { key: "processId", label: "Proceso electoral", options: processes.map((item) => ({ value: item.id, label: item.name })) },
+    { key: "electionTypeId", label: "Tipo de elección", disabled: !filters.processId, options: elections.map((item) => ({ value: item.id, label: item.name })) },
+    { key: "stateId", label: "Entidad federativa", disabled: !filters.electionTypeId, options: states.map((item) => ({ value: item.id, label: `${item.officialCode} · ${item.name}` })) },
+    { key: "districtType", label: "Tipo de distrito", disabled: !filters.stateId, options: districtTypes.map((item) => ({ value: item, label: item === "federal" ? "Federal" : "Local" })) },
+    { key: "districtId", label: "Distrito electoral", disabled: !filters.districtType, options: districts.map((item) => ({ value: item.id, label: item.name })) },
+    { key: "municipalityId", label: "Municipio o alcaldía", disabled: !filters.stateId, options: municipalities.map((item) => ({ value: item.id, label: item.name })) },
+    { key: "sectionId", label: "Sección electoral", disabled: !filters.municipalityId, options: sections.map((item) => ({ value: item.id, label: item.number })) },
+    { key: "pollingStationId", label: "Casilla", disabled: !filters.sectionId || !pollingCatalogAvailable(filters), options: pollingStations.map((item) => ({ value: item.id, label: item.number ?? item.type })) },
+    { key: "contestantId", label: "Candidatura o partido", disabled: !filters.electionTypeId, options: contestants.map((item) => ({ value: item.id, label: item.name })) },
+    { key: "verificationStatus", label: "Estado de verificación", options: Object.keys(statusLabels).map((item) => ({ value: item, label: statusLabels[item as VerificationStatus] })) },
   ];
-  return <div className="rounded-2xl border bg-white p-4"><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{fields.map((field) => <label key={field.key} className="text-sm font-bold text-slate-700">{field.label}<select value={filters[field.key]} onChange={(event) => onChange(field.key, event.target.value)} className="input mt-1"><option value="">Todo el ámbito disponible</option>{field.options.map((option) => <option key={option} value={option}>{field.key === "status" ? statusLabels[option as VerificationStatus] : option}</option>)}</select></label>)}</div><button type="button" onClick={onClear} className="mt-4 rounded-xl border border-[#E4007C] px-4 py-2 text-sm font-bold text-[#E4007C]">Limpiar filtros</button></div>;
+  return <div className="rounded-2xl border bg-white p-4"><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{fields.map((field) => <label key={field.key} className="text-sm font-bold text-slate-700">{field.label}<select value={filters[field.key]} disabled={field.disabled} title={field.disabled ? "Selecciona primero los filtros territoriales superiores." : undefined} onChange={(event) => onChange(field.key, event.target.value)} className="input mt-1 disabled:cursor-not-allowed disabled:bg-slate-100"><option value="">{field.options.length ? "Todo el ámbito disponible" : "Sin opciones para esta selección"}</option>{field.options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>)}</div><div className="mt-4 flex flex-wrap items-center justify-between gap-3"><button type="button" onClick={onClear} className="rounded-xl border border-[#E4007C] px-4 py-2 text-sm font-bold text-[#E4007C]">Limpiar filtros</button><p aria-live="polite" className="text-xs text-slate-500">Catálogo local cargado. {metadata ? "Marco geográfico electoral: corte enero de 2026." : ""} {pollingCatalogAvailable(filters) ? "Catálogo de casillas del proceso disponible." : "Catálogo de casillas todavía no publicado o no cargado. Las casillas específicas se actualizarán con el catálogo oficial del proceso electoral seleccionado."}</p></div></div>;
 }
 
 function CoveragePanel({ records, included, expected, percentage, updatedAt }: { records: ConsolidatedPollingStation[]; included: number; expected?: number; percentage?: number; updatedAt: string }) {
