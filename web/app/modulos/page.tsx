@@ -12,6 +12,8 @@ const modulosDisponibles: Record<number, string> = {
   2: "/fiscalia-ia",
   3: "/congreso-civico",
   5: "/madres-buscadoras",
+  6: "/sistema-judicial-carrera",
+  10: "/salud-publica",
   21: "/observacion-electoral",
 };
 
