@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { createLocalElectoralCatalogProvider, pollingCatalogAvailable } from "./catalogProvider.ts";
+import { INITIAL_CATALOG_SELECTION, updateCatalogSelection } from "./catalogFilters.ts";
+
+const provider = createLocalElectoralCatalogProvider([]);
+const demoRecord = (overrides) => ({ id: "demo-1", process: "demo", electionType: "Ayuntamiento", state: "Ciudad de México", district: "01", municipality: "Azcapotzalco", section: "100", pollingPlaceType: "Básica", pollingPlaceNumber: "1", votes: { "Partido A": 1, "Partido B": 0, "Partido C": 0 }, nullVotes: 0, unregistered: 0, status: "verificada_visualmente", evidences: [], sourceRecords: [], ...overrides });
+const populatedProvider = createLocalElectoralCatalogProvider([demoRecord({}), demoRecord({ id: "demo-2", district: "02", municipality: "Coyoacán", section: "200" })]);
+test("lista 32 entidades sin duplicados", () => { const states = provider.getStates(); assert.equal(states.length, 32); assert.equal(new Set(states.map((item) => item.officialCode)).size, 32); });
+test("Ciudad de México contiene 16 alcaldías", () => assert.equal(provider.getMunicipalities("mx-09", "mge-structure-2026-01").length, 16));
+test("municipios no se cruzan entre entidades", () => { assert.equal(provider.getMunicipalities("mx-14", "mge-structure-2026-01").length, 0); assert.equal(provider.getMunicipalities("mx-09", "mge-structure-2026-01").every((item) => item.stateId === "mx-09"), true); });
+test("selección superior limpia descendientes", () => { const changed = updateCatalogSelection({ ...INITIAL_CATALOG_SELECTION, stateId: "mx-14", districtId: "d-1", sectionId: "s-1" }, "stateId", "mx-09"); assert.equal(changed.districtId, ""); assert.equal(changed.sectionId, ""); });
+test("secciones oficiales no se inventan", () => assert.deepEqual(provider.getSections({ processId: "mge-structure-2026-01", stateId: "mx-09", districtId: "", municipalityId: "mx-09-002" }), []));
+test("catálogo de casillas nacionales no disponible", () => assert.equal(pollingCatalogAvailable({ processId: "mge-structure-2026-01" }), false));
+test("candidaturas demo separadas del catálogo nacional", () => { assert.equal(provider.getContestants({ processId: "mge-structure-2026-01", electionTypeId: "mge-presidencia", stateId: "", districtId: "", municipalityId: "" }).length, 0); assert.equal(provider.getContestants({ processId: "demo-local-2026", electionTypeId: "demo-ayuntamiento", stateId: "", districtId: "", municipalityId: "" }).every((item) => item.demo), true); });
+test("candidaturas dependen del proceso", () => assert.equal(provider.getContestants({ processId: "demo-local-2026", electionTypeId: "demo-diputacion-local", stateId: "", districtId: "", municipalityId: "" }).length, 0));
+test("distritos demo responden a entidad y tipo", () => { assert.equal(populatedProvider.getDistricts({ processId: "demo-local-2026", electionTypeId: "demo-ayuntamiento", stateId: "mx-09", districtType: "local" }).length, 2); assert.equal(populatedProvider.getDistricts({ processId: "demo-local-2026", electionTypeId: "demo-ayuntamiento", stateId: "mx-14", districtType: "local" }).length, 0); });
+test("secciones demo responden al municipio seleccionado", () => { const municipality = populatedProvider.getMunicipalities("mx-09", "demo-local-2026").find((item) => item.name === "Coyoacán"); const sections = populatedProvider.getSections({ processId: "demo-local-2026", stateId: "mx-09", districtId: "", municipalityId: municipality.id }); assert.deepEqual(sections.map((item) => item.number), ["200"]); });
