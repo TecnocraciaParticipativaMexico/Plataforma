@@ -113,6 +113,18 @@ export default function SistemaJudicialCarreraPage() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-6 px-4 pb-32 pt-6 md:pt-8">
+        <section className="max-w-3xl rounded-xl border-l-4 border-[#FFC20E] bg-[#FFC20E]/10 px-4 py-3 print:hidden">
+          <div className="inline-flex rounded-full bg-[#FFC20E] px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-slate-950">
+            FUNDAMENTO LEGAL
+          </div>
+          <h2 className="mt-2 text-sm font-black text-[#0A4E84] sm:text-base">
+            Participación, acceso a la justicia, transparencia y carrera judicial
+          </h2>
+          <p className="mt-2 text-xs leading-5 text-slate-700 sm:text-sm sm:leading-6">
+            Se sustenta en los artículos 1, 6, 17, 20, 21, 94, 97, 100, 102 y 116 de la Constitución Política de los Estados Unidos Mexicanos; la Ley General de Transparencia y Acceso a la Información Pública; la Ley General de Responsabilidades Administrativas; la Ley de Carrera Judicial del Poder Judicial de la Federación; y la legislación aplicable en protección de datos personales. Permite organizar información, preparar borradores ciudadanos, consultar trayectorias y solicitar análisis técnicos no vinculantes. No sustituye asesoría jurídica, procedimientos oficiales ni resoluciones de las autoridades competentes.
+          </p>
+        </section>
+
         <nav className="rounded-[24px] bg-white p-2 shadow-sm ring-1 ring-slate-200 print:hidden" aria-label="Secciones del módulo">
           <div className="flex gap-2 overflow-x-auto pb-1">
             {mainSections.map((section) => (
