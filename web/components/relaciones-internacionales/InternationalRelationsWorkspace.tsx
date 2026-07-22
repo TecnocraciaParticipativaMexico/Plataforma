@@ -1,0 +1,13 @@
+"use client";
+import { useState } from "react";
+import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
+import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
+import type { ModuleView } from "@/lib/relaciones-internacionales/types";
+import { DiplomaticEvaluation } from "./DiplomaticEvaluation";
+import { DiasporaDirectory, InternationalCases, SolidarityFunding, Traceability } from "./Directories";
+import { LegalFoundation, ModuleChrome, Panel } from "./ModuleChrome";
+
+const metrics=[['12','Países con participación'],['24','Perfiles de diáspora'],['6','Evaluaciones en borrador'],['9','Expedientes en revisión'],['4','Dossiers preparados'],['3','Campañas vinculadas'],['11','Acciones registradas']];
+export function InternationalRelationsWorkspace(){const [active,setActive]=useState<ModuleView>("resumen");const change=(view:ModuleView)=>{setActive(view);window.scrollTo({top:0,behavior:"smooth"})};return <main className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 print:bg-white"><ModuleChrome active={active} onChange={change}/><div id={`panel-${active}`} role="tabpanel" aria-labelledby={`tab-${active}`} tabIndex={0} className="mx-auto max-w-7xl space-y-5 px-4 pb-32 pt-6 sm:px-6 lg:px-8">
+  {active==="resumen"&&<><LegalFoundation/><Panel title="Articulación transnacional ciudadana" description="Panel general del Módulo 30. Todas las cifras y perfiles de esta versión son datos demostrativos."><div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">{metrics.map(([value,label])=><div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="text-2xl font-black text-[#E4007C]">{value}</div><div className="mt-1 text-xs font-bold text-slate-600">{label}</div><div className="mt-2 text-[10px] uppercase text-slate-400">Datos demostrativos</div></div>)}</div><h3 className="mt-6 text-sm font-black uppercase tracking-wide text-[#0A4E84]">Accesos rápidos</h3><div className="mt-3 flex flex-wrap gap-3">{[["evaluacion","Nueva evaluación"],["expedientes","Nuevo expediente"],["diaspora","Proponer representante"],["financiamiento","Vincular campaña"],["trazabilidad","Consultar trazabilidad"]].map(([id,label])=><button key={id} onClick={()=>change(id as ModuleView)} className="rounded-xl bg-[#0A4E84] px-4 py-3 text-sm font-black text-white hover:bg-[#083b62]">{label}</button>)}</div></Panel></>}
+  {active==="evaluacion"&&<DiplomaticEvaluation/>}{active==="diaspora"&&<DiasporaDirectory/>}{active==="expedientes"&&<InternationalCases/>}{active==="financiamiento"&&<SolidarityFunding/>}{active==="trazabilidad"&&<Traceability/>}<PlatformFooterBanner/></div><PlatformBottomNav/></main>}
