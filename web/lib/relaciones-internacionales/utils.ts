@@ -5,9 +5,16 @@ export async function sha256(value: string) {
 }
 
 export function formatBytes(bytes: number) {
-  return bytes < 1024 * 1024 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return bytes < 1024 * 1024
+    ? `${Math.ceil(bytes / 1024)} KB`
+    : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
 export function safeExternalUrl(value: string) {
-  try { const url = new URL(value); return url.protocol === "https:" ? url.toString() : null; } catch { return null; }
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
