@@ -7,13 +7,7 @@ export async function createSha256(input: string): Promise<string> {
       .join("");
   }
 
-  let hash = 0;
-  for (let index = 0; index < input.length; index += 1) {
-    hash = (hash << 5) - hash + input.charCodeAt(index);
-    hash |= 0;
-  }
-
-  return Math.abs(hash).toString(16).padStart(64, "0").slice(0, 64);
+  return `SHA-256 no disponible en este navegador (${input.length} caracteres evaluados localmente)`;
 }
 
 export function createDemoFolio(prefix = "DDHH"): string {
@@ -23,5 +17,9 @@ export function createDemoFolio(prefix = "DDHH"): string {
     String(date.getMonth() + 1).padStart(2, "0"),
     String(date.getDate()).padStart(2, "0"),
   ].join("");
-  return `${prefix}-${stamp}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const suffix =
+    typeof window !== "undefined" && window.crypto?.randomUUID
+      ? window.crypto.randomUUID().slice(0, 8).toUpperCase()
+      : String(date.getTime()).slice(-8);
+  return `${prefix}-${stamp}-${suffix}`;
 }
