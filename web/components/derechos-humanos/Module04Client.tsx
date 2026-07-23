@@ -8,6 +8,7 @@ import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
 import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
 import { committees, committeeReviews, demoNotice, dossiers, humanRightsCases, solidarityProjects, structuralPatterns } from "@/lib/derechos-humanos/mockData";
 import { createDemoFolio, createSha256 } from "@/lib/derechos-humanos/hash";
+import { downloadHumanRightsTechnicalPdf } from "@/lib/derechos-humanos/pdfExpediente";
 import type { HumanRightsCase, IntegrityRecord, ModuleTab, NewCaseForm } from "@/lib/derechos-humanos/types";
 
 const tabs: { id: ModuleTab; label: string; mark: string }[] = [
@@ -64,6 +65,7 @@ export function Module04Client() {
   const [isLoading, setIsLoading] = useState(true);
   const [demoError, setDemoError] = useState("");
   const [integrity, setIntegrity] = useState<IntegrityRecord | null>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setIsLoading(false), 250);
@@ -183,12 +185,27 @@ export function Module04Client() {
     };
     setCases((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     setActiveTab("dossiers");
-    setSuccess("Dossier demostrativo preparado para impresión.");
+    setSuccess("Dossier internacional demostrativo preparado. Ya puedes descargar el expediente tecnico en PDF.");
     void refreshIntegrity(updated);
   }
 
   function simulateLoadError() {
     setDemoError("Error demostrativo: no se pudo cargar una fuente externa. El módulo funciona con datos locales mock.");
+  }
+
+  async function handleDownloadPdf(caseItem: HumanRightsCase) {
+    setIsGeneratingPdf(true);
+    setSuccess("");
+    setDemoError("");
+    try {
+      const nextIntegrity = await downloadHumanRightsTechnicalPdf(caseItem, committeeReviews);
+      setIntegrity(nextIntegrity);
+      setSuccess("Expediente tecnico ciudadano descargado en PDF con identidad institucional y SHA-256 local.");
+    } catch {
+      setDemoError("No se pudo generar el expediente tecnico en PDF. Verifica que el navegador permita descargas locales.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   }
 
   return (
@@ -346,7 +363,14 @@ export function Module04Client() {
                       <h2 className="mt-1 text-2xl font-black text-slate-950">{selectedCase.title}</h2>
                       <p className="mt-2 text-sm leading-6 text-slate-700">{selectedCase.summary}</p>
                     </div>
-                    <button type="button" onClick={() => window.print()} className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white print:hidden">Imprimir</button>
+                    <button
+                      type="button"
+                      onClick={() => void handleDownloadPdf(selectedCase)}
+                      disabled={isGeneratingPdf}
+                      className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:bg-slate-400 print:hidden"
+                    >
+                      {isGeneratingPdf ? "Generando PDF..." : "📄 Descargar Expediente Técnico (PDF)"}
+                    </button>
                   </div>
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
                     <div className="rounded-xl bg-slate-50 p-3"><div className="text-xs font-bold uppercase text-slate-500">Ubicación</div><div className="mt-1 text-sm font-bold text-slate-800">{selectedCase.location}</div></div>
@@ -355,7 +379,7 @@ export function Module04Client() {
                   </div>
                   <div className="mt-5 flex flex-col gap-2 sm:flex-row print:hidden">
                     <button type="button" onClick={preparePublicVersion} className="rounded-xl border border-[#0A4E84] px-4 py-3 text-sm font-black text-[#0A4E84]">Preparar versión pública</button>
-                    <button type="button" onClick={prepareDossier} className="rounded-xl bg-[#39B54A] px-4 py-3 text-sm font-black text-white">Preparar dossier</button>
+                    <button type="button" onClick={prepareDossier} className="rounded-xl bg-[#39B54A] px-4 py-3 text-sm font-black text-white">🌐 Generar Dossier Internacional</button>
                   </div>
                   <div className="mt-5">
                     <h3 className="text-sm font-black uppercase text-slate-700">Trazabilidad y privacidad</h3>
@@ -435,7 +459,16 @@ export function Module04Client() {
                   <h2 className="text-2xl font-black text-slate-950">Dossiers e informes imprimibles</h2>
                   <p className="mt-2 text-sm leading-6 text-slate-600">Documentos de apoyo con alcance ciudadano, avisos de privacidad y trazabilidad local.</p>
                 </div>
-                <button type="button" onClick={() => window.print()} className="rounded-xl bg-[#E4007C] px-4 py-3 text-sm font-black text-white print:hidden">Imprimir o guardar PDF</button>
+                {selectedCase ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleDownloadPdf(selectedCase)}
+                    disabled={isGeneratingPdf}
+                    className="rounded-xl bg-[#E4007C] px-4 py-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:bg-slate-400 print:hidden"
+                  >
+                    {isGeneratingPdf ? "Generando PDF..." : "📄 Descargar Expediente Técnico (PDF)"}
+                  </button>
+                ) : null}
               </div>
             </Card>
             {[...dossiers, ...(selectedCase?.status === "dossier_preparado" ? [{ id: `DOS-${selectedCase.id}`, caseId: selectedCase.id, title: `Dossier de ${selectedCase.title}`, version: "v1.0-local", status: "preparado" as const, preparedAt: new Date().toISOString().slice(0, 10), sections: ["Resumen", "Cronología", "Privacidad", "Trazabilidad local", "Alcance legal"] }] : [])].map((dossier) => (
