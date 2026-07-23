@@ -15,6 +15,7 @@ const modulosDisponibles: Record<number, string> = {
   6: "/sistema-judicial-carrera",
   10: "/salud-publica",
   21: "/observacion-electoral",
+  30: "/relaciones-internacionales",
 };
 
 function formatoModulo(id: number) {
