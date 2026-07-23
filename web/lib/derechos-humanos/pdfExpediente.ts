@@ -2,17 +2,17 @@ import { createInstitutionalPdf, downloadPdf, type InstitutionalPdfSection } fro
 import { createSha256 } from "./hash";
 import type { CommitteeReview, HumanRightsCase, IntegrityRecord } from "./types";
 
-const moduleLabel = "Modulo 04";
+const moduleLabel = "Módulo 04";
 const moduleName = "Derechos Humanos y Contrapeso Institucional";
 const legalBasis =
-  "Se sustenta principalmente en los articulos 1, 6, 8, 16 y 20 de la Constitucion Politica de los Estados Unidos Mexicanos; en la Ley General de Victimas, la Ley General de Proteccion de Datos Personales en Posesion de Sujetos Obligados y los tratados internacionales de derechos humanos aplicables. Facilita documentacion y participacion ciudadana; no sustituye denuncias, investigaciones, peritajes, resoluciones ni procedimientos ante autoridades competentes.";
+  "Se sustenta principalmente en los artículos 1, 6, 8, 16 y 20 de la Constitución Política de los Estados Unidos Mexicanos; en la Ley General de Víctimas, la Ley General de Protección de Datos Personales en Posesión de Sujetos Obligados y los tratados internacionales de derechos humanos aplicables. Facilita documentación y participación ciudadana; no sustituye denuncias, investigaciones, peritajes, resoluciones ni procedimientos ante autoridades competentes.";
 
 function statusLabel(status: HumanRightsCase["status"]) {
   const labels: Record<HumanRightsCase["status"], string> = {
     borrador: "Borrador",
     registrado: "Registrado",
-    revision_pendiente: "Revision pendiente",
-    version_publica: "Version publica",
+    revision_pendiente: "Revisión pendiente",
+    version_publica: "Versión pública",
     dossier_preparado: "Dossier preparado",
   };
   return labels[status];
@@ -22,7 +22,7 @@ function privacyLabel(level: HumanRightsCase["privacyLevel"]) {
   const labels: Record<HumanRightsCase["privacyLevel"], string> = {
     reservado: "Reservado",
     anonimizado: "Anonimizado",
-    publico: "Publico",
+    publico: "Público",
   };
   return labels[level];
 }
@@ -34,14 +34,14 @@ function versionForCase(caseItem: HumanRightsCase) {
 
 function rightsForCase(caseItem: HumanRightsCase) {
   const text = `${caseItem.caseType} ${caseItem.summary}`.toLowerCase();
-  const rights = new Set<string>(["Derecho a la verdad y acceso a informacion", "Derecho a la proteccion de datos personales"]);
+  const rights = new Set<string>(["Derecho a la verdad y acceso a información", "Derecho a la protección de datos personales"]);
 
   if (text.includes("fuerza") || text.includes("integridad")) rights.add("Derecho a la integridad personal");
   if (text.includes("detencion") || text.includes("libertad")) rights.add("Derecho a la libertad personal y debido proceso");
-  if (text.includes("periodista") || text.includes("informacion")) rights.add("Libertad de expresion y derecho a documentar");
+  if (text.includes("periodista") || text.includes("informacion")) rights.add("Libertad de expresión y derecho a documentar");
   if (text.includes("defensor")) rights.add("Derechos de personas defensoras de derechos humanos");
   if (text.includes("omision") || text.includes("atencion")) rights.add("Derecho de acceso a la justicia y debida diligencia");
-  if (text.includes("protesta")) rights.add("Derecho de reunion y protesta pacifica");
+  if (text.includes("protesta")) rights.add("Derecho de reunión y protesta pacífica");
 
   return Array.from(rights);
 }
@@ -57,18 +57,18 @@ function timelineItems(caseItem: HumanRightsCase) {
 
 function committeeItems(caseItem: HumanRightsCase, reviews: CommitteeReview[]) {
   const related = reviews.filter((review) => review.caseId === caseItem.id);
-  if (!related.length) return ["No existen observaciones de comite registradas para este expediente demostrativo."];
+  if (!related.length) return ["No existen observaciones de comité registradas para este expediente demostrativo."];
 
   return related.flatMap((review) => [
-    `Revision ${review.id}. Estado: ${review.status.replace("_", " ")}. Siguiente paso: ${review.nextStep}`,
-    ...review.observations.map((observation) => `Observacion: ${observation}`),
+    `Revisión ${review.id}. Estado: ${review.status.replace("_", " ")}. Siguiente paso: ${review.nextStep}`,
+    ...review.observations.map((observation) => `Observación: ${observation}`),
   ]);
 }
 
 function internationalDossierNote(caseItem: HumanRightsCase) {
   return caseItem.status === "dossier_preparado"
-    ? "El expediente fue marcado localmente como dossier preparado para organizar una version tecnica con alcance internacional."
-    : "El expediente puede evolucionar a dossier internacional cuando exista version publica anonimizada y revision metodologica suficiente.";
+    ? "El expediente fue marcado localmente como dossier preparado para organizar una versión técnica con alcance internacional."
+    : "El expediente puede evolucionar a dossier internacional cuando exista versión pública anonimizada y revisión metodológica suficiente.";
 }
 
 export async function buildHumanRightsTechnicalPdf(caseItem: HumanRightsCase, reviews: CommitteeReview[]) {
@@ -94,7 +94,7 @@ export async function buildHumanRightsTechnicalPdf(caseItem: HumanRightsCase, re
       body: [
         caseItem.summary,
         internationalDossierNote(caseItem),
-        "Este expediente tecnico ciudadano organiza informacion demostrativa con criterios de privacidad, trazabilidad local y no revictimizacion.",
+        "Este expediente técnico ciudadano organiza información demostrativa con criterios de privacidad, trazabilidad local y no revictimización.",
       ],
     },
     {
@@ -102,9 +102,9 @@ export async function buildHumanRightsTechnicalPdf(caseItem: HumanRightsCase, re
       items: timelineItems(caseItem),
     },
     {
-      title: "Informacion general",
+      title: "Información general",
       fields: [
-        { label: "Ubicacion", value: caseItem.location },
+        { label: "Ubicación", value: caseItem.location },
         { label: "Periodo", value: caseItem.date },
         { label: "Tipo de hecho", value: caseItem.caseType },
         { label: "Grupo afectado", value: caseItem.affectedGroup },
@@ -122,11 +122,11 @@ export async function buildHumanRightsTechnicalPdf(caseItem: HumanRightsCase, re
       items: evidenceItems(caseItem),
     },
     {
-      title: "Cronologia del expediente",
+      title: "Cronología del expediente",
       items: timelineItems(caseItem),
     },
     {
-      title: "Observaciones del Comite de Ciudadanos Expertos",
+      title: "Observaciones del Comité de Ciudadanos Expertos",
       items: committeeItems(caseItem, reviews),
     },
     {
@@ -136,8 +136,8 @@ export async function buildHumanRightsTechnicalPdf(caseItem: HumanRightsCase, re
     {
       title: "Avisos legales",
       body: [
-        "Tecnocracia Participativa no sustituye autoridades, tribunales, ministerios publicos, comisiones oficiales, peritajes, asesoria juridica ni representacion legal.",
-        "Este documento no acredita por si mismo hechos, responsabilidades ni efectos procesales. Su finalidad es ordenar documentacion ciudadana y facilitar revision tecnica posterior.",
+        "Tecnocracia Participativa no sustituye autoridades, tribunales, ministerios públicos, comisiones oficiales, peritajes, asesoría jurídica ni representación legal.",
+        "Este documento no acredita por sí mismo hechos, responsabilidades ni efectos procesales. Su finalidad es ordenar documentación ciudadana y facilitar revisión técnica posterior.",
       ],
     },
   ];
@@ -145,8 +145,8 @@ export async function buildHumanRightsTechnicalPdf(caseItem: HumanRightsCase, re
   const fileName = `${caseItem.id.toLowerCase()}-expediente-tecnico.pdf`;
   const bytes = await createInstitutionalPdf({
     fileName,
-    title: "Expediente Tecnico Ciudadano",
-    subtitle: "Documentacion Ciudadana de Posibles Violaciones a Derechos Humanos",
+    title: "Expediente Técnico Ciudadano",
+    subtitle: "Documentación Ciudadana de Posibles Violaciones a Derechos Humanos",
     moduleLabel,
     moduleName,
     folio: caseItem.id,
@@ -155,6 +155,8 @@ export async function buildHumanRightsTechnicalPdf(caseItem: HumanRightsCase, re
     classification,
     generatedAt,
     integrityHash,
+    integrityDescription:
+      "Huella SHA-256 de los datos estructurados de esta versión del expediente. Es una referencia de integridad del contenido base utilizado para generar este documento; no constituye certificación oficial, firma electrónica gubernamental ni cadena de custodia legal.",
     sections,
     logoUrl: "/branding/logo-tecnocracia.png",
   });
@@ -164,7 +166,7 @@ export async function buildHumanRightsTechnicalPdf(caseItem: HumanRightsCase, re
     version,
     hash: integrityHash,
     generatedAt,
-    note: "SHA-256 local del expediente tecnico. No constituye certificacion oficial, firma gubernamental ni cadena de custodia legal.",
+    note: "SHA-256 de los datos estructurados de esta versión del expediente. No constituye certificación oficial, firma gubernamental ni cadena de custodia legal.",
   };
 
   return { bytes, fileName, integrity };

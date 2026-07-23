@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { FormEvent, ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ModuleIdentityHeader } from "@/components/branding/ModuleIdentityHeader";
 import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
 import { PlatformFooterBanner } from "@/components/branding/PlatformFooterBanner";
@@ -66,6 +66,7 @@ export function Module04Client() {
   const [demoError, setDemoError] = useState("");
   const [integrity, setIntegrity] = useState<IntegrityRecord | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const pdfGenerationRef = useRef(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setIsLoading(false), 250);
@@ -185,7 +186,7 @@ export function Module04Client() {
     };
     setCases((current) => current.map((item) => (item.id === updated.id ? updated : item)));
     setActiveTab("dossiers");
-    setSuccess("Dossier internacional demostrativo preparado. Ya puedes descargar el expediente tecnico en PDF.");
+    setSuccess("Dossier internacional demostrativo preparado localmente. Debe adaptarse a los requisitos de la institucion receptora.");
     void refreshIntegrity(updated);
   }
 
@@ -194,6 +195,8 @@ export function Module04Client() {
   }
 
   async function handleDownloadPdf(caseItem: HumanRightsCase) {
+    if (pdfGenerationRef.current) return;
+    pdfGenerationRef.current = true;
     setIsGeneratingPdf(true);
     setSuccess("");
     setDemoError("");
@@ -204,6 +207,7 @@ export function Module04Client() {
     } catch {
       setDemoError("No se pudo generar el expediente tecnico en PDF. Verifica que el navegador permita descargas locales.");
     } finally {
+      pdfGenerationRef.current = false;
       setIsGeneratingPdf(false);
     }
   }
@@ -379,8 +383,9 @@ export function Module04Client() {
                   </div>
                   <div className="mt-5 flex flex-col gap-2 sm:flex-row print:hidden">
                     <button type="button" onClick={preparePublicVersion} className="rounded-xl border border-[#0A4E84] px-4 py-3 text-sm font-black text-[#0A4E84]">Preparar versión pública</button>
-                    <button type="button" onClick={prepareDossier} className="rounded-xl bg-[#39B54A] px-4 py-3 text-sm font-black text-white">🌐 Generar Dossier Internacional</button>
+                    <button type="button" onClick={prepareDossier} className="rounded-xl bg-[#39B54A] px-4 py-3 text-sm font-black text-white">🌐 Preparar dossier internacional</button>
                   </div>
+                  <p className="mt-3 text-xs font-semibold leading-5 text-slate-500 print:hidden">Documento ciudadano de apoyo. Debe adaptarse a los requisitos de la institución receptora.</p>
                   <div className="mt-5">
                     <h3 className="text-sm font-black uppercase text-slate-700">Trazabilidad y privacidad</h3>
                     <div className="mt-3 space-y-2">

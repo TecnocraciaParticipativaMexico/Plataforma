@@ -24,6 +24,7 @@ export type InstitutionalPdfOptions = {
   classification: string;
   generatedAt: string;
   integrityHash: string;
+  integrityDescription: string;
   sections: InstitutionalPdfSection[];
   logoUrl?: string;
 };
@@ -73,6 +74,25 @@ function wrapText(font: PDFFont, text: string, size: number, maxWidth: number) {
   let line = "";
 
   for (const word of normalized.split(" ")) {
+    if (textWidth(font, word, size) > maxWidth) {
+      if (line) {
+        lines.push(line);
+        line = "";
+      }
+      let chunk = "";
+      for (const char of word) {
+        const candidate = `${chunk}${char}`;
+        if (textWidth(font, candidate, size) <= maxWidth) {
+          chunk = candidate;
+          continue;
+        }
+        if (chunk) lines.push(chunk);
+        chunk = char;
+      }
+      if (chunk) line = chunk;
+      continue;
+    }
+
     const candidate = line ? `${line} ${word}` : word;
     if (textWidth(font, candidate, size) <= maxWidth) {
       line = candidate;
@@ -163,7 +183,7 @@ async function drawCover(ctx: PdfContext, options: InstitutionalPdfOptions) {
   ctx.page.drawRectangle({ x: 0, y: ctx.pageHeight - 136, width: ctx.pageWidth, height: 4, color: brand.magenta });
   await embedLogo(ctx, options.logoUrl);
 
-  drawText(ctx, "Mexico 2030", ctx.pageWidth - 190, ctx.pageHeight - 70, { size: 12, font: ctx.bold, color: brand.blue });
+  drawText(ctx, "México 2030", ctx.pageWidth - 190, ctx.pageHeight - 70, { size: 12, font: ctx.bold, color: brand.blue });
   drawText(ctx, options.moduleLabel, ctx.pageWidth - 190, ctx.pageHeight - 90, { size: 10, font: ctx.bold, color: brand.magenta });
   drawText(ctx, options.moduleName, ctx.pageWidth - 190, ctx.pageHeight - 108, { size: 9, font: ctx.regular, color: brand.slate, maxWidth: 140 });
 
@@ -176,8 +196,8 @@ async function drawCover(ctx: PdfContext, options: InstitutionalPdfOptions) {
   const fields: InstitutionalPdfField[] = [
     { label: "Folio", value: options.folio },
     { label: "Fecha", value: options.date },
-    { label: "Version", value: options.version },
-    { label: "Clasificacion", value: options.classification },
+    { label: "Versión", value: options.version },
+    { label: "Clasificación", value: options.classification },
   ];
 
   const boxWidth = (ctx.pageWidth - ctx.margin * 2 - 18) / 2;
@@ -193,7 +213,7 @@ async function drawCover(ctx: PdfContext, options: InstitutionalPdfOptions) {
   ctx.y -= 164;
 
   drawRule(ctx, brand.gold);
-  drawWrapped(ctx, "Documento ciudadano generado localmente para preservar informacion tecnica, contexto y trazabilidad. No sustituye procedimientos ni determinaciones de autoridad.", {
+  drawWrapped(ctx, "Documento ciudadano generado localmente para preservar información técnica, contexto y trazabilidad. No sustituye procedimientos ni determinaciones de autoridad.", {
     size: 10,
     color: brand.muted,
     width: 430,
@@ -227,7 +247,7 @@ function drawFields(ctx: PdfContext, fields: InstitutionalPdfField[]) {
 
 function drawSection(ctx: PdfContext, section: InstitutionalPdfSection, index: number) {
   ensureSpace(ctx, 72);
-  drawText(ctx, `SECCION ${index}`, ctx.margin, ctx.y, { size: 8, font: ctx.bold, color: brand.magenta });
+  drawText(ctx, `SECCIÓN ${index}`, ctx.margin, ctx.y, { size: 8, font: ctx.bold, color: brand.magenta });
   ctx.y -= 17;
   drawText(ctx, section.title, ctx.margin, ctx.y, { size: 15, font: ctx.bold, color: brand.blue });
   ctx.y -= 14;
@@ -261,17 +281,13 @@ function drawIntegrityPage(ctx: PdfContext, options: InstitutionalPdfOptions) {
   drawRule(ctx, brand.magenta);
   drawFields(ctx, [
     { label: "Folio", value: options.folio },
-    { label: "Fecha de generacion", value: options.generatedAt },
-    { label: "Version", value: options.version },
-    { label: "SHA-256", value: options.integrityHash },
-    { label: "Generado por", value: `Tecnocracia Participativa Mexico 2030 - ${options.moduleLabel} - ${options.moduleName}` },
+    { label: "Fecha de generación", value: options.generatedAt },
+    { label: "Versión", value: options.version },
+    { label: "SHA-256 de datos base", value: options.integrityHash },
+    { label: "Generado por", value: `Tecnocracia Participativa México 2030 - ${options.moduleLabel} - ${options.moduleName}` },
   ]);
   ctx.y -= 18;
-  drawWrapped(
-    ctx,
-    "La huella SHA-256 permite verificar la integridad de esta version del documento. No constituye certificacion oficial, firma electronica gubernamental ni cadena de custodia legal.",
-    { size: 10, font: ctx.bold, color: brand.slate },
-  );
+  drawWrapped(ctx, options.integrityDescription, { size: 10, font: ctx.bold, color: brand.slate });
 }
 
 function drawFooters(ctx: PdfContext, date: string) {
@@ -283,14 +299,14 @@ function drawFooters(ctx: PdfContext, date: string) {
       thickness: 0.6,
       color: rgb(0.82, 0.86, 0.91),
     });
-    page.drawText("Tecnocracia Participativa Mexico 2030", {
+    page.drawText("Tecnocracia Participativa México 2030", {
       x: ctx.margin,
       y: 31,
       size: 8,
       font: ctx.regular,
       color: brand.muted,
     });
-    page.drawText(`${date} | Pagina ${index + 1} de ${pages.length}`, {
+    page.drawText(`${date} | Página ${index + 1} de ${pages.length}`, {
       x: ctx.pageWidth - ctx.margin - 132,
       y: 31,
       size: 8,
@@ -302,6 +318,12 @@ function drawFooters(ctx: PdfContext, date: string) {
 
 export async function createInstitutionalPdf(options: InstitutionalPdfOptions) {
   const doc = await PDFDocument.create();
+  doc.setTitle(options.title);
+  doc.setSubject(`${options.moduleLabel} - ${options.moduleName}`);
+  doc.setCreator("Tecnocracia Participativa México 2030");
+  doc.setProducer("Tecnocracia Participativa México 2030");
+  doc.setCreationDate(new Date(options.generatedAt));
+  doc.setModificationDate(new Date(options.generatedAt));
   const regular = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const page = doc.addPage(pageSize);

@@ -146,7 +146,7 @@ export const committeeReviews: CommitteeReview[] = [
       "Mantener ubicación exacta fuera de la versión pública.",
       "Agregar explicación de ausencia de documentos de autoridad, si aplica.",
     ],
-    nextStep: "Generar dossier internacional publico anonimizado.",
+    nextStep: "Preparar dossier internacional público anonimizado.",
   },
 ];
 
