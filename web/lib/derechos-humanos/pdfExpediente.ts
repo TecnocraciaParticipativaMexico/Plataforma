@@ -142,7 +142,8 @@ export async function buildHumanRightsTechnicalPdf(caseItem: HumanRightsCase, re
     },
   ];
 
-  const fileName = `${caseItem.id.toLowerCase()}-expediente-tecnico.pdf`;
+  const safeCaseId = caseItem.id.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "expediente";
+  const fileName = `${safeCaseId}-expediente-tecnico.pdf`;
   const bytes = await createInstitutionalPdf({
     fileName,
     title: "Expediente Técnico Ciudadano",

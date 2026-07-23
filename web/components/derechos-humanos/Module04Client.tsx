@@ -67,10 +67,14 @@ export function Module04Client() {
   const [integrity, setIntegrity] = useState<IntegrityRecord | null>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const pdfGenerationRef = useRef(false);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setIsLoading(false), 250);
-    return () => window.clearTimeout(timeout);
+    return () => {
+      isMountedRef.current = false;
+      window.clearTimeout(timeout);
+    };
   }, []);
 
   const filteredCases = useMemo(() => {
@@ -202,13 +206,15 @@ export function Module04Client() {
     setDemoError("");
     try {
       const nextIntegrity = await downloadHumanRightsTechnicalPdf(caseItem, committeeReviews);
+      if (!isMountedRef.current) return;
       setIntegrity(nextIntegrity);
       setSuccess("Expediente tecnico ciudadano descargado en PDF con identidad institucional y SHA-256 local.");
     } catch {
+      if (!isMountedRef.current) return;
       setDemoError("No se pudo generar el expediente tecnico en PDF. Verifica que el navegador permita descargas locales.");
     } finally {
       pdfGenerationRef.current = false;
-      setIsGeneratingPdf(false);
+      if (isMountedRef.current) setIsGeneratingPdf(false);
     }
   }
 
