@@ -2,12 +2,9 @@ import "server-only";
 import { supabaseServer } from "@/lib/supabaseServer";
 import {
   EXAM_APPROVAL_VALID_DAYS,
-  EXAM_ATTEMPT_WINDOW_HOURS,
   EXAM_BANK_VERSION,
   EXAM_DURATION_MINUTES,
-  EXAM_MAX_ATTEMPTS_PER_WINDOW,
   EXAM_QUESTIONS_PER_TYPE,
-  EXAM_RETRY_COOLDOWN_MINUTES,
 } from "../constants";
 import {
   obtenerBancoTecnico,
@@ -19,6 +16,7 @@ import { sampleSecure, shuffleSecure } from "./random";
 import { gradeAttempt, type ExamResponses, type OptionOrder } from "./grading";
 import { validateQuestionBanks } from "../validation";
 import { assertSubmittableAttempt } from "./policies";
+import { toPublicQuestion } from "../public";
 
 validateQuestionBanks();
 
@@ -47,31 +45,6 @@ export async function createAttempt(userId: string, moduleId: number) {
   }
 
   const now = new Date();
-  const windowStart = new Date(
-    now.getTime() - EXAM_ATTEMPT_WINDOW_HOURS * 3_600_000,
-  ).toISOString();
-  const { data: recent, error: recentError } = await supabaseServer
-    .from("committee_exam_attempts")
-    .select("id,status,approved,submitted_at,attempt_number")
-    .eq("user_id", userId)
-    .eq("module_id", moduleId)
-    .gte("created_at", windowStart)
-    .order("created_at", { ascending: false });
-  if (recentError) throw recentError;
-  if ((recent?.length ?? 0) >= EXAM_MAX_ATTEMPTS_PER_WINDOW) {
-    throw new Error("ATTEMPT_LIMIT");
-  }
-  const lastFailed = recent?.find(
-    (attempt) => attempt.status === "submitted" && !attempt.approved,
-  );
-  if (lastFailed?.submitted_at) {
-    const retryAt = addMinutes(
-      new Date(lastFailed.submitted_at),
-      EXAM_RETRY_COOLDOWN_MINUTES,
-    );
-    if (retryAt > now) throw new Error("RETRY_COOLDOWN");
-  }
-
   const selected = shuffleSecure([
     ...sampleSecure(preguntasEticasGlobales, EXAM_QUESTIONS_PER_TYPE),
     ...sampleSecure(obtenerBancoTecnico(moduleId), EXAM_QUESTIONS_PER_TYPE),
@@ -83,22 +56,14 @@ export async function createAttempt(userId: string, moduleId: number) {
 
   const selection = selected.map(({ id, tipo }) => ({ id, tipo }));
   const { data, error } = await supabaseServer
-    .from("committee_exam_attempts")
-    .insert({
-      user_id: userId,
-      module_id: moduleId,
-      bank_version: EXAM_BANK_VERSION,
-      status: "started",
-      started_at: now.toISOString(),
-      expires_at: addMinutes(now, EXAM_DURATION_MINUTES).toISOString(),
-      question_selection: selection,
-      option_order: optionOrder,
-      attempt_number:
-        Math.max(0, ...(recent ?? []).map((item) => item.attempt_number ?? 0)) + 1,
+    .rpc("create_committee_exam_attempt", {
+      p_user_id: userId,
+      p_module_id: moduleId,
+      p_bank_version: EXAM_BANK_VERSION,
+      p_expires_at: addMinutes(now, EXAM_DURATION_MINUTES).toISOString(),
+      p_question_selection: selection,
+      p_option_order: optionOrder,
     })
-    .select(
-      "id,user_id,module_id,status,created_at,expires_at,question_selection,option_order,attempt_number,approved,application_id",
-    )
     .single();
   if (error) throw error;
   return publicAttempt(data as AttemptRow);
@@ -110,12 +75,7 @@ export function publicAttempt(attempt: AttemptRow) {
       const question = obtenerPreguntaPorId(selected.id);
       const order = attempt.option_order[selected.id];
       if (!question || !order) throw new Error("INVALID_STORED_ATTEMPT");
-      return {
-        id: question.id,
-        pregunta: question.pregunta,
-        tipo: question.tipo,
-        opciones: order.map((originalIndex) => question.opciones[originalIndex]),
-      };
+      return toPublicQuestion(question, order);
     },
   );
   return {

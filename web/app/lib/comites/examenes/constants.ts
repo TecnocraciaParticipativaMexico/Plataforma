@@ -6,3 +6,6 @@ export const EXAM_MAX_ATTEMPTS_PER_WINDOW = 3;
 export const EXAM_ATTEMPT_WINDOW_HOURS = 24;
 export const EXAM_RETRY_COOLDOWN_MINUTES = 30;
 export const EXAM_BANK_VERSION = "pr19-88c347d7-v1";
+
+// Política: cada inicio cuenta en la ventana móvil de 24 h, incluso si se
+// abandona. El enfriamiento corre desde el envío reprobado más reciente.

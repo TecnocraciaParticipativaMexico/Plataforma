@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import { modulosTecnocracia } from "../../lib/modulosTecnocracia";
 import { supabaseBrowser } from "../../lib/supabaseBrowser";
+import { parseModuleParam } from "../../lib/comites/examenes/public";
 
 type PublicQuestion = {
   id: string;
@@ -44,13 +45,7 @@ const errorMessage = (code?: string) => {
 
 function ExamContent() {
   const searchParams = useSearchParams();
-  const requestedModule = Number(searchParams.get("modulo"));
-  const initialModule =
-    Number.isInteger(requestedModule) &&
-    requestedModule >= 1 &&
-    requestedModule <= 30
-      ? requestedModule
-      : 1;
+  const initialModule = parseModuleParam(searchParams.get("modulo")) ?? 0;
   const [moduleId, setModuleId] = useState(initialModule);
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -168,6 +163,9 @@ function ExamContent() {
               onChange={(event) => setModuleId(Number(event.target.value))}
               className="w-full rounded-2xl border px-4 py-3"
             >
+              <option value="" disabled>
+                Selecciona un módulo
+              </option>
               {modulosTecnocracia.map((item) => (
                 <option key={item.id} value={item.id}>
                   Módulo {String(item.id).padStart(2, "0")}: {item.nombre}
@@ -178,7 +176,7 @@ function ExamContent() {
             <button
               type="button"
               onClick={startAttempt}
-              disabled={loading}
+              disabled={loading || !selectedModule}
               className="mt-5 w-full rounded-2xl bg-[#F2C300] px-4 py-4 font-bold text-[#1F2937] disabled:opacity-50"
             >
               {loading ? "Creando intento…" : "Iniciar examen"}

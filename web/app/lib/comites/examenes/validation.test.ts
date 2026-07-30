@@ -8,6 +8,7 @@ import {
   assertApplicationAttempt,
   assertSubmittableAttempt,
 } from "./server/policies";
+import { parseModuleParam, toPublicQuestion } from "./public";
 
 test("valida 30 éticas y 900 técnicas con IDs únicos", () => {
   const report = validateQuestionBanks();
@@ -123,4 +124,34 @@ test("acepta intento aprobado del mismo usuario y módulo", () => {
   assert.doesNotThrow(() =>
     assertApplicationAttempt(validAttempt, "user-1", 4),
   );
+});
+
+test("el payload público no revela metadatos de calificación", () => {
+  const question = preguntasEticasGlobales[0];
+  const payload = toPublicQuestion(question, [3, 1, 0, 2]);
+  assert.deepEqual(Object.keys(payload).sort(), [
+    "id",
+    "opciones",
+    "pregunta",
+    "tipo",
+  ]);
+  const serialized = JSON.stringify(payload);
+  assert.doesNotMatch(
+    serialized,
+    /respuestaCorrecta|correctIndex|distractores|option_order/i,
+  );
+  assert.deepEqual(payload.opciones, [
+    question.opciones[3],
+    question.opciones[1],
+    question.opciones[0],
+    question.opciones[2],
+  ]);
+});
+
+test("acepta módulos 01–30 y rechaza parámetros ambiguos", () => {
+  assert.equal(parseModuleParam("01"), 1);
+  assert.equal(parseModuleParam("30"), 30);
+  for (const invalid of [null, "", "00", "-1", "1.5", "31", "texto"]) {
+    assert.equal(parseModuleParam(invalid), null);
+  }
 });
