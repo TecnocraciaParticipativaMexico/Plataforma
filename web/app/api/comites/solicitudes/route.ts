@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireExamUser } from "@/app/lib/comites/examenes/server/auth";
+import { assertApplicationAttempt } from "@/app/lib/comites/examenes/server/policies";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,9 +25,10 @@ export async function GET() {
     }
 
     return NextResponse.json({ ok: true, applications: data || [] });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error interno";
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: message },
       { status: 500 }
     );
   }
@@ -33,11 +36,12 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await requireExamUser(req);
     const body = await req.json();
 
     const {
-      user_id,
       actor_hash,
+      attempt_id,
       module_id,
       module_name,
       level,
@@ -56,8 +60,8 @@ export async function POST(req: NextRequest) {
     } = body;
 
     if (
-      !user_id ||
       !actor_hash ||
+      !attempt_id ||
       !module_id ||
       !module_name ||
       !level ||
@@ -74,13 +78,39 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { data: attempt, error: attemptError } = await supabase
+      .from("committee_exam_attempts")
+      .select(
+        "id,user_id,module_id,status,approved,expires_at,application_id",
+      )
+      .eq("id", attempt_id)
+      .single();
+
+    if (attemptError || !attempt) {
+      return NextResponse.json(
+        { ok: false, error: "El intento aprobado no es válido para esta solicitud" },
+        { status: 403 }
+      );
+    }
+    try {
+      assertApplicationAttempt(attempt, user.id, module_id);
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "El intento aprobado no es válido para esta solicitud" },
+        { status: 403 }
+      );
+    }
+
     const review_status = is_public_figure
       ? "Revisión ética avanzada"
       : "Revisión ética";
 
-    const { error } = await supabase.from("committee_applications").insert({
-      user_id,
+    const { data: application, error } = await supabase
+      .from("committee_applications")
+      .insert({
+      user_id: user.id,
       actor_hash,
+      exam_attempt_id: attempt.id,
       module_id,
       module_name,
       level,
@@ -97,7 +127,9 @@ export async function POST(req: NextRequest) {
       ethics_accepted,
       is_public_figure: Boolean(is_public_figure),
       review_status,
-    });
+      })
+      .select("id")
+      .single();
 
     if (error) {
       return NextResponse.json(
@@ -106,10 +138,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { data: consumed, error: consumeError } = await supabase
+      .from("committee_exam_attempts")
+      .update({ application_id: application.id })
+      .eq("id", attempt.id)
+      .eq("user_id", user.id)
+      .is("application_id", null)
+      .select("id")
+      .single();
+
+    if (consumeError || !consumed) {
+      await supabase.from("committee_applications").delete().eq("id", application.id);
+      return NextResponse.json(
+        { ok: false, error: "El intento ya fue utilizado por otra solicitud" },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json({ ok: true, review_status });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error interno";
+    if (message === "UNAUTHORIZED") {
+      return NextResponse.json(
+        { ok: false, error: "Sesión requerida" },
+        { status: 401 }
+      );
+    }
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: message },
       { status: 500 }
     );
   }
@@ -163,9 +219,10 @@ export async function PATCH(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error interno";
     return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
+      { ok: false, error: message },
       { status: 500 }
     );
   }
