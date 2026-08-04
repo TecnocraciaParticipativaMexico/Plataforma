@@ -35,15 +35,6 @@ function textoInvalido(texto: string) {
   return false;
 }
 
-type ResultadoExamenComite = {
-  module_id: number;
-  module_name: string;
-  total: number;
-  correctas: number;
-  aprobado: boolean;
-  created_at: string;
-};
-
 function SolicitarComiteContent() {
   const searchParams = useSearchParams();
   const supabase = supabaseBrowser();
@@ -62,31 +53,36 @@ function SolicitarComiteContent() {
   const [curriculumEvidence, setCurriculumEvidence] = useState("");
   const [ethicsAccepted, setEthicsAccepted] = useState(false);
   const [isPublicFigure, setIsPublicFigure] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{ ok: boolean; error?: string } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [examen, setExamen] = useState<ResultadoExamenComite | null>(null);
+  const [attemptId, setAttemptId] = useState("");
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     const moduloParam = Number(searchParams.get("modulo"));
+    const attemptParam = searchParams.get("attempt");
 
     if (moduloParam && modulos.some((modulo) => modulo.id === moduloParam)) {
       setModuleId(moduloParam);
     }
+    if (attemptParam) {
+      setAttemptId(attemptParam);
+      return;
+    }
+    const saved = sessionStorage.getItem("ultimo_intento_comite_aprobado");
+    if (!saved) return;
+    try {
+      const parsed = JSON.parse(saved);
+      const effectiveModule = moduloParam || 1;
+      if (parsed.module_id === effectiveModule) setAttemptId(parsed.attempt_id);
+    } catch {
+      sessionStorage.removeItem("ultimo_intento_comite_aprobado");
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [searchParams]);
 
   useEffect(() => {
-    const guardado = localStorage.getItem("ultimo_examen_comite");
-
-    if (!guardado) return;
-
-    try {
-      setExamen(JSON.parse(guardado));
-    } catch {
-      setExamen(null);
-    }
-  }, []);
-
-  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     const borrador = localStorage.getItem("borrador_solicitud_comite");
 
     if (!borrador) return;
@@ -111,6 +107,7 @@ function SolicitarComiteContent() {
     } catch {
       localStorage.removeItem("borrador_solicitud_comite");
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   function obtenerCamposFaltantes() {
@@ -162,14 +159,15 @@ function SolicitarComiteContent() {
 
       const { data } = await supabase.auth.getSession();
       const userId = data.session?.user?.id;
+      const accessToken = data.session?.access_token;
 
-      if (!userId) {
+      if (!userId || !accessToken) {
         alert("Debes iniciar sesión.");
         window.location.href = "/login";
         return;
       }
 
-      if (!examen || !examen.aprobado || examen.module_id !== moduleId) {
+      if (!attemptId) {
         setResult({
           ok: false,
           error: "Debes aprobar el examen técnico del módulo seleccionado antes de enviar la solicitud.",
@@ -214,9 +212,10 @@ function SolicitarComiteContent() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          user_id: userId,
+          attempt_id: attemptId,
           actor_hash: actorHash,
           module_id: moduleId,
           module_name: modulo?.nombre,
@@ -243,10 +242,10 @@ function SolicitarComiteContent() {
         localStorage.removeItem("borrador_solicitud_comite");
         window.location.href = "/comites/mis-solicitudes";
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setResult({
         ok: false,
-        error: err?.message || "Error enviando solicitud",
+        error: err instanceof Error ? err.message : "Error enviando solicitud",
       });
     } finally {
       setLoading(false);
@@ -274,6 +273,7 @@ function SolicitarComiteContent() {
             onChange={(e) => {
               setModuleId(Number(e.target.value));
               setExpertiseArea("");
+              setAttemptId("");
             }}
             className="mb-4 w-full rounded-2xl border px-4 py-3"
           >
@@ -426,16 +426,17 @@ function SolicitarComiteContent() {
 
           <div
             className={`mb-4 rounded-2xl p-4 text-sm ${
-              examen?.aprobado && examen.module_id === moduleId
+              attemptId
                 ? "bg-green-50 text-green-800"
                 : datosMinimosCompletos()
                 ? "bg-yellow-50 text-yellow-900"
                 : "bg-slate-50 text-slate-600"
             }`}
           >
-            {examen?.aprobado && examen.module_id === moduleId ? (
+            {attemptId ? (
               <div>
-                ✅ Examen técnico aprobado: {examen.correctas}/{examen.total}
+                ✅ Intento aprobado seleccionado. El servidor validará usuario,
+                módulo, vigencia y disponibilidad al enviar.
               </div>
             ) : datosMinimosCompletos() ? (
               <div>
@@ -486,12 +487,12 @@ function SolicitarComiteContent() {
 
           <button
             onClick={enviarSolicitud}
-            disabled={loading || !examen?.aprobado || examen.module_id !== moduleId}
+            disabled={loading || !attemptId}
             className="w-full rounded-2xl bg-[#F2C300] px-4 py-4 text-lg font-bold text-[#1F2937] shadow-[0_6px_0_0_#8B6B00] disabled:opacity-50"
           >
             {loading
               ? "Enviando..."
-              : !examen?.aprobado || examen.module_id !== moduleId
+              : !attemptId
               ? "Aprueba el examen para enviar"
               : "Enviar solicitud"}
           </button>
