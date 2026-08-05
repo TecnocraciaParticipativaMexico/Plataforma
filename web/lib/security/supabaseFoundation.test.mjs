@@ -1,0 +1,75 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const migration = (name) => readFileSync(resolve(process.cwd(), "supabase/migrations", name), "utf8");
+const core = migration("20260805000100_security_core_schema.sql");
+const rls = migration("20260805000200_security_rls_and_storage.sql");
+const rpc = migration("20260805000300_security_transactional_rpcs.sql");
+const sqlTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_authorization.sql"), "utf8");
+
+test("ownership is auth-user based and legacy hashes are not credentials", () => {
+  assert.match(core, /owner_user_id uuid references auth\.users/);
+  assert.match(core, /legacy_actor_hash text/);
+  assert.doesNotMatch(rls, /actor_hash\s*=\s*auth\.uid/);
+});
+
+test("roles and memberships are separate from editable profiles", () => {
+  assert.match(core, /create table if not exists public\.user_platform_roles/);
+  assert.match(core, /create table if not exists public\.committee_memberships/);
+  assert.doesNotMatch(core.match(/create table if not exists public\.profiles[\s\S]*?\);/)?.[0] ?? "", /role/);
+});
+
+test("sensitive tables enable RLS and revoke client access by default", () => {
+  assert.match(rls, /enable row level security/);
+  assert.match(rls, /revoke all on table/);
+  assert.doesNotMatch(rls, /using\s*\(\s*true\s*\)/i);
+});
+
+test("security definer functions fix search path and revoke before grants", () => {
+  const definers = [...rpc.matchAll(/security definer/g)].length + [...rls.matchAll(/security definer/g)].length;
+  const paths = [...rpc.matchAll(/set search_path = pg_catalog, public, private/g)].length + [...rls.matchAll(/set search_path = pg_catalog, public, private/g)].length;
+  assert.ok(definers >= 10);
+  assert.equal(paths, definers);
+  assert.match(rpc, /revoke all on function public\.cast_citizen_vote/);
+});
+
+test("votes rely on unique indexes and server-computed weight", () => {
+  assert.match(core, /unique\(user_id, proposal_id\)/);
+  assert.match(rpc, /v_score::numeric\/10/);
+  assert.doesNotMatch(rpc, /p_.*weight/);
+});
+
+test("state transitions use row locks, expected version and explicit matrix", () => {
+  assert.match(rpc, /where id=p_process_id for update/);
+  assert.match(rpc, /VERSION_CONFLICT/);
+  assert.match(rpc, /v_current\.status='draft' and p_target_status='submitted'/);
+});
+
+test("committee closure requires configured quorum greater than one", () => {
+  assert.match(core, /minimum_votes smallint not null check \(minimum_votes >= 2\)/);
+  assert.match(rpc, /QUORUM_RULE_NOT_CONFIGURED/);
+  assert.match(rpc, /QUORUM_NOT_MET/);
+});
+
+test("reputation and audit are append-only to clients", () => {
+  assert.match(core, /create table if not exists public\.reputation_events/);
+  assert.match(core, /create table if not exists public\.security_audit_events/);
+  assert.doesNotMatch(rls, /policy .*reputation.* for (insert|update|delete)/i);
+  assert.doesNotMatch(rls, /policy .*audit.* for (insert|update|delete)/i);
+});
+
+test("evidence bucket is private with no overwrite or delete policy", () => {
+  assert.match(rls, /'evidence','evidence',false/);
+  assert.match(rls, /evidence_insert_pre_authorized/);
+  assert.doesNotMatch(rls, /storage\.objects for (update|delete)/i);
+});
+
+test("SQL authorization tests cover negative access paths", () => {
+  assert.match(sqlTests, /user A cannot read process B/);
+  assert.match(sqlTests, /user cannot self-assign a role/);
+  assert.match(sqlTests, /duplicate citizen vote is rejected transactionally/);
+  assert.match(sqlTests, /member of committee A cannot act in committee B/);
+  assert.match(sqlTests, /unowned historical data stays closed/);
+});

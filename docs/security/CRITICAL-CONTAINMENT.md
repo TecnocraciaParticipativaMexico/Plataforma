@@ -64,3 +64,7 @@ npm run build
 The security tests use local doubles and source-contract checks. They do not call Supabase or any other external system. Pre-existing repository failures (including missing `react-leaflet`, unrelated lint findings, and test-runner incompatibilities in older tests) must be reported separately from regressions introduced here.
 
 No production system, real user, remote database, Storage bucket, or third-party service was tested or modified.
+
+## Phase 2 follow-up
+
+The stacked security-foundation work is documented in `docs/security/SECURITY-FOUNDATION-SUPABASE.md`. It versions ownership, roles, memberships, RLS, private Storage, idempotency and transactional RPCs. Phase 1 fail-closed responses remain in place until a separate Phase 3 deliberately integrates and tests the HTTP routes.
