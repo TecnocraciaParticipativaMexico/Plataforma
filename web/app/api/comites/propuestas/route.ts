@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseServer as supabase } from "@/lib/supabaseServer";
+import { requireUser, securityErrorResponse } from "@/lib/security/auth";
 
 function crearResumenAutomatico(data: any) {
   return `
@@ -39,6 +35,7 @@ export async function GET(req: NextRequest) {
   const id = searchParams.get("id");
 
   try {
+    await requireUser(req);
     if (id) {
       const { data, error } = await supabase
         .from("committee_proposals")
@@ -70,10 +67,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ ok: true, proposals: data || [] });
   } catch (err: any) {
-    return NextResponse.json(
-      { ok: false, error: err?.message || "Error interno" },
-      { status: 500 }
-    );
+    return securityErrorResponse(err);
   }
 }
 
@@ -108,11 +102,15 @@ function textoInvalido(texto: string) {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+  const user = await requireUser(req);
   const body = await req.json();
 
+  if (body?.user_id !== undefined || body?.actor_hash !== undefined || body?.role !== undefined) {
+    return NextResponse.json({ ok: false, error: "Client-supplied identity is not allowed" }, { status: 400 });
+  }
+
   const {
-    user_id,
-    actor_hash,
     module_id,
     module_name,
     level,
@@ -166,8 +164,8 @@ if (
   const { data, error } = await supabase
     .from("committee_proposals")
     .insert({
-      user_id,
-      actor_hash: actor_hash || null,
+      user_id: user.id,
+      actor_hash: user.id,
       module_id,
       module_name,
       level,
@@ -195,4 +193,7 @@ if (
   }
 
   return NextResponse.json({ ok: true, proposal: data });
+  } catch (error) {
+    return securityErrorResponse(error);
+  }
 }

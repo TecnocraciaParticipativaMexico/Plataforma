@@ -1,70 +1,27 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireUser, securityErrorResponse } from "@/lib/security/auth";
+import { assertNoClientIdentity } from "@/lib/security/authCore";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const actor_hash = body?.actor_hash;
-
-    if (!actor_hash) {
-      return NextResponse.json({
-        ok: false,
-        error: "actor_hash requerido",
-      });
-    }
-
-    const { data, error } = await supabaseServer
-      .from("append_only_event")
-      .select("*")
-      .eq("entity_type", "ProcesoCivico")
-      .eq("actor_hash", actor_hash)
+    const user = await requireUser(req);
+    const body = await req.json().catch(() => ({}));
+    assertNoClientIdentity(body);
+    const { data, error } = await supabaseServer.from("append_only_event").select("*")
+      .eq("entity_type", "ProcesoCivico").eq("actor_hash", user.id)
       .order("created_at", { ascending: false });
-
-    if (error) {
-      return NextResponse.json({
-        ok: false,
-        error: error.message,
-      });
+    if (error) throw error;
+    const processes = new Map<string, { process_id: string; titulo: string; estado: string; created_at: string }>();
+    for (const event of data || []) {
+      const current = processes.get(event.entity_id) ?? {
+        process_id: event.entity_id, titulo: "Denuncia ciudadana", estado: "Recibido", created_at: event.created_at,
+      };
+      if (event.event_type === "ProcessCreated") current.titulo = event.payload_json?.tipo_proceso || current.titulo;
+      processes.set(event.entity_id, current);
     }
-
-    const procesos = new Map<string, any>();
-
-    for (const evento of data || []) {
-      const processId = evento.entity_id;
-
-      if (!procesos.has(processId)) {
-        procesos.set(processId, {
-          process_id: processId,
-          titulo:
-            evento.payload_json?.tipo_proceso ||
-            evento.payload_json?.title ||
-            "Denuncia ciudadana",
-          estado: "Recibido",
-          created_at: evento.created_at,
-        });
-      }
-
-      if (evento.event_type === "StatusChanged") {
-        procesos.get(processId).estado =
-          evento.payload_json?.label ||
-          evento.payload_json?.status ||
-          "Estado actualizado";
-      }
-
-      if (evento.event_type === "ProcessCreated") {
-        procesos.get(processId).titulo =
-          evento.payload_json?.tipo_proceso || "Denuncia ciudadana";
-      }
-    }
-
-    return NextResponse.json({
-      ok: true,
-      denuncias: Array.from(procesos.values()),
-    });
-  } catch (error: any) {
-    return NextResponse.json({
-      ok: false,
-      error: error?.message || "Error cargando denuncias",
-    });
+    return NextResponse.json({ ok: true, denuncias: [...processes.values()] });
+  } catch (error) {
+    return securityErrorResponse(error);
   }
 }

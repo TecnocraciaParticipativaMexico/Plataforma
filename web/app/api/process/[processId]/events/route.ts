@@ -1,34 +1,19 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabaseServer";
+import { requireUser, securityErrorResponse } from "@/lib/security/auth";
+import { assertProcessOwner } from "@/lib/security/processOwnership";
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ processId: string }> }
-) {
+export async function GET(req: Request, context: { params: Promise<{ processId: string }> }) {
   try {
-    const { processId } = await params;
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    const { data, error } = await supabase
-      .from("append_only_event")
-      .select("*")
-      .eq("entity_id", processId)
-      .eq("entity_type", "ProcesoCivico")
+    const user = await requireUser(req);
+    const { processId } = await context.params;
+    await assertProcessOwner(processId, user.id);
+    const { data, error } = await supabaseServer.from("append_only_event").select("*")
+      .eq("entity_id", processId).eq("entity_type", "ProcesoCivico").eq("actor_hash", user.id)
       .order("created_at", { ascending: true });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
+    if (error) throw error;
     return NextResponse.json(data ?? []);
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err?.message || "Error interno" },
-      { status: 500 }
-    );
+  } catch (error) {
+    return securityErrorResponse(error);
   }
 }
