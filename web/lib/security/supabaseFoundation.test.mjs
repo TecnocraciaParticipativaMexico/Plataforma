@@ -8,6 +8,8 @@ const core = migration("20260805000100_security_core_schema.sql");
 const rls = migration("20260805000200_security_rls_and_storage.sql");
 const rpc = migration("20260805000300_security_transactional_rpcs.sql");
 const sqlTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_authorization.sql"), "utf8");
+const catalogTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_catalog_audit.sql"), "utf8");
+const baselineFixture = readFileSync(resolve(process.cwd(), "supabase/tests/fixtures/historical_baseline.sql"), "utf8");
 
 test("ownership is auth-user based and legacy hashes are not credentials", () => {
   assert.match(core, /owner_user_id uuid references auth\.users/);
@@ -67,9 +69,28 @@ test("evidence bucket is private with no overwrite or delete policy", () => {
 });
 
 test("SQL authorization tests cover negative access paths", () => {
+  assert.match(sqlTests, /select plan\(31\)/);
   assert.match(sqlTests, /user A cannot read process B/);
+  assert.match(sqlTests, /anon cannot read civic processes/);
   assert.match(sqlTests, /user cannot self-assign a role/);
   assert.match(sqlTests, /duplicate citizen vote is rejected transactionally/);
   assert.match(sqlTests, /member of committee A cannot act in committee B/);
+  assert.match(sqlTests, /member with an active conflict cannot vote/);
+  assert.match(sqlTests, /cannot close without a configured quorum rule/);
   assert.match(sqlTests, /unowned historical data stays closed/);
+});
+
+test("catalog audit checks runtime RLS, grants, definers and private Storage", () => {
+  assert.match(catalogTests, /select plan\(14\)/);
+  assert.match(catalogTests, /every sensitive table exists and has RLS enabled/);
+  assert.match(catalogTests, /anon has no direct write grant/);
+  assert.match(catalogTests, /no SECURITY DEFINER function grants EXECUTE to PUBLIC/);
+  assert.match(catalogTests, /evidence bucket is private/);
+});
+
+test("historical baseline remains a narrow local fixture", () => {
+  assert.match(baselineFixture, /LOCAL TEST FIXTURE ONLY/);
+  assert.match(baselineFixture, /create table public\.committee_applications/);
+  assert.doesNotMatch(baselineFixture, /create policy|security definer|storage\.buckets/i);
+  assert.doesNotMatch(core, /create table if not exists public\.committee_applications/);
 });

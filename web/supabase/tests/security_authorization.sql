@@ -1,7 +1,7 @@
 -- Run only against disposable Supabase local test DB: `supabase test db`.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(26);
+select plan(31);
 
 select has_table('public','civic_processes','canonical process table exists');
 select has_table('public','committee_memberships','committee membership table exists');
@@ -13,6 +13,7 @@ select ok((select public=false from storage.buckets where id='evidence'),'eviden
 select ok(not has_function_privilege('anon','public.cast_citizen_vote(uuid,text,uuid,uuid,uuid)','EXECUTE'),'anon cannot cast votes');
 select ok(not has_function_privilege('anon','public.close_committee_report(uuid,bigint,uuid)','EXECUTE'),'anon cannot close reports');
 select ok(not has_function_privilege('authenticated','private.write_security_audit(uuid,text,text,uuid,text,text,uuid,jsonb)','EXECUTE'),'users cannot forge audit');
+select ok(not has_schema_privilege('authenticated','private','USAGE'),'authenticated cannot directly address private helpers');
 select ok(exists(select 1 from pg_indexes where schemaname='public' and tablename='proposal_votes' and indexdef ilike '%unique%user_id%proposal_id%'),'vote uniqueness is database-enforced for concurrent requests');
 
 insert into auth.users(id,aud,role,email,encrypted_password,email_confirmed_at,created_at,updated_at)
@@ -56,6 +57,11 @@ select throws_ok(
 );
 reset role;
 
+set local role anon;
+select set_config('request.jwt.claim.sub','',true);
+select is((select count(*) from public.civic_processes),0::bigint,'anon cannot read civic processes');
+reset role;
+
 insert into public.committee_proposals(id,owner_user_id,user_id,module_id,title,status)
 values ('c0000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',1,'Test proposal','active');
 insert into public.committee_exam_attempts(
@@ -92,6 +98,8 @@ insert into public.committee_proposals(id,owner_user_id,user_id,module_id,title,
 values ('c0000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000002',2,'Other committee','active');
 insert into public.committee_reports(id,proposal_id,module_id,created_by,status)
 values ('ca000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000001',1,'30000000-0000-4000-8000-000000000003','under_review');
+insert into public.committee_member_conflicts(user_id,module_id,proposal_id,status,reason_code,recorded_by)
+values ('10000000-0000-4000-8000-000000000001',1,'c0000000-0000-4000-8000-000000000001','active','TEST_CONFLICT','30000000-0000-4000-8000-000000000003');
 set local role authenticated;
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',true);
 select throws_ok(
@@ -102,6 +110,20 @@ select throws_ok(
   $$select public.close_committee_report('ca000000-0000-4000-8000-000000000001',1,null)$$,
   '42501',null,'ordinary committee member cannot close a report'
 );
+select throws_ok(
+  $$select public.cast_technical_vote('ca000000-0000-4000-8000-000000000001','approve','Reasoning long enough for this authorization test','ea000000-0000-4000-8000-000000000001',null)$$,
+  '42501',null,'member with an active conflict cannot vote'
+);
+reset role;
+
+insert into public.committee_memberships(user_id,module_id,membership_role,status,created_by)
+values ('10000000-0000-4000-8000-000000000001',1,'admin','active','30000000-0000-4000-8000-000000000003');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',true);
+select throws_ok(
+  $$select public.close_committee_report('ca000000-0000-4000-8000-000000000001',1,null)$$,
+  '55000',null,'committee admin cannot close without a configured quorum rule'
+);
 reset role;
 
 insert into public.civic_processes(id,owner_user_id,process_type,title,idempotency_key)
@@ -110,6 +132,7 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',true);
 select is((select count(*) from public.civic_processes where id='f0000000-0000-4000-8000-000000000001'),0::bigint,'unowned historical data stays closed');
 select is((select count(*) from storage.objects where bucket_id='evidence'),0::bigint,'user cannot list foreign evidence');
+select ok(not has_table_privilege('authenticated','public.evidence_pointers','INSERT'),'client cannot register an evidence pointer directly');
 
 select * from finish();
 rollback;

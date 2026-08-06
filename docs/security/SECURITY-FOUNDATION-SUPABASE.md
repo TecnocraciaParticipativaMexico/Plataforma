@@ -18,7 +18,7 @@ Primary threats addressed:
 
 ## Inventory and baseline limitation
 
-Before this phase the repository contained one migration only: `20260730000000_committee_exam_attempts.sql`. Application code referenced at least twelve tables, five RPCs and the `evidence` bucket whose original DDL was not versioned. There was no `supabase/config.toml` and no Supabase CLI in the execution environment.
+Before this phase the repository contained one migration only: `20260730000000_committee_exam_attempts.sql`. Application code referenced at least twelve tables, five RPCs and the `evidence` bucket whose original DDL was not versioned. Phase 2.5 added local-only CLI configuration and a narrow historical fixture; neither is linked to a remote project.
 
 The existing exam migration itself references `committee_applications`, proving it depends on an omitted historical baseline. Consequently a clean `supabase db reset` cannot be claimed until that baseline is pulled and reviewed. These migrations are additive and use nullable ownership for historical compatibility; they never infer ownership from `actor_hash`.
 
@@ -172,9 +172,40 @@ npm run typecheck
 npm run build
 ```
 
-`web/supabase/tests/security_authorization.sql` contains 26 pgTAP assertions covering RLS, ownership, role/membership escalation, audit immutability, vote uniqueness, server weight, foreign attempts, cross-committee access, report closure, private Storage and historical rows.
+`web/supabase/tests/security_authorization.sql` contains 31 pgTAP assertions covering RLS, ownership, anon isolation, role/membership escalation, audit immutability, vote uniqueness, server weight, foreign attempts, cross-committee access, active conflicts, report closure without authority/quorum, private Storage and historical rows. `security_catalog_audit.sql` adds 14 catalog assertions.
 
-In the current environment `supabase` and `npm` are unavailable, and the missing historical schema prevents a truthful clean reset. SQL was therefore reviewed statically but not asserted against a running database. Never run these migrations first against production; restore/pull the baseline into version control, reset a disposable local project, run tests and inspect `supabase db diff` and advisors.
+See `LOCAL-SUPABASE-VALIDATION.md` for the isolated fixture procedure. Never run these migrations first against production; validate a reviewed historical baseline in a disposable project, run tests and inspect advisors before any remote proposal.
+
+## Validation executed (Phase 2.5)
+
+### Validated locally
+
+- Branch, clean starting tree, exact Phase 2 SHA and Draft PR base/head.
+- Official Supabase CLI 2.111.0 discovery and local `config.toml` generation.
+- Node 24.14.0 and pnpm 11.9.0 from the bundled workspace runtime.
+- Static migration contracts and application security tests through the repository Node suite.
+- `react-leaflet` compatibility from its published peer metadata and exact 5.0.0 lockfile installation.
+- TypeScript and the production build. Build-time Supabase variables were non-secret loopback placeholders scoped to one process.
+- Phase 1 containment routes remained unchanged.
+
+### Not validated in PostgreSQL/Supabase local
+
+`supabase start` failed before database creation with Docker/Podman unavailable. Therefore `db reset`, SQL compilation, pgTAP, catalog RLS/grants, Storage catalog state, RPC creation and restart reproducibility are **not** claimed as executed. Static tests are not a substitute.
+
+### Validated only statically
+
+- Dependency classification and narrow fixture derivation.
+- Function bodies, fixed search paths, explicit revokes/grants, `auth.uid()` use, table effects and locking/error paths.
+- RLS and Storage policy source, absence of generic swallowed exceptions and unchanged containment endpoints.
+
+### Pending real-baseline confirmation
+
+- Exact historical/deployed types, constraints, triggers, policies, overloads and owners.
+- Compatibility of `IF NOT EXISTS` tables/columns with same-named pre-existing objects.
+- Accumulation with any unversioned permissive policy.
+- Real concurrent-vote execution. Unique indexes provide database arbitration by design, but the two-session behavior has not been exercised here.
+
+The detailed gaps, function matrix and reproducible procedure are in `SCHEMA-BASELINE-GAPS.md`, `SECURITY-DEFINER-REVIEW.md` and `LOCAL-SUPABASE-VALIDATION.md`.
 
 ## Application state and remaining risks
 
