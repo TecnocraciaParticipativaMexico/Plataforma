@@ -68,3 +68,9 @@ No production system, real user, remote database, Storage bucket, or third-party
 ## Phase 2 follow-up
 
 The stacked security-foundation work is documented in `docs/security/SECURITY-FOUNDATION-SUPABASE.md`. It versions ownership, roles, memberships, RLS, private Storage, idempotency and transactional RPCs. Phase 1 fail-closed responses remain in place until a separate Phase 3 deliberately integrates and tests the HTTP routes.
+
+## Phase 3 follow-up
+
+Phase 3 is documented in `docs/security/SECURITY-ROUTE-REACTIVATION.md`. The temporary blocks for civic process creation/reads/notes/transitions, citizen votes, committee report creation/observation/technical vote/closure, own application reads, reputation reads and private evidence downloads were replaced by user-JWT RLS or the corresponding Phase 2 transactional RPC.
+
+The historical containment remains authoritative for surfaces that still lack a complete backend boundary: legacy applications remain 410; proposal creation and administrative application review remain 403; process-chain verification, evidence upload and reputation mutation remain 503; and the unsafe map remains 403. No Phase 1 history was removed.

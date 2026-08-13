@@ -12,6 +12,7 @@ const catalogTests = readFileSync(resolve(process.cwd(), "supabase/tests/securit
 const baselineFixture = readFileSync(resolve(process.cwd(), "supabase/tests/fixtures/historical_baseline.sql"), "utf8");
 const ciWorkflow = readFileSync(resolve(process.cwd(), "../.github/workflows/security-supabase-validation.yml"), "utf8");
 const concurrencyTest = readFileSync(resolve(process.cwd(), "supabase/tests/security_vote_concurrency.sh"), "utf8");
+const httpTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_http_phase3.sh"), "utf8");
 
 test("ownership is auth-user based and legacy hashes are not credentials", () => {
   assert.match(core, /owner_user_id uuid references auth\.users/);
@@ -115,4 +116,12 @@ test("concurrency validation requires one success and one persisted vote", () =>
   assert.match(concurrencyTest, /first_status -eq 0 && \$second_status -ne 0/);
   assert.match(concurrencyTest, /persisted.*count\(\*\)/s);
   assert.match(concurrencyTest, /"\$persisted" != "1"/);
+});
+
+test("Phase 3 HTTP validation covers all 22 required controls", () => {
+  for (let index = 1; index <= 22; index += 1) {
+    assert.match(httpTests, new RegExp(`[' ]${index} `));
+  }
+  assert.match(httpTests, /HTTP_PHASE3_TESTS=22 PASS/);
+  assert.match(ciWorkflow, /Run 22 Phase 3 HTTP authorization tests/);
 });

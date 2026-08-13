@@ -1,198 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer as supabase } from "@/lib/supabaseServer";
-import { requireUser, securityErrorResponse } from "@/lib/security/auth";
-
-function crearResumenAutomatico(data: any) {
-  return `
-Resumen ejecutivo:
-${data.title}
-
-Problema:
-${data.problem}
-
-Solución propuesta:
-${data.proposed_solution}
-
-Impacto esperado:
-${data.expected_impact || "No especificado"}
-
-Riesgos:
-${data.risks || "No especificados"}
-
-Urgencia:
-${data.urgency || "Media"}
-
-Puntos críticos:
-- Revisar evidencia disponible.
-- Evaluar costo social y costo económico.
-- Confirmar impacto territorial.
-- Someter a estudio técnico y voto ponderado.
-`.trim();
-}
+import { requireUserContext, securityErrorResponse } from "@/lib/security/auth";
+import { rejectClientAuthority, requireObject, requireUuid } from "@/lib/security/routeSecurity";
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const id = searchParams.get("id");
-
   try {
-    await requireUser(req);
-    if (id) {
-      const { data, error } = await supabase
-        .from("committee_proposals")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) {
-        return NextResponse.json(
-          { ok: false, error: error.message },
-          { status: 500 }
-        );
-      }
-
-      return NextResponse.json({ ok: true, proposal: data });
-    }
-
-    const { data, error } = await supabase
-      .from("committee_proposals")
-      .select("*")
+    const { supabase } = await requireUserContext(req);
+    const id = req.nextUrl.searchParams.get("id");
+    let query = supabase.from("committee_proposals")
+      .select("id,module_id,title,status,created_at,updated_at")
       .order("created_at", { ascending: false });
-
-    if (error) {
-      return NextResponse.json(
-        { ok: false, error: error.message },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ ok: true, proposals: data || [] });
-  } catch (err: any) {
-    return securityErrorResponse(err);
+    if (id) query = query.eq("id", requireUuid(id, "proposal ID"));
+    const { data, error } = await query;
+    if (error) throw error;
+    return NextResponse.json({ ok: true, proposals: data ?? [] });
+  } catch (error) {
+    return securityErrorResponse(error);
   }
-}
-
-function textoInvalido(texto: string) {
-  const t = texto.toLowerCase().trim();
-
-  const bloqueadas = [
-    "ching",
-    "pendej",
-    "puto",
-    "puta",
-    "mierda",
-    "verga",
-    "jaja",
-    "asdf",
-    "qwerty",
-    "test",
-    "prueba",
-    "tu mama",
-    "tu mamá",
-    "tu papa",
-    "tu papá",
-  ];
-
-  if (t.length < 20) return true;
-
-  if (bloqueadas.some((p) => t.includes(p))) {
-    return true;
-  }
-
-  return false;
 }
 
 export async function POST(req: NextRequest) {
   try {
-  const user = await requireUser(req);
-  const body = await req.json();
-
-  if (body?.user_id !== undefined || body?.actor_hash !== undefined || body?.role !== undefined) {
-    return NextResponse.json({ ok: false, error: "Client-supplied identity is not allowed" }, { status: 400 });
-  }
-
-  const {
-    module_id,
-    module_name,
-    level,
-    municipality,
-    state,
-    title,
-    problem,
-    proposed_solution,
-    evidence,
-    expected_impact,
-    urgency,
-    estimated_cost,
-    risks,
-  } = body;
-
-if (
-  !title ||
-  !problem ||
-  !proposed_solution ||
-  !expected_impact ||
-  !module_id ||
-  !module_name ||
-  !level
-) {
-  return NextResponse.json(
-    {
-      ok: false,
-      error: "Completa todos los campos obligatorios.",
-    },
-    { status: 400 }
-  );
-}
-
-if (
-  textoInvalido(problem) ||
-  textoInvalido(proposed_solution) ||
-  textoInvalido(expected_impact)
-) {
-  return NextResponse.json(
-    {
-      ok: false,
-      error:
-        "La propuesta parece incompleta, inválida o contiene lenguaje no permitido.",
-    },
-    { status: 400 }
-  );
-}
-
-  const ai_summary = crearResumenAutomatico(body);
-
-  const { data, error } = await supabase
-    .from("committee_proposals")
-    .insert({
-      user_id: user.id,
-      actor_hash: user.id,
-      module_id,
-      module_name,
-      level,
-      municipality: municipality || null,
-      state: state || null,
-      title,
-      problem,
-      proposed_solution,
-      evidence: evidence || null,
-      expected_impact: expected_impact || null,
-      urgency: urgency || "Media",
-      estimated_cost: estimated_cost || null,
-      risks: risks || null,
-      ai_summary,
-      status: "En estudio",
-    })
-    .select()
-    .single();
-
-  if (error) {
+    await requireUserContext(req);
+    const body = requireObject(await req.json().catch(() => ({})));
+    rejectClientAuthority(body);
     return NextResponse.json(
-      { ok: false, error: error.message },
-      { status: 500 }
+      { ok: false, error: "Proposal creation authority is not defined" },
+      { status: 403 },
     );
-  }
-
-  return NextResponse.json({ ok: true, proposal: data });
   } catch (error) {
     return securityErrorResponse(error);
   }

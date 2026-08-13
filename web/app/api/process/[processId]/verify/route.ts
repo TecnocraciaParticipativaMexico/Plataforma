@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
-import { requireUser, securityErrorResponse } from "@/lib/security/auth";
-import { assertProcessOwner } from "@/lib/security/processOwnership";
+import { requireUserContext, securityErrorResponse } from "@/lib/security/auth";
+import { requireUuid } from "@/lib/security/routeSecurity";
 
 export async function GET(req: Request, context: { params: Promise<{ processId: string }> }) {
   try {
-    const user = await requireUser(req);
+    await requireUserContext(req);
     const { processId } = await context.params;
-    await assertProcessOwner(processId, user.id);
-    const { data, error } = await supabaseServer.rpc("verify_chain_integrity_for_process", { p_process_id: processId });
-    if (error) throw error;
-    return NextResponse.json({ ok: true, result: data?.[0] ?? data });
+    requireUuid(processId, "process ID");
+    return NextResponse.json(
+      { ok: false, error: "Process verification is unavailable until a canonical verification RPC exists" },
+      { status: 503 },
+    );
   } catch (error) {
     return securityErrorResponse(error);
   }
