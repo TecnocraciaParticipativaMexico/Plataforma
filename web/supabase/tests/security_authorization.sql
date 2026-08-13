@@ -57,10 +57,10 @@ select throws_ok(
 );
 reset role;
 
-set local role anon;
-select set_config('request.jwt.claim.sub','',true);
-select is((select count(*) from public.civic_processes),0::bigint,'anon cannot read civic processes');
-reset role;
+select ok(
+  not has_table_privilege('anon','public.civic_processes','SELECT'),
+  'anon cannot read civic processes'
+);
 
 insert into public.committee_proposals(id,owner_user_id,user_id,module_id,title,status)
 values ('c0000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',1,'Test proposal','active');
