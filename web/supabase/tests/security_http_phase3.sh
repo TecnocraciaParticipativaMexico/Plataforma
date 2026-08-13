@@ -48,7 +48,8 @@ curl -fsS "$app_url" >/dev/null
 response_body=""
 request() {
   local method="$1" path="$2" token="$3" body="${4:-}"
-  local output="${results_dir}/response.json" args=(--silent --show-error --output "$output" --write-out '%{http_code}' -X "$method")
+  local output="${results_dir}/response.json"
+  local args=(--silent --show-error --output "$output" --write-out '%{http_code}' -X "$method")
   [[ -n "$token" ]] && args+=(-H "Authorization: Bearer $token")
   [[ -n "$body" ]] && args+=(-H 'Content-Type: application/json' --data "$body")
   local status
