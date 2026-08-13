@@ -142,7 +142,7 @@ jobs:
           fi
           while IFS= read -r file; do
             if grep -IE 'postgres(ql)?://[^[:space:]]+:[^[:space:]]+@' "$file" \
-              | grep -Fv 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' \
+              | grep -Ev 'postgres(ql)?://[^[:space:]]+:[^[:space:]]+@(127\.0\.0\.1|localhost):' \
               | grep -q .; then
               echo "Non-local database connection string detected; values suppressed." >&2
               exit 1
