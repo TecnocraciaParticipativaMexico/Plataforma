@@ -81,8 +81,8 @@ jobs:
         run: |
           set -euo pipefail
           output="$(mktemp)"
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" \
-            --workdir "${{ steps.isolated.outputs.root }}" test db \
+          cd "${{ steps.isolated.outputs.root }}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
             supabase/tests/security_authorization.sql --local | tee "$output"
           grep -Eq 'Tests=31([^0-9]|$)' "$output"
 
@@ -91,8 +91,8 @@ jobs:
         run: |
           set -euo pipefail
           output="$(mktemp)"
-          npx --yes "supabase@${SUPABASE_CLI_VERSION}" \
-            --workdir "${{ steps.isolated.outputs.root }}" test db \
+          cd "${{ steps.isolated.outputs.root }}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
             supabase/tests/security_catalog_audit.sql --local | tee "$output"
           grep -Eq 'Tests=14([^0-9]|$)' "$output"
 
