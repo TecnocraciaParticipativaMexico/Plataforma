@@ -85,7 +85,7 @@ test("SQL authorization tests cover negative access paths", () => {
 test("catalog audit checks runtime RLS, grants, definers and private Storage", () => {
   assert.match(catalogTests, /select plan\(14\)/);
   assert.match(catalogTests, /every sensitive table exists and has RLS enabled/);
-  assert.match(catalogTests, /anon has no direct write grant/);
+  assert.match(catalogTests, /anon has no sensitive public-table writes or evidence policy/);
   assert.match(catalogTests, /no SECURITY DEFINER function grants EXECUTE to PUBLIC/);
   assert.match(catalogTests, /evidence bucket is private/);
 });
