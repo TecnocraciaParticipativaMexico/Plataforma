@@ -13,15 +13,19 @@ test("la ruta heredada no permite crear ni modificar solicitudes", () => {
 
 test("la revisión administrativa y el cierre de dictamen fallan cerrados", () => {
   assert.match(source("app/api/comites/solicitudes/route.ts"), /Administrative review is not enabled securely yet/);
-  assert.match(source("app/comites/dictamenes/cerrar/route.ts"), /status:\s*403/);
+  const closure = source("app/comites/dictamenes/cerrar/route.ts");
+  assert.match(closure, /rpc\("close_committee_report"/);
+  assert.match(closure, /requireUserContext/);
+  assert.doesNotMatch(closure, /\.update\(/);
 });
 
 test("votos y reputación no aceptan puntajes del navegador", () => {
   const votes = source("app/api/comites/votos/route.ts");
-  assert.match(votes, /assertNoClientScore/);
-  assert.match(votes, /status:\s*503/);
+  assert.match(votes, /rejectClientAuthority/);
+  assert.match(votes, /rpc\("cast_citizen_vote"/);
+  assert.doesNotMatch(votes, /p_.*(score|weight)/);
   const reputation = source("app/api/reputacion/route.ts");
-  assert.match(reputation, /comprehension_score/);
+  assert.match(reputation, /rejectClientAuthority/);
   assert.match(reputation, /server-verified source event/);
 });
 

@@ -1,34 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
-import { requireUser, securityErrorResponse } from "@/lib/security/auth";
+import { requireUserContext, securityErrorResponse } from "@/lib/security/auth";
+import { rejectClientAuthority, requireObject } from "@/lib/security/routeSecurity";
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await requireUser(req);
-    if (req.nextUrl.searchParams.has("actor_hash")) {
+    const { supabase } = await requireUserContext(req);
+    if (req.nextUrl.searchParams.has("actor_hash") || req.nextUrl.searchParams.has("user_id")) {
       return NextResponse.json({ ok: false, error: "Client-supplied identity is not allowed" }, { status: 400 });
     }
-    const { data, error } = await supabaseServer.from("civic_reputation").select("*")
-      .eq("actor_hash", user.id).maybeSingle();
+    const { data, error } = await supabase.from("reputation_events")
+      .select("points,rule_version,created_at").order("created_at", { ascending: false });
     if (error) throw error;
-    return NextResponse.json({ ok: true, reputacion: data || null });
-  } catch (error) {
-    return securityErrorResponse(error);
-  }
+    const total = (data ?? []).reduce((sum, event) => sum + Number(event.points), 0);
+    return NextResponse.json({ ok: true, total, events: data ?? [] });
+  } catch (error) { return securityErrorResponse(error); }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    await requireUser(req);
-    const body = await req.json().catch(() => ({}));
-    if (body?.actor_hash !== undefined || body?.user_id !== undefined || body?.comprehension_score !== undefined) {
-      return NextResponse.json({ ok: false, error: "Client-supplied identity or score is not allowed" }, { status: 400 });
-    }
+    await requireUserContext(req);
+    const body = requireObject(await req.json().catch(() => ({})));
+    rejectClientAuthority(body);
     return NextResponse.json(
-      { ok: false, error: "Reputation updates require a server-verified source event." },
+      { ok: false, error: "Reputation updates require a server-verified source event" },
       { status: 503 },
     );
-  } catch (error) {
-    return securityErrorResponse(error);
-  }
+  } catch (error) { return securityErrorResponse(error); }
 }
