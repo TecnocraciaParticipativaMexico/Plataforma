@@ -62,9 +62,6 @@ type DbError = { code?: string; message?: string };
 
 export function databaseErrorResponse(error: DbError, fallback = "Request could not be completed") {
   const marker = error.message ?? "";
-  if (error.code === "23505" || /CONFLICT|ALREADY_USED|EXISTS/.test(marker)) {
-    return NextResponse.json({ ok: false, error: "Conflicting request" }, { status: 409 });
-  }
   if (error.code === "42501" || /FORBIDDEN|REQUIRED|ACTIVE_CONFLICT|QUALIFICATION_INVALID/.test(marker)) {
     return NextResponse.json({ ok: false, error: "Not authorized" }, { status: 403 });
   }
@@ -73,6 +70,9 @@ export function databaseErrorResponse(error: DbError, fallback = "Request could 
   }
   if (error.code === "40001" || /VERSION_CONFLICT/.test(marker)) {
     return NextResponse.json({ ok: false, error: "Resource version conflict" }, { status: 409 });
+  }
+  if (error.code === "23505" || /VOTE_CONFLICT|ALREADY_USED|EXISTS/.test(marker)) {
+    return NextResponse.json({ ok: false, error: "Conflicting request" }, { status: 409 });
   }
   if (/QUORUM_RULE_NOT_CONFIGURED/.test(marker)) {
     return NextResponse.json({ ok: false, error: "Committee quorum policy is not active." }, { status: 503 });
