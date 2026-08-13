@@ -207,6 +207,14 @@ See `LOCAL-SUPABASE-VALIDATION.md` for the isolated fixture procedure. Never run
 
 The detailed gaps, function matrix and reproducible procedure are in `SCHEMA-BASELINE-GAPS.md`, `SECURITY-DEFINER-REVIEW.md` and `LOCAL-SUPABASE-VALIDATION.md`.
 
+## Disposable CI validation
+
+`.github/workflows/security-supabase-validation.yml` provides the real PostgreSQL/Supabase execution path on an ephemeral GitHub-hosted `ubuntu-latest` runner. It requires no Docker installation on Susan's computer and no production secret. Its GitHub token permission is limited to `contents: read`.
+
+The workflow constructs a temporary project, promotes the narrow historical fixture to an earlier migration **only inside the runner**, applies the unchanged production migrations in chronological order, executes the 31 authorization and 14 catalog assertions, and verifies duplicate-vote arbitration with two concurrent PostgreSQL connections. It also runs application checks and a value-suppressing diff secret scan. No generated local credential or database is retained as an artifact.
+
+A successful CI run validates syntax, compilation and behavior against the documented local fixture. It does **not** prove that same-named objects, types, policies, overloads or historical data in Supabase production are compatible. Remote compatibility remains pending a separately authorized, reviewed baseline; this workflow never links to or queries that project.
+
 ## Application state and remaining risks
 
 All Phase 1 403/410/503 controls remain. No HTTP route is reactivated by these migrations. Remaining work includes:

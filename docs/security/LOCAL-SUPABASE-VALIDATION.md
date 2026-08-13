@@ -2,6 +2,25 @@
 
 These instructions operate only on a disposable local stack. Do not run `supabase link`, `db push`, `migration repair`, remote `secrets`, or any command with `--linked`.
 
+## GitHub Actions (recommended for this repository)
+
+Susan does **not** need Docker, WSL, Ubuntu or virtualization on her computer. `.github/workflows/security-supabase-validation.yml` runs the complete disposable validation on GitHub's temporary `ubuntu-latest` runner for relevant pull-request changes or through `workflow_dispatch`.
+
+The workflow has only `contents: read`, consumes no repository secrets, pins Supabase CLI 2.111.0, and uses only the local Supabase addresses and credentials generated/expected inside the runner. It never invokes `supabase link`, `db push` or a remote project operation.
+
+During the run it:
+
+1. creates a temporary directory outside the checkout;
+2. copies local configuration, real migrations and tests;
+3. copies `historical_baseline.sql` into that temporary directory under the earlier test-only timestamp `20260729000000`;
+4. starts local Supabase and resets it from zero;
+5. executes 31 authorization and 14 catalog pgTAP assertions;
+6. opens two concurrent `psql` sessions and requires one persisted vote plus one rejected duplicate;
+7. runs Node security tests, TypeScript, build, focused lint, diff checks and a non-mutating dependency audit; and
+8. stops the stack without a backup. The runner and its local credentials are then destroyed by GitHub.
+
+The fixture never enters `migrations/` in Git, and the workflow verifies this invariant. GitHub job summaries contain counts and versions only—no database, `.env`, generated keys or raw service logs are uploaded as artifacts.
+
 ## Prerequisites
 
 - Docker Desktop or Podman running locally.
@@ -67,7 +86,7 @@ npm run build
 
 Report global lint separately from lint on modified TypeScript/JavaScript files. A build failure caused only by blocked Google Fonts network access is distinct from a TypeScript or bundling failure and must not be hidden.
 
-## Current execution record (2026-08-05)
+## Current execution record
 
 - Official Supabase CLI 2.111.0: available through the bundled Node/pnpm runtime.
 - `supabase start`: blocked before database creation because neither Docker nor Podman is installed/on `PATH`.
@@ -79,3 +98,5 @@ Report global lint separately from lint on modified TypeScript/JavaScript files.
 - Global `npm run lint`: 59 existing findings (42 errors, 17 warnings). Lint on the modified JavaScript test passed.
 - `npm audit`: 9 findings in the full dependency tree (1 low, 8 high); no automatic or forced update was applied in this focused phase.
 - No remote connection, schema download or remote mutation was attempted.
+
+The GitHub Actions run record is the authoritative execution evidence once the workflow completes. A passing fixture-based run proves reproducibility against the narrow repository fixture, not compatibility with an unknown production baseline.

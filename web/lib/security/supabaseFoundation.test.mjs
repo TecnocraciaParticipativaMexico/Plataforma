@@ -10,6 +10,8 @@ const rpc = migration("20260805000300_security_transactional_rpcs.sql");
 const sqlTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_authorization.sql"), "utf8");
 const catalogTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_catalog_audit.sql"), "utf8");
 const baselineFixture = readFileSync(resolve(process.cwd(), "supabase/tests/fixtures/historical_baseline.sql"), "utf8");
+const ciWorkflow = readFileSync(resolve(process.cwd(), "../.github/workflows/security-supabase-validation.yml"), "utf8");
+const concurrencyTest = readFileSync(resolve(process.cwd(), "supabase/tests/security_vote_concurrency.sh"), "utf8");
 
 test("ownership is auth-user based and legacy hashes are not credentials", () => {
   assert.match(core, /owner_user_id uuid references auth\.users/);
@@ -93,4 +95,24 @@ test("historical baseline remains a narrow local fixture", () => {
   assert.match(baselineFixture, /create table public\.committee_applications/);
   assert.doesNotMatch(baselineFixture, /create policy|security definer|storage\.buckets/i);
   assert.doesNotMatch(core, /create table if not exists public\.committee_applications/);
+});
+
+test("CI validation is disposable, secret-free and preserves real migrations", () => {
+  assert.match(ciWorkflow, /runs-on: ubuntu-latest/);
+  assert.match(ciWorkflow, /contents: read/);
+  assert.match(ciWorkflow, /SUPABASE_CLI_VERSION: 2\.111\.0/);
+  assert.match(ciWorkflow, /20260729000000_local_historical_baseline\.sql/);
+  assert.match(ciWorkflow, /db reset --local --no-seed/);
+  assert.match(ciWorkflow, /Tests=31/);
+  assert.match(ciWorkflow, /Tests=14/);
+  assert.doesNotMatch(ciWorkflow, /supabase (link|db push|migration repair)/);
+  assert.doesNotMatch(ciWorkflow, /secrets\./);
+});
+
+test("concurrency validation requires one success and one persisted vote", () => {
+  assert.match(concurrencyTest, /run_vote for[\s\S]*&/);
+  assert.match(concurrencyTest, /run_vote against[\s\S]*&/);
+  assert.match(concurrencyTest, /first_status -eq 0 && \$second_status -ne 0/);
+  assert.match(concurrencyTest, /persisted.*count\(\*\)/s);
+  assert.match(concurrencyTest, /"\$persisted" != "1"/);
 });
