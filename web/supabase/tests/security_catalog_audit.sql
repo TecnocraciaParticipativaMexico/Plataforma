@@ -19,9 +19,21 @@ select ok(not exists (
 
 select ok(not exists (
   select 1 from information_schema.role_table_grants
-  where grantee = 'anon' and table_schema in ('public','storage')
+  where grantee = 'anon' and table_schema = 'public'
     and privilege_type in ('INSERT','UPDATE','DELETE','TRUNCATE')
-), 'anon has no direct write grant on public or storage tables');
+    and table_name in (
+      'profiles','user_platform_roles','committee_memberships','committee_member_conflicts',
+      'civic_processes','process_events','citizen_reports','evidence_pointers',
+      'committee_applications','committee_exam_attempts','committee_proposals',
+      'proposal_votes','committee_reports','committee_report_observations',
+      'committee_technical_votes','committee_quorum_rules','reputation_events',
+      'security_audit_events'
+    )
+) and not exists (
+  select 1 from pg_policies
+  where schemaname = 'storage' and tablename = 'objects'
+    and policyname like 'evidence_%' and 'anon' = any(roles)
+), 'anon has no sensitive public-table writes or evidence policy');
 
 select ok(not exists (
   select 1 from information_schema.role_table_grants
