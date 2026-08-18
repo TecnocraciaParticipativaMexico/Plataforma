@@ -5,7 +5,7 @@ This is a source review. Runtime owner, ACL and catalog values remain subject to
 | Function | Definer / fixed search path | Caller | Identity and authorization | Writes / concurrency / result |
 |---|---|---|---|---|
 | `private.has_platform_role(text[])` | Yes / `pg_catalog, public, private` | Used by policy; function ACL authenticated + service role, but private schema has no client `USAGE` | `auth.uid()`, active nonexpired DB grant | Read-only boolean. Stable. |
-| `private.has_committee_membership(smallint,text[])` | Yes / same | Used by policy; same private-schema barrier | `auth.uid()`, module, role, active validity window | Read-only boolean. Stable. |
+| `private.has_committee_membership(integer,text[])` | Yes / same | Used by policy; accepts both legacy integer and canonical smallint module identifiers | `auth.uid()`, module, role, active validity window | Read-only boolean. Stable. |
 | `private.write_security_audit(...)` | Yes / same | No client grant | Caller RPC supplies actor already obtained from `auth.uid()` | Inserts one audit event; returns UUID; rejects sensitive metadata keys through table constraint. |
 | `public.create_civic_process(...)` | Yes / same | authenticated | Requires `auth.uid()`; ignores client identity | Inserts owned process/event/audit. Unique idempotency; returns process UUID. |
 | `public.add_civic_process_note(...)` | Yes / same | authenticated | Owner from locked process must equal `auth.uid()` | `FOR UPDATE`; allowed state; unique event idempotency; returns event UUID. |

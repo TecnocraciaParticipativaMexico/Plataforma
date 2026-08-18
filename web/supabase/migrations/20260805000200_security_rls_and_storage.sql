@@ -18,7 +18,7 @@ revoke all on function private.has_platform_role(text[]) from public, anon, auth
 grant execute on function private.has_platform_role(text[]) to authenticated, service_role;
 
 create or replace function private.has_committee_membership(
-  p_module_id smallint,
+  p_module_id integer,
   p_roles text[] default array['member','reviewer','admin']::text[]
 )
 returns boolean
@@ -37,8 +37,8 @@ as $$
       and (m.valid_until is null or m.valid_until > now())
   );
 $$;
-revoke all on function private.has_committee_membership(smallint, text[]) from public, anon, authenticated;
-grant execute on function private.has_committee_membership(smallint, text[]) to authenticated, service_role;
+revoke all on function private.has_committee_membership(integer, text[]) from public, anon, authenticated;
+grant execute on function private.has_committee_membership(integer, text[]) to authenticated, service_role;
 
 do $$
 declare t text;
