@@ -3,8 +3,6 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(25);
 
-select is((select count(*) from public.committee_applications where id::text like '71000000-%'),7::bigint,
-  'all seven legacy applications survive');
 select is((select count(*) from public.committee_applications where id::text like '71000000-%' and owner_user_id is not null),3::bigint,
   'only three applications with verified auth users receive owners');
 select is((select count(*) from public.committee_applications where id::text like '71000000-%' and owner_user_id is null),4::bigint,
