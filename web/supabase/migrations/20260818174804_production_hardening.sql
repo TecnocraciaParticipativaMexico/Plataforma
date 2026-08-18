@@ -274,9 +274,11 @@ begin
     or (v_app.review_status='Suspendida' and v_target in('Integrada','Rechazada'))) then
     raise exception 'INVALID_STATE_TRANSITION' using errcode='22023';
   end if;
-  update public.committee_applications set review_status=v_target,state_version=state_version+1,reviewed_by=v_user,
-    reviewed_at=clock_timestamp(),review_idempotency_key=p_idempotency_key where id=p_application_id
-    returning committee_applications.review_status,committee_applications.state_version into review_status,state_version;
+  update public.committee_applications as app
+    set review_status=v_target,state_version=app.state_version+1,reviewed_by=v_user,
+      reviewed_at=clock_timestamp(),review_idempotency_key=p_idempotency_key
+    where app.id=p_application_id
+    returning app.review_status,app.state_version into review_status,state_version;
   perform private.write_security_audit(v_user,'application.review','committee_application',p_application_id,'allowed','STATE_CHANGED',p_request_id,
     jsonb_build_object('action',p_action,'module_id',v_app.module_id));
   return next;
