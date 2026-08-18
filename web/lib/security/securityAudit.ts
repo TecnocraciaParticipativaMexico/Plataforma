@@ -20,6 +20,12 @@ export async function auditedDatabaseErrorResponse(
   const reasonCode = typeof error.code === "string" && /^[A-Z0-9]{4,10}$/.test(error.code)
     ? `DB_${error.code}`
     : "DB_REJECTED";
+  console.warn(JSON.stringify({
+    event: "security.database_rejection",
+    reason_code: reasonCode,
+    action: context.action,
+    request_id: context.requestId,
+  }));
   try {
     await supabaseServer.rpc("record_security_rejection", {
       p_actor_user_id: context.actorUserId,

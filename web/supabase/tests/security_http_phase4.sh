@@ -5,7 +5,13 @@ api_url="${API_URL:?local API URL required}"; anon_key="${ANON_KEY:?local anon k
 db_url="${DB_URL:?local DB URL required}"; app_url='http://127.0.0.1:3000'
 case "$api_url|$db_url" in http://127.0.0.1:*\|postgresql://postgres:postgres@127.0.0.1:*) ;; *) echo 'Loopback services required.' >&2; exit 1;; esac
 work="$(mktemp -d)"; app_log="$work/app.log"
-cleanup(){ [[ -n "${app_pid:-}" ]] && kill "$app_pid" 2>/dev/null || true; rm -rf "$work"; }
+cleanup(){
+  local status=$?
+  [[ -n "${app_pid:-}" ]] && kill "$app_pid" 2>/dev/null || true
+  if [[ "$status" -ne 0 ]]; then tail -n 80 "$app_log" >&2 || true; fi
+  rm -rf "$work"
+  return "$status"
+}
 trap cleanup EXIT
 
 signup(){ curl -fsS -H "apikey: $anon_key" -H 'Content-Type: application/json' -d "{\"email\":\"$1\",\"password\":\"Local-Phase4-Password!\"}" "$api_url/auth/v1/signup"; }

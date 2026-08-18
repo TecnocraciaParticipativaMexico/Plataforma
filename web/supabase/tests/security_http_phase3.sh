@@ -15,7 +15,13 @@ case "$api_url|$db_url" in
 esac
 
 cleanup() {
+  local status=$?
   if [[ -n "${app_pid:-}" ]]; then kill "$app_pid" 2>/dev/null || true; fi
+  if [[ "$status" -ne 0 ]]; then
+    echo 'Sanitized local application log follows:' >&2
+    tail -n 80 "$app_log" >&2 || true
+  fi
+  return "$status"
 }
 trap cleanup EXIT
 
