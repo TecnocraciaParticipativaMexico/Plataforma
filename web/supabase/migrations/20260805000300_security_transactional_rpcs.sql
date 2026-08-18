@@ -222,7 +222,8 @@ begin
     where c.user_id=v_user and r.id=p_report_id and c.status='active') then raise exception 'ACTIVE_CONFLICT' using errcode='42501'; end if;
   insert into public.committee_report_observations(report_id,author_user_id,content,idempotency_key)
    values(p_report_id,v_user,btrim(p_content),p_idempotency_key)
-   on conflict(author_user_id,idempotency_key) do update set idempotency_key=excluded.idempotency_key
+   on conflict(author_user_id,idempotency_key) where idempotency_key is not null
+   do update set idempotency_key=excluded.idempotency_key
    returning id into v_observation;
   perform private.write_security_audit(v_user,'committee_report.observe','committee_report',p_report_id,'allowed','OBSERVATION_ADDED',p_request_id);
   return v_observation;
