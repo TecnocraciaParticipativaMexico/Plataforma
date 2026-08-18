@@ -43,6 +43,12 @@ alter table if exists public.committee_proposals
   add column if not exists owner_user_id uuid references auth.users(id) on delete restrict;
 alter table if exists public.committee_proposals
   add column if not exists updated_at timestamptz not null default now();
+-- Preserve legacy presentation values, but do not require canonical guarded
+-- writes to fabricate fields that are no longer part of the authority model.
+alter table if exists public.committee_proposals alter column module_name drop not null;
+alter table if exists public.committee_proposals alter column level drop not null;
+alter table if exists public.committee_proposals alter column problem drop not null;
+alter table if exists public.committee_proposals alter column proposed_solution drop not null;
 update public.committee_proposals as proposal
 set owner_user_id = proposal.user_id
 where proposal.owner_user_id is null

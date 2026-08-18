@@ -70,6 +70,8 @@ reset role;
 
 select ok((select bool_and(is_nullable='YES') from information_schema.columns
   where table_schema='public' and (table_name,column_name) in (
+    ('committee_proposals','module_name'),('committee_proposals','level'),
+    ('committee_proposals','problem'),('committee_proposals','proposed_solution'),
     ('proposal_votes','vote'),('proposal_votes','comprehension_score'),('proposal_votes','vote_weight'),
     ('committee_report_observations','actor_hash'),('committee_report_observations','observation_type'),
     ('committee_technical_votes','proposal_id'),('committee_technical_votes','actor_hash'),('committee_technical_votes','vote')
