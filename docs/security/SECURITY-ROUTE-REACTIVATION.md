@@ -2,6 +2,10 @@
 
 Phase 3 reconnects HTTP handlers only where Phase 2 provides an RLS policy or a transactional RPC that remains the authorization boundary. It does not contact or modify remote Supabase environments.
 
+## Phase 4 follow-up
+
+Phase 4 is documented in `docs/security/PRODUCTION-HARDENING.md`. It adds distributed PostgreSQL rate limits, server-side evidence validation and quarantine, accepted-only attachment downloads, process-chain verification, and same-module application review with separation of duties. Proposal creation remains closed because the institutional creator role is still ambiguous. The earlier Phase 3 decisions below are retained as historical context; where a route changed in Phase 4, the Phase 4 document is authoritative.
+
 ## Reactivated routes
 
 | Route | Operation | Database boundary | Authorization |

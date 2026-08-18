@@ -57,7 +57,7 @@ select ok(not exists (
 
 select is((select public from storage.buckets where id = 'evidence'), false,
   'evidence bucket is private');
-select is((select file_size_limit from storage.buckets where id = 'evidence'), 52428800::bigint,
+select is((select file_size_limit from storage.buckets where id = 'evidence'), 10485760::bigint,
   'evidence bucket enforces the configured size limit');
 
 select ok(not exists (

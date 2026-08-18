@@ -132,7 +132,7 @@ assert_status 400 "$(request POST /api/reputacion "$token_a" '{"points":100}')" 
 evidence_id="$(new_uuid)"; object_name="$evidence_id"
 psql "$db_url" -v ON_ERROR_STOP=1 -v e="$evidence_id" -v a="$id_a" -v p="$process_a" <<'SQL'
 insert into public.evidence_pointers(id,owner_user_id,process_id,storage_path,sha256,size_bytes,mime_type,review_status)
-values (:'e',:'a',:'p',:'e',repeat('a',64),4,'image/png','pending');
+values (:'e',:'a',:'p',:'e',repeat('a',64),4,'image/png','accepted');
 SQL
 curl --silent --show-error --fail -X POST -H "Authorization: Bearer $service_key" -H "apikey: $service_key" \
   -H 'Content-Type: image/png' --data-binary 'test' "$api_url/storage/v1/object/evidence/$object_name" >/dev/null

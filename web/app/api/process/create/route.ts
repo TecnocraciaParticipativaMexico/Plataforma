@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireUserContext, securityErrorResponse } from "@/lib/security/auth";
-import { databaseErrorResponse, idempotencyKey, rejectClientAuthority, requestId, requireObject, requireRateLimitBoundary } from "@/lib/security/routeSecurity";
+import { auditedDatabaseErrorResponse } from "@/lib/security/securityAudit";
+import { idempotencyKey, rateLimitResponse, rejectClientAuthority, requestId, requireObject } from "@/lib/security/routeSecurity";
 
 export async function POST(req: Request) {
   try {
-    const { supabase } = await requireUserContext(req);
-    requireRateLimitBoundary("Process creation");
+    const { user, supabase } = await requireUserContext(req);
+    const correlationId = requestId(req);
+    const limited = await rateLimitResponse(supabase, "process.create", null, correlationId);
+    if (limited) return limited;
     const body = requireObject(await req.json());
     rejectClientAuthority(body);
     const processType = String(body.process_type ?? body.tipo_proceso ?? "").trim();
@@ -17,9 +20,9 @@ export async function POST(req: Request) {
       p_process_type: processType,
       p_title: title || null,
       p_idempotency_key: idempotencyKey(body.idempotency_key),
-      p_request_id: requestId(req),
+      p_request_id: correlationId,
     });
-    if (error) return databaseErrorResponse(error);
+    if (error) return auditedDatabaseErrorResponse(error, { actorUserId: user.id, action: "process.create", resourceType: "civic_process", resourceId: null, requestId: correlationId });
     return NextResponse.json({ ok: true, process_id: data }, { status: 201 });
   } catch (error) {
     return securityErrorResponse(error);
