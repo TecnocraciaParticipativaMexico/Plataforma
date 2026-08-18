@@ -19,7 +19,7 @@ The bridge is additive and preservation-oriented. It does not delete rows, rewri
 
 | Table | Confirmed legacy condition | Bridge decision |
 |---|---|---|
-| `committee_applications` | 7 rows; 3 `user_id` values match real `auth.users`; 4 lack `user_id` | Add nullable `owner_user_id`. Backfill only when the same `user_id` currently exists in `auth.users`; four remain `NULL`. No claim-by-ID policy or direct update grant. |
+| `committee_applications` | 7 rows; 3 `user_id` values match real `auth.users`; 4 lack `user_id`; legacy `actor_hash` is required | Add nullable `owner_user_id`. Backfill only when the same `user_id` currently exists in `auth.users`; four remain `NULL`. Preserve historical hashes but make the field nullable for canonical authenticated rows. No hash-based identity, claim-by-ID policy or direct update grant. |
 | `append_only_event` | 237 ownerless events and an independent MD5-era chain | Add nullable `owner_user_id`; no backfill and no hash rewrite. Table remains without a citizen policy. Historical validity is not asserted by the new SHA-256 chain verifier. |
 | `citizen_report_index` | 3 ownerless indexes | Add nullable `owner_user_id`; no backfill. Table remains closed to client roles. |
 | `evidence_pointers` | 43 pointers, no owner/review state; 3 MIME values outside the new allowlist | Add nullable owner; mark pre-existing rows `legacy_unverified`; set future default to `pending`; relax only legacy `actor_hash` authority. Conditional MIME constraint permits the isolated historical rows but rejects any new non-allowlisted MIME. Download RPC continues to require `accepted`. |

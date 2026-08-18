@@ -4,6 +4,8 @@
 
 alter table if exists public.committee_applications
   add column if not exists owner_user_id uuid references auth.users(id) on delete restrict;
+alter table if exists public.committee_applications
+  alter column actor_hash drop not null;
 
 -- user_id is authoritative only when the referenced auth.users row exists.
 -- Unknown applications deliberately remain ownerless and fail closed under RLS.

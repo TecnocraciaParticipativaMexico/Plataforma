@@ -68,6 +68,7 @@ reset role;
 
 select ok((select bool_and(is_nullable='YES') from information_schema.columns
   where table_schema='public' and (table_name,column_name) in (
+    ('committee_applications','actor_hash'),
     ('committee_proposals','module_name'),('committee_proposals','level'),
     ('committee_proposals','problem'),('committee_proposals','proposed_solution'),
     ('proposal_votes','vote'),('proposal_votes','comprehension_score'),('proposal_votes','vote_weight'),
