@@ -9,6 +9,12 @@ const statusFor = (message: string) => {
   return 500;
 };
 
+const publicError = (error: unknown) => {
+  const marker = error instanceof Error ? error.message : "";
+  const known = new Set(["UNAUTHORIZED", "INVALID_MODULE", "ATTEMPT_LIMIT", "RETRY_COOLDOWN"]);
+  return known.has(marker) ? marker : "SERVICE_UNAVAILABLE";
+};
+
 export async function POST(request: NextRequest) {
   try {
     const user = await requireExamUser(request);
@@ -16,7 +22,7 @@ export async function POST(request: NextRequest) {
     const attempt = await createAttempt(user.id, Number(body?.module_id));
     return NextResponse.json({ ok: true, attempt }, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "INTERNAL_ERROR";
+    const message = publicError(error);
     return NextResponse.json(
       { ok: false, error: message },
       { status: statusFor(message) },

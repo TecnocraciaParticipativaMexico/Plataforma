@@ -1,170 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-function detectarSpam(texto: string) {
-  const t = texto.toLowerCase();
-
-  const patrones = [
-    "jajaja",
-    "asdf",
-    "xxxxx",
-    "12345",
-    "no se",
-    "nose",
-    "hola",
-    "test",
-    "prueba",
-    "aaa",
-    "bbb",
-  ];
-
-  if (texto.trim().length < 20) return true;
-
-  if (patrones.some((p) => t.includes(p))) {
-    return true;
-  }
-
-  return false;
-}
+import { requireUserContext, securityErrorResponse } from "@/lib/security/auth";
+import { rejectClientAuthority, requireObject } from "@/lib/security/routeSecurity";
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const actor_hash = searchParams.get("actor_hash");
-
-  if (!actor_hash) {
-    return NextResponse.json(
-      { ok: false, error: "Falta actor_hash" },
-      { status: 400 }
-    );
-  }
-
-  const { data, error } = await supabase
-    .from("civic_reputation")
-    .select("*")
-    .eq("actor_hash", actor_hash)
-    .maybeSingle();
-
-  if (error) {
-    return NextResponse.json(
-      { ok: false, error: error.message },
-      { status: 500 }
-    );
-  }
-
-  return NextResponse.json({
-    ok: true,
-    reputacion: data || null,
-  });
+  try {
+    const { supabase } = await requireUserContext(req);
+    if (req.nextUrl.searchParams.has("actor_hash") || req.nextUrl.searchParams.has("user_id")) {
+      return NextResponse.json({ ok: false, error: "Client-supplied identity is not allowed" }, { status: 400 });
+    }
+    const { data, error } = await supabase.from("reputation_events")
+      .select("points,rule_version,created_at").order("created_at", { ascending: false });
+    if (error) throw error;
+    const total = (data ?? []).reduce((sum, event) => sum + Number(event.points), 0);
+    return NextResponse.json({ ok: true, total, events: data ?? [] });
+  } catch (error) { return securityErrorResponse(error); }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-
-    const {
-      actor_hash,
-      respuestas,
-      comprehension_score,
-    } = body;
-
-    if (!actor_hash) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Falta actor_hash",
-        },
-        { status: 400 }
-      );
-    }
-
-    let spamDetectado = false;
-
-    for (const r of respuestas || []) {
-      if (detectarSpam(r || "")) {
-        spamDetectado = true;
-      }
-    }
-
-    const technicalScore = Number(comprehension_score || 0);
-
-    const { data: existing } = await supabase
-      .from("civic_reputation")
-      .select("*")
-      .eq("actor_hash", actor_hash)
-      .single();
-
-    if (!existing) {
-      const { error } = await supabase
-        .from("civic_reputation")
-        .insert({
-          actor_hash,
-          technical_score: technicalScore,
-          citizen_score: technicalScore,
-          spam_flags: spamDetectado ? 1 : 0,
-        });
-
-      if (error) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: error.message,
-          },
-          { status: 500 }
-        );
-      }
-    } else {
-      const nuevosSpamFlags =
-        Number(existing.spam_flags || 0) +
-        (spamDetectado ? 1 : 0);
-
-      const nuevoTechnical =
-        Number(existing.technical_score || 0) +
-        technicalScore;
-
-      const suspension =
-        nuevosSpamFlags >= 5
-          ? new Date(
-              Date.now() + 1000 * 60 * 60 * 24 * 30
-            ).toISOString()
-          : existing.suspension_until;
-
-      const { error } = await supabase
-        .from("civic_reputation")
-        .update({
-          technical_score: nuevoTechnical,
-          citizen_score: nuevoTechnical,
-          spam_flags: nuevosSpamFlags,
-          suspension_until: suspension,
-        })
-        .eq("actor_hash", actor_hash);
-
-      if (error) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: error.message,
-          },
-          { status: 500 }
-        );
-      }
-    }
-
-    return NextResponse.json({
-      ok: true,
-      spam_detectado: spamDetectado,
-    });
-  } catch (err: any) {
+    await requireUserContext(req);
+    const body = requireObject(await req.json().catch(() => ({})));
+    rejectClientAuthority(body);
     return NextResponse.json(
-      {
-        ok: false,
-        error: err?.message || "Error reputación",
-      },
-      { status: 500 }
+      { ok: false, error: "Reputation updates require a server-verified source event" },
+      { status: 503 },
     );
-  }
+  } catch (error) { return securityErrorResponse(error); }
 }

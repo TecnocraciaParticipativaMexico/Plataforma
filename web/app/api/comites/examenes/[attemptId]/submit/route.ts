@@ -17,6 +17,15 @@ const statusFor = (message: string) => {
   return 500;
 };
 
+const publicError = (error: unknown) => {
+  const marker = error instanceof Error ? error.message : "";
+  const known = new Set([
+    "UNAUTHORIZED", "FORBIDDEN", "ATTEMPT_NOT_FOUND", "INCOMPLETE_RESPONSES",
+    "INVALID_RESPONSE", "ATTEMPT_EXPIRED", "ALREADY_SUBMITTED",
+  ]);
+  return known.has(marker) ? marker : "SERVICE_UNAVAILABLE";
+};
+
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ attemptId: string }> },
@@ -28,7 +37,7 @@ export async function POST(
     const result = await submitAttempt(user.id, attemptId, body?.responses ?? {});
     return NextResponse.json({ ok: true, result });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "INTERNAL_ERROR";
+    const message = publicError(error);
     return NextResponse.json(
       { ok: false, error: message },
       { status: statusFor(message) },
