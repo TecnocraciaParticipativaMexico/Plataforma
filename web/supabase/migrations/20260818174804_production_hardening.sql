@@ -202,7 +202,7 @@ revoke all on function public.prepare_evidence_upload(uuid,text,bigint,text,uuid
 grant execute on function public.prepare_evidence_upload(uuid,text,bigint,text,uuid) to authenticated;
 
 create or replace function public.confirm_evidence_upload(p_evidence_id uuid,p_owner_user_id uuid,p_request_id uuid default null)
-returns void language plpgsql security definer set search_path=pg_catalog,public,private,storage as $$
+returns void language plpgsql security definer set search_path=pg_catalog,public,private as $$
 declare v_evidence public.evidence_pointers%rowtype;
 begin
   select * into v_evidence from public.evidence_pointers where id=p_evidence_id and owner_user_id=p_owner_user_id and review_status='pending' for update;
