@@ -1,7 +1,7 @@
 -- Run only against a disposable Supabase local database after all migrations.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(14);
+select plan(15);
 
 select ok(not exists (
   select 1
@@ -109,6 +109,14 @@ select ok(not exists (
   select 1 from pg_policies
   where schemaname = 'public' and tablename in ('append_only_event','citizen_report_index')
 ), 'optional unowned historical tables receive no reopening policy');
+
+select ok(not exists (
+  select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+  where n.nspname='public'
+    and p.proname in ('create_process_with_event','add_process_event','verify_chain_integrity_for_process')
+    and (has_function_privilege('anon',p.oid,'EXECUTE')
+      or has_function_privilege('authenticated',p.oid,'EXECUTE'))
+), 'unsafe inherited RPCs are never executable by anon or authenticated');
 
 select * from finish();
 rollback;

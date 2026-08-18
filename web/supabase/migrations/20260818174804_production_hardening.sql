@@ -174,11 +174,15 @@ drop policy if exists "evidence_select_owner" on storage.objects;
 update storage.buckets set public=false,file_size_limit=10485760,
   allowed_mime_types=array['image/jpeg','image/png','application/pdf'] where id='evidence';
 alter table public.evidence_pointers drop constraint if exists evidence_pointers_mime_type_check;
-alter table public.evidence_pointers add constraint evidence_pointers_mime_type_check check(mime_type in('image/jpeg','image/png','application/pdf'));
+alter table public.evidence_pointers add constraint evidence_pointers_mime_type_check check(
+  review_status='legacy_unverified' or mime_type in('image/jpeg','image/png','application/pdf')
+);
 alter table public.evidence_pointers drop constraint if exists evidence_pointers_size_bytes_check;
 alter table public.evidence_pointers add constraint evidence_pointers_size_bytes_check check(size_bytes>0 and size_bytes<=10485760);
 alter table public.evidence_pointers drop constraint if exists evidence_pointers_review_status_check;
-alter table public.evidence_pointers add constraint evidence_pointers_review_status_check check(review_status in('pending','pending_scan','accepted','rejected'));
+alter table public.evidence_pointers add constraint evidence_pointers_review_status_check check(
+  review_status in('legacy_unverified','pending','pending_scan','accepted','rejected')
+);
 
 create or replace function public.prepare_evidence_upload(
   p_process_id uuid,p_sha256 text,p_size_bytes bigint,p_mime_type text,p_request_id uuid default null

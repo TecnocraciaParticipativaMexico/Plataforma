@@ -88,7 +88,7 @@ jobs:
             supabase/tests/security_authorization.sql --local | tee "$output"
           grep -Eq 'Tests=31([^0-9]|$)' "$output"
 
-      - name: Run 14 catalog pgTAP assertions
+      - name: Run 15 catalog pgTAP assertions
         shell: bash
         run: |
           set -euo pipefail
@@ -96,7 +96,17 @@ jobs:
           cd "${{ steps.isolated.outputs.root }}"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
             supabase/tests/security_catalog_audit.sql --local | tee "$output"
-          grep -Eq 'Tests=14([^0-9]|$)' "$output"
+          grep -Eq 'Tests=15([^0-9]|$)' "$output"
+
+      - name: Run 25 legacy-bridge pgTAP assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(mktemp)"
+          cd "${{ steps.isolated.outputs.root }}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
+            supabase/tests/security_legacy_bridge.sql --local | tee "$output"
+          grep -Eq 'Tests=25([^0-9]|$)' "$output"
 
       - name: Run 30 production-hardening pgTAP assertions
         shell: bash
@@ -199,9 +209,10 @@ jobs:
             echo "- Supabase CLI: ${SUPABASE_CLI_VERSION}"
             echo "- Historical fixture: temporary runner-only migration"
             echo "- Authorization plan: 31"
-            echo "- Catalog plan: 14"
+            echo "- Catalog plan: 15"
+            echo "- Legacy bridge plan: 25"
             echo "- Production-hardening plan: 30"
-            echo "- Expected SQL total: 75"
+            echo "- Expected SQL total: 101"
             echo "- Phase 3 HTTP tests: 22"
             echo "- Phase 4 HTTP tests: 19"
             echo "- Remote Supabase: not linked or accessed"

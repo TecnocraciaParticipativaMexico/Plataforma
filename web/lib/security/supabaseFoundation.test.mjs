@@ -5,11 +5,13 @@ import { resolve } from "node:path";
 
 const migration = (name) => readFileSync(resolve(process.cwd(), "supabase/migrations", name), "utf8");
 const core = migration("20260805000100_security_core_schema.sql");
+const bridge = migration("20260804000000_legacy_security_bridge.sql");
 const rls = migration("20260805000200_security_rls_and_storage.sql");
 const rpc = migration("20260805000300_security_transactional_rpcs.sql");
 const sqlTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_authorization.sql"), "utf8");
 const catalogTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_catalog_audit.sql"), "utf8");
 const baselineFixture = readFileSync(resolve(process.cwd(), "supabase/tests/fixtures/historical_baseline.sql"), "utf8");
+const bridgeTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_legacy_bridge.sql"), "utf8");
 const ciWorkflow = readFileSync(resolve(process.cwd(), "../.github/workflows/security-supabase-validation.yml"), "utf8");
 const concurrencyTest = readFileSync(resolve(process.cwd(), "supabase/tests/security_vote_concurrency.sh"), "utf8");
 const httpTests = readFileSync(resolve(process.cwd(), "supabase/tests/security_http_phase3.sh"), "utf8");
@@ -84,18 +86,31 @@ test("SQL authorization tests cover negative access paths", () => {
 });
 
 test("catalog audit checks runtime RLS, grants, definers and private Storage", () => {
-  assert.match(catalogTests, /select plan\(14\)/);
+  assert.match(catalogTests, /select plan\(15\)/);
   assert.match(catalogTests, /every sensitive table exists and has RLS enabled/);
   assert.match(catalogTests, /anon has no sensitive public-table writes or evidence policy/);
   assert.match(catalogTests, /no SECURITY DEFINER function grants EXECUTE to PUBLIC/);
   assert.match(catalogTests, /evidence bucket is private/);
 });
 
-test("historical baseline remains a narrow local fixture", () => {
+test("historical baseline is sanitized, local-only and reproduces bridge conflicts", () => {
   assert.match(baselineFixture, /LOCAL TEST FIXTURE ONLY/);
   assert.match(baselineFixture, /create table public\.committee_applications/);
-  assert.doesNotMatch(baselineFixture, /create policy|security definer|storage\.buckets/i);
+  assert.match(baselineFixture, /generate_series\(1,237\)/);
+  assert.match(baselineFixture, /generate_series\(1,43\)/);
+  assert.match(baselineFixture, /application\/octet-stream/);
+  assert.doesNotMatch(baselineFixture, /storage\.buckets|@gmail\.|@hotmail\.|@outlook\./i);
   assert.doesNotMatch(core, /create table if not exists public\.committee_applications/);
+});
+
+test("legacy bridge preserves unknown ownership and closes inherited RPCs", () => {
+  assert.match(bridge, /owner_user_id is null[\s\S]*exists \(select 1 from auth\.users/);
+  assert.doesNotMatch(bridge, /actor_hash\s*::\s*uuid|owner_user_id\s*=\s*[^;]*actor_hash/);
+  assert.match(bridge, /legacy_unverified/);
+  assert.match(bridge, /revoke all on function %s from public, anon, authenticated/);
+  assert.match(bridge, /set search_path = pg_catalog, public/);
+  assert.match(bridgeTests, /select plan\(25\)/);
+  assert.match(bridgeTests, /citizen cannot invoke inherited StatusChanged/);
 });
 
 test("CI validation is disposable, secret-free and preserves real migrations", () => {
@@ -105,7 +120,8 @@ test("CI validation is disposable, secret-free and preserves real migrations", (
   assert.match(ciWorkflow, /20260729000000_local_historical_baseline\.sql/);
   assert.match(ciWorkflow, /db reset --local --no-seed/);
   assert.match(ciWorkflow, /Tests=31/);
-  assert.match(ciWorkflow, /Tests=14/);
+  assert.match(ciWorkflow, /Tests=15/);
+  assert.match(ciWorkflow, /Tests=25/);
   assert.doesNotMatch(ciWorkflow, /supabase (link|db push|migration repair)/);
   assert.doesNotMatch(ciWorkflow, /secrets\./);
 });
