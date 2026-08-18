@@ -1,198 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-function sha256(input: any) {
-  return crypto
-    .createHash("sha256")
-    .update(JSON.stringify(input))
-    .digest("hex");
-}
-
-async function registrarEvento({
-  report_id,
-  proposal_id,
-  actor_hash,
-  payload,
-}: {
-  report_id: string;
-  proposal_id: string;
-  actor_hash: string;
-  payload: any;
-}) {
-  const { data: lastEvent } = await supabase
-    .from("committee_report_events")
-    .select("event_hash")
-    .eq("report_id", report_id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const previous_hash = lastEvent?.event_hash || null;
-
-  const event_hash = sha256({
-    report_id,
-    proposal_id,
-    actor_hash,
-    payload,
-    previous_hash,
-    created_at: new Date().toISOString(),
-  });
-
-  await supabase.from("committee_report_events").insert({
-    report_id,
-    proposal_id,
-    event_type: "VOTO_TECNICO_REGISTRADO",
-    actor_hash,
-    event_payload: payload,
-    previous_hash,
-    event_hash,
-  });
-
-  await supabase
-    .from("committee_reports")
-    .update({
-      chain_head_hash: event_hash,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", report_id);
-}
+import { requireUserContext, securityErrorResponse } from "@/lib/security/auth";
+import { auditedDatabaseErrorResponse } from "@/lib/security/securityAudit";
+import { idempotencyKey, rateLimitResponse, rejectClientAuthority, requestId, requireObject, requireUuid } from "@/lib/security/routeSecurity";
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-
-  const report_id = searchParams.get("report_id");
-
-  if (!report_id) {
-    return NextResponse.json({
-      ok: false,
-      error: "Falta report_id",
-    });
-  }
-
-  const { data, error } = await supabase
-    .from("committee_technical_votes")
-    .select("*")
-    .eq("report_id", report_id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    return NextResponse.json({
-      ok: false,
-      error: error.message,
-    });
-  }
-
-  const votes = data || [];
-
-  const resumen = {
-    total: votes.length,
-    aprobada: votes.filter((v) => v.vote === "Aprobada técnicamente").length,
-    revision: votes.filter((v) => v.vote === "Requiere revisión").length,
-    inviable: votes.filter((v) => v.vote === "No viable").length,
-  };
-
-  return NextResponse.json({
-    ok: true,
-    votes,
-    resumen,
-  });
+  try {
+    const { supabase } = await requireUserContext(req);
+    const reportId = requireUuid(req.nextUrl.searchParams.get("report_id"), "report ID");
+    const { data, error } = await supabase.from("committee_technical_votes")
+      .select("id,report_id,choice,reasoning,computed_weight,created_at").eq("report_id", reportId).order("created_at");
+    if (error) throw error;
+    return NextResponse.json({ ok: true, votes: data ?? [] });
+  } catch (error) { return securityErrorResponse(error); }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-
-    const {
-      report_id,
-      proposal_id,
-      actor_hash,
-      vote,
-      reasoning,
-      technical_weight,
-      conflict_declared,
-    } = body;
-
-    if (
-      !report_id ||
-      !proposal_id ||
-      !actor_hash ||
-      !vote ||
-      !reasoning
-    ) {
-      return NextResponse.json({
-        ok: false,
-        error: "Faltan datos obligatorios",
-      });
+    const { user, supabase } = await requireUserContext(req);
+    const body = requireObject(await req.json());
+    rejectClientAuthority(body);
+    const reportId = requireUuid(body.report_id, "report ID");
+    const correlationId = requestId(req);
+    const limited = await rateLimitResponse(supabase, "vote.technical", reportId, correlationId);
+    if (limited) return limited;
+    const choice = String(body.choice ?? "");
+    const reasoning = String(body.reasoning ?? "").trim();
+    if (!['approve','revise','reject'].includes(choice) || reasoning.length < 20 || reasoning.length > 5000) {
+      return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
     }
-
-    if (String(reasoning).trim().length < 20) {
-      return NextResponse.json({
-        ok: false,
-        error: "El razonamiento debe tener mínimo 20 caracteres.",
-      });
-    }
-
-    const { data: existingVote } = await supabase
-      .from("committee_technical_votes")
-      .select("id")
-      .eq("report_id", report_id)
-      .eq("actor_hash", actor_hash)
-      .maybeSingle();
-
-    if (existingVote) {
-      return NextResponse.json({
-        ok: false,
-        error: "Ya emitiste un voto técnico para este dictamen.",
-      });
-    }
-
-    const { data, error } = await supabase
-      .from("committee_technical_votes")
-      .insert({
-        report_id,
-        proposal_id,
-        actor_hash,
-        vote,
-        reasoning,
-        technical_weight: technical_weight || 1,
-        conflict_declared: Boolean(conflict_declared),
-      })
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({
-        ok: false,
-        error: error.message,
-      });
-    }
-
-    await registrarEvento({
-      report_id,
-      proposal_id,
-      actor_hash,
-      payload: {
-        vote,
-        reasoning,
-        technical_weight,
-        conflict_declared,
-      },
+    const { data, error } = await supabase.rpc("cast_technical_vote", {
+      p_report_id: reportId, p_choice: choice, p_reasoning: reasoning,
+      p_idempotency_key: idempotencyKey(body.idempotency_key), p_request_id: correlationId,
     });
-
-    return NextResponse.json({
-      ok: true,
-      technical_vote: data,
-    });
-  } catch (err: any) {
-    return NextResponse.json({
-      ok: false,
-      error: err?.message || "Error interno",
-    });
-  }
+    if (error) return auditedDatabaseErrorResponse(error, { actorUserId: user.id, action: "vote.technical", resourceType: "committee_report", resourceId: reportId, requestId: correlationId });
+    return NextResponse.json({ ok: true, vote_id: data }, { status: 201 });
+  } catch (error) { return securityErrorResponse(error); }
 }

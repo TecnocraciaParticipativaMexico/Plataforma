@@ -1,0 +1,223 @@
+name: Security Supabase validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/security-supabase-validation.yml"
+      - "docs/security/**"
+      - "web/app/**"
+      - "web/lib/security/**"
+      - "web/next.config.ts"
+      - "web/package.json"
+      - "web/package-lock.json"
+      - "web/supabase/**"
+
+permissions:
+  contents: read
+
+jobs:
+  disposable-supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_CLI_VERSION: 2.111.0
+      LOCAL_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+    steps:
+      - name: Checkout PR commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Configure pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+          run_install: false
+
+      - name: Install application dependencies from lockfile
+        working-directory: web
+        run: npm ci
+
+      - name: Verify tools and Docker
+        run: |
+          set -euo pipefail
+          node --version
+          npm --version
+          pnpm --version
+          docker version
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" --version
+
+      - name: Build isolated historical-baseline project
+        id: isolated
+        shell: bash
+        run: |
+          set -euo pipefail
+          validation_root="$(mktemp -d)"
+          echo "root=${validation_root}" >> "$GITHUB_OUTPUT"
+          mkdir -p "${validation_root}/supabase"
+          cp web/supabase/config.toml "${validation_root}/supabase/config.toml"
+          cp -R web/supabase/migrations "${validation_root}/supabase/migrations"
+          cp -R web/supabase/tests "${validation_root}/supabase/tests"
+          cp web/supabase/tests/fixtures/historical_baseline.sql \
+            "${validation_root}/supabase/migrations/20260729000000_local_historical_baseline.sql"
+          test -f "${validation_root}/supabase/migrations/20260729000000_local_historical_baseline.sql"
+          test ! -e web/supabase/migrations/20260729000000_local_historical_baseline.sql
+          find "${validation_root}/supabase/migrations" -maxdepth 1 -type f -printf '%f\n' | sort
+
+      - name: Start disposable Supabase
+        run: npx --yes "supabase@${SUPABASE_CLI_VERSION}" --workdir "${{ steps.isolated.outputs.root }}" start
+
+      - name: Reset database and apply migrations from zero
+        run: npx --yes "supabase@${SUPABASE_CLI_VERSION}" --workdir "${{ steps.isolated.outputs.root }}" db reset --local --no-seed
+
+      - name: Run 31 authorization pgTAP assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(mktemp)"
+          cd "${{ steps.isolated.outputs.root }}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
+            supabase/tests/security_authorization.sql --local | tee "$output"
+          grep -Eq 'Tests=31([^0-9]|$)' "$output"
+
+      - name: Run 15 catalog pgTAP assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(mktemp)"
+          cd "${{ steps.isolated.outputs.root }}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
+            supabase/tests/security_catalog_audit.sql --local | tee "$output"
+          grep -Eq 'Tests=15([^0-9]|$)' "$output"
+
+      - name: Run 25 legacy-bridge pgTAP assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(mktemp)"
+          cd "${{ steps.isolated.outputs.root }}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
+            supabase/tests/security_legacy_bridge.sql --local | tee "$output"
+          grep -Eq 'Tests=25([^0-9]|$)' "$output"
+
+      - name: Run 30 production-hardening pgTAP assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          output="$(mktemp)"
+          cd "${{ steps.isolated.outputs.root }}"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
+            supabase/tests/security_production_hardening.sql --local | tee "$output"
+          grep -Eq 'Tests=30([^0-9]|$)' "$output"
+
+      - name: Run concurrent duplicate-vote test
+        shell: bash
+        run: bash web/supabase/tests/security_vote_concurrency.sh "$LOCAL_DB_URL"
+
+      - name: Run concurrent distributed rate-limit test
+        shell: bash
+        run: bash web/supabase/tests/security_rate_limit_concurrency.sh "$LOCAL_DB_URL"
+
+      - name: Run 22 Phase 3 HTTP authorization tests
+        working-directory: web
+        shell: bash
+        run: |
+          set -euo pipefail
+          status_file="$(mktemp)"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" \
+            --workdir "${{ steps.isolated.outputs.root }}" status --output env > "$status_file"
+          set -a
+          source "$status_file"
+          set +a
+          API_URL="${API_URL}" ANON_KEY="${ANON_KEY}" SERVICE_ROLE_KEY="${SERVICE_ROLE_KEY}" \
+            DB_URL="$LOCAL_DB_URL" bash supabase/tests/security_http_phase3.sh
+
+      - name: Run 19 Phase 4 HTTP hardening tests
+        working-directory: web
+        shell: bash
+        run: |
+          set -euo pipefail
+          status_file="$(mktemp)"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" \
+            --workdir "${{ steps.isolated.outputs.root }}" status --output env > "$status_file"
+          set -a
+          source "$status_file"
+          set +a
+          API_URL="${API_URL}" ANON_KEY="${ANON_KEY}" SERVICE_ROLE_KEY="${SERVICE_ROLE_KEY}" \
+            DB_URL="$LOCAL_DB_URL" bash supabase/tests/security_http_phase4.sh
+
+      - name: Run application security checks
+        working-directory: web
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: local-ci-placeholder-not-a-secret
+          SUPABASE_SERVICE_ROLE_KEY: local-ci-placeholder-not-a-secret
+        run: |
+          set -euo pipefail
+          npm test
+          npm run typecheck
+          npm run build
+          npx eslint \
+            next.config.ts \
+            lib/security \
+            app/api/comites \
+            app/api/process \
+            app/comites/dictamenes/cerrar/route.ts \
+            app/comites/revision/page.tsx
+
+      - name: Validate diff and scan sensitive signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check origin/codex/security-route-reactivation...HEAD
+          files="$(mktemp)"
+          git diff --name-only origin/codex/security-route-reactivation...HEAD > "$files"
+          if test -s "$files" && xargs -r grep -IlE \
+            '(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.|sb_secret_[A-Za-z0-9_-]+|sk-[A-Za-z0-9_-]{20,})' \
+            < "$files" | grep -q .; then
+            echo "Sensitive signature detected in changed file; values suppressed." >&2
+            exit 1
+          fi
+          while IFS= read -r file; do
+            if grep -IE 'postgres(ql)?://[^[:space:]]+:[^[:space:]]+@' "$file" \
+              | grep -Ev 'postgres(ql)?://[^[:space:]]+:[^[:space:]]+@(127\.0\.0\.1|localhost):' \
+              | grep -q .; then
+              echo "Non-local database connection string detected; values suppressed." >&2
+              exit 1
+            fi
+          done < "$files"
+
+      - name: Record non-mutating dependency audit
+        working-directory: web
+        continue-on-error: true
+        run: npm audit --audit-level=critical
+
+      - name: Write safe validation summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Disposable Supabase validation"
+            echo "- Supabase CLI: ${SUPABASE_CLI_VERSION}"
+            echo "- Historical fixture: temporary runner-only migration"
+            echo "- Authorization plan: 31"
+            echo "- Catalog plan: 15"
+            echo "- Legacy bridge plan: 25"
+            echo "- Production-hardening plan: 30"
+            echo "- Expected SQL total: 101"
+            echo "- Phase 3 HTTP tests: 22"
+            echo "- Phase 4 HTTP tests: 19"
+            echo "- Remote Supabase: not linked or accessed"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Stop disposable Supabase
+        if: always() && steps.isolated.outputs.root != ''
+        run: npx --yes "supabase@${SUPABASE_CLI_VERSION}" --workdir "${{ steps.isolated.outputs.root }}" stop --no-backup

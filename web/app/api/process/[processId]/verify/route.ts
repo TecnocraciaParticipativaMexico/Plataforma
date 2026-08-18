@@ -1,23 +1,23 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { requireUserContext, securityErrorResponse } from "@/lib/security/auth";
+import { auditedDatabaseErrorResponse } from "@/lib/security/securityAudit";
+import { rateLimitResponse, requestId, requireUuid } from "@/lib/security/routeSecurity";
 
-export async function GET(
-  _req: Request,
-  context: { params: Promise<{ processId: string }> }
-) {
+export async function GET(req: Request, context: { params: Promise<{ processId: string }> }) {
   try {
+    const { user, supabase } = await requireUserContext(req);
     const { processId } = await context.params;
-    const pid = String(processId || "").trim();
-    if (!pid) return NextResponse.json({ ok: false, error: "processId requerido" }, { status: 400 });
-
-    const { data, error } = await supabaseServer.rpc("verify_chain_integrity_for_process", {
-      p_process_id: pid,
+    const validatedProcessId = requireUuid(processId, "process ID");
+    const correlationId = requestId(req);
+    const limited = await rateLimitResponse(supabase, "process.verify", validatedProcessId, correlationId);
+    if (limited) return limited;
+    const { data, error } = await supabase.rpc("verify_process_chain", {
+      p_process_id: validatedProcessId,
+      p_request_id: correlationId,
     });
-
-    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-
-    return NextResponse.json({ ok: true, result: data?.[0] ?? data });
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message ?? "error" }, { status: 500 });
+    if (error) return auditedDatabaseErrorResponse(error, { actorUserId: user.id, action: "process.verify", resourceType: "civic_process", resourceId: validatedProcessId, requestId: correlationId }, "Process verification is unavailable");
+    return NextResponse.json({ ok: true, result: data });
+  } catch (error) {
+    return securityErrorResponse(error);
   }
 }
