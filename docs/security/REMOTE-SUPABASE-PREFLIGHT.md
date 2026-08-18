@@ -1,6 +1,6 @@
 # Preflight read-only de Supabase remoto
 
-Fecha: 2026-08-18  
+Fecha: 2026-08-18
 Decisión: **SUPABASE BLOQUEADO PARA MIGRACIÓN**
 
 ## Alcance y garantías
