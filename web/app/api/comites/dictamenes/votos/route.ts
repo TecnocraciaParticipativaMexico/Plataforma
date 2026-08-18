@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUserContext, securityErrorResponse } from "@/lib/security/auth";
-import { databaseErrorResponse, idempotencyKey, rejectClientAuthority, requestId, requireObject, requireRateLimitBoundary, requireUuid } from "@/lib/security/routeSecurity";
+import { auditedDatabaseErrorResponse } from "@/lib/security/securityAudit";
+import { idempotencyKey, rateLimitResponse, rejectClientAuthority, requestId, requireObject, requireUuid } from "@/lib/security/routeSecurity";
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,20 +16,23 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { supabase } = await requireUserContext(req);
-    requireRateLimitBoundary("Technical voting");
+    const { user, supabase } = await requireUserContext(req);
     const body = requireObject(await req.json());
     rejectClientAuthority(body);
+    const reportId = requireUuid(body.report_id, "report ID");
+    const correlationId = requestId(req);
+    const limited = await rateLimitResponse(supabase, "vote.technical", reportId, correlationId);
+    if (limited) return limited;
     const choice = String(body.choice ?? "");
     const reasoning = String(body.reasoning ?? "").trim();
     if (!['approve','revise','reject'].includes(choice) || reasoning.length < 20 || reasoning.length > 5000) {
       return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
     }
     const { data, error } = await supabase.rpc("cast_technical_vote", {
-      p_report_id: requireUuid(body.report_id, "report ID"), p_choice: choice, p_reasoning: reasoning,
-      p_idempotency_key: idempotencyKey(body.idempotency_key), p_request_id: requestId(req),
+      p_report_id: reportId, p_choice: choice, p_reasoning: reasoning,
+      p_idempotency_key: idempotencyKey(body.idempotency_key), p_request_id: correlationId,
     });
-    if (error) return databaseErrorResponse(error);
+    if (error) return auditedDatabaseErrorResponse(error, { actorUserId: user.id, action: "vote.technical", resourceType: "committee_report", resourceId: reportId, requestId: correlationId });
     return NextResponse.json({ ok: true, vote_id: data }, { status: 201 });
   } catch (error) { return securityErrorResponse(error); }
 }

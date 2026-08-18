@@ -11,8 +11,11 @@ test("la ruta heredada no permite crear ni modificar solicitudes", () => {
   assert.doesNotMatch(route, /\.insert\(|\.update\(/);
 });
 
-test("la revisión administrativa y el cierre de dictamen fallan cerrados", () => {
-  assert.match(source("app/api/comites/solicitudes/route.ts"), /Administrative review is not enabled securely yet/);
+test("la revisión administrativa usa RPC y el cierre de dictamen permanece transaccional", () => {
+  const review = source("app/api/comites/solicitudes/route.ts");
+  assert.match(review, /rpc\("review_committee_application"/);
+  assert.match(review, /expected_version/);
+  assert.doesNotMatch(review, /\.update\(/);
   const closure = source("app/comites/dictamenes/cerrar/route.ts");
   assert.match(closure, /rpc\("close_committee_report"/);
   assert.match(closure, /requireUserContext/);
@@ -29,8 +32,12 @@ test("votos y reputación no aceptan puntajes del navegador", () => {
   assert.match(reputation, /server-verified source event/);
 });
 
-test("la carga de evidencia queda bloqueada y no existen URLs públicas", () => {
-  assert.match(source("app/api/process/[processId]/evidence/upload/route.ts"), /status:\s*503/);
+test("la carga de evidencia valida bytes y no existen URLs públicas", () => {
+  const upload = source("app/api/process/[processId]/evidence/upload/route.ts");
+  assert.match(upload, /validateEvidenceFile/);
+  assert.match(upload, /queueEvidenceScan/);
+  assert.match(source("lib/security/evidenceValidation.ts"), /pending_scan/);
+  assert.match(upload, /supabaseServer\.storage\.from\("evidence"\)\.upload/);
   assert.doesNotMatch(source("app/seguimiento/page.tsx"), /\/object\/public\//);
 });
 

@@ -15,7 +15,13 @@ case "$api_url|$db_url" in
 esac
 
 cleanup() {
+  local status=$?
   if [[ -n "${app_pid:-}" ]]; then kill "$app_pid" 2>/dev/null || true; fi
+  if [[ "$status" -ne 0 ]]; then
+    echo 'Sanitized local application log follows:' >&2
+    tail -n 80 "$app_log" >&2 || true
+  fi
+  return "$status"
 }
 trap cleanup EXIT
 
@@ -38,7 +44,7 @@ test -n "$token_a"; test "$token_a" != null
 export NEXT_PUBLIC_SUPABASE_URL="$api_url"
 export NEXT_PUBLIC_SUPABASE_ANON_KEY="$anon_key"
 export SUPABASE_SERVICE_ROLE_KEY="$service_key"
-npm run dev >"$app_log" 2>&1 & app_pid=$!
+node node_modules/next/dist/bin/next dev >"$app_log" 2>&1 & app_pid=$!
 for _ in {1..60}; do
   if curl -fsS "$app_url" >/dev/null 2>&1; then break; fi
   sleep 1
@@ -132,7 +138,7 @@ assert_status 400 "$(request POST /api/reputacion "$token_a" '{"points":100}')" 
 evidence_id="$(new_uuid)"; object_name="$evidence_id"
 psql "$db_url" -v ON_ERROR_STOP=1 -v e="$evidence_id" -v a="$id_a" -v p="$process_a" <<'SQL'
 insert into public.evidence_pointers(id,owner_user_id,process_id,storage_path,sha256,size_bytes,mime_type,review_status)
-values (:'e',:'a',:'p',:'e',repeat('a',64),4,'image/png','pending');
+values (:'e',:'a',:'p',:'e',repeat('a',64),4,'image/png','accepted');
 SQL
 curl --silent --show-error --fail -X POST -H "Authorization: Bearer $service_key" -H "apikey: $service_key" \
   -H 'Content-Type: image/png' --data-binary 'test' "$api_url/storage/v1/object/evidence/$object_name" >/dev/null

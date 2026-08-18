@@ -27,10 +27,11 @@ export async function requireUserContext(request: Request) {
 
 export function securityErrorResponse(error: unknown) {
   if (error instanceof SecurityHttpError) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: error.status });
+    const code = error.status === 401 ? "AUTH_REQUIRED" : error.status === 403 ? "FORBIDDEN" : "INVALID_REQUEST";
+    return NextResponse.json({ ok: false, code, error: error.message }, { status: error.status });
   }
   if (error instanceof SyntaxError) {
     return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
   }
-  return NextResponse.json({ ok: false, error: "Service temporarily unavailable" }, { status: 503 });
+  return NextResponse.json({ ok: false, code: "SERVICE_UNAVAILABLE", error: "Service temporarily unavailable" }, { status: 503 });
 }
