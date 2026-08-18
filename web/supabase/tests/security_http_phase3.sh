@@ -44,7 +44,7 @@ test -n "$token_a"; test "$token_a" != null
 export NEXT_PUBLIC_SUPABASE_URL="$api_url"
 export NEXT_PUBLIC_SUPABASE_ANON_KEY="$anon_key"
 export SUPABASE_SERVICE_ROLE_KEY="$service_key"
-npm run dev >"$app_log" 2>&1 & app_pid=$!
+node node_modules/next/dist/bin/next dev >"$app_log" 2>&1 & app_pid=$!
 for _ in {1..60}; do
   if curl -fsS "$app_url" >/dev/null 2>&1; then break; fi
   sleep 1

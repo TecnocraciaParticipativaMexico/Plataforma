@@ -20,7 +20,7 @@ token_a="$(jq -r .access_token<<<"$a")"; id_a="$(jq -r .user.id<<<"$a")"; token_
 token_reviewer="$(jq -r .access_token<<<"$reviewer")"; id_reviewer="$(jq -r .user.id<<<"$reviewer")"; token_outsider="$(jq -r .access_token<<<"$outsider")"; id_outsider="$(jq -r .user.id<<<"$outsider")"
 
 export NEXT_PUBLIC_SUPABASE_URL="$api_url" NEXT_PUBLIC_SUPABASE_ANON_KEY="$anon_key" SUPABASE_SERVICE_ROLE_KEY="${SERVICE_ROLE_KEY:?local service key required}"
-npm run dev >"$app_log" 2>&1 & app_pid=$!
+node node_modules/next/dist/bin/next dev >"$app_log" 2>&1 & app_pid=$!
 for _ in {1..60}; do curl -fsS "$app_url" >/dev/null 2>&1 && break; sleep 1; done
 curl -fsS "$app_url" >/dev/null
 
@@ -79,6 +79,9 @@ expect 200 "$(request PATCH /api/comites/solicitudes "$token_reviewer" "$review_
 rate_user="$(signup phase4-rate@example.test)"; rate_token="$(jq -r .access_token<<<"$rate_user")"
 for index in $(seq 1 10); do expect 201 "$(request POST /api/process/create "$rate_token" "{\"process_type\":\"rate\",\"idempotency_key\":\"$(uuid)\"}")" "rate request $index"; done
 status="$(request POST /api/process/create "$rate_token" "{\"process_type\":\"rate\",\"idempotency_key\":\"$(uuid)\"}")"; expect 429 "$status" '19 distributed limit returns 429'
-grep -qi '^retry-after:' < <(curl -sSI -X POST -H "Authorization: Bearer $rate_token" -H 'Content-Type: application/json' --data "{\"process_type\":\"rate\",\"idempotency_key\":\"$(uuid)\"}" "$app_url/api/process/create")
+curl -sS -D "$work/rate.headers" -o /dev/null -X POST -H "Authorization: Bearer $rate_token" \
+  -H 'Content-Type: application/json' --data "{\"process_type\":\"rate\",\"idempotency_key\":\"$(uuid)\"}" \
+  "$app_url/api/process/create"
+grep -qi '^retry-after:' "$work/rate.headers"
 
 echo 'HTTP_PHASE4_TESTS=19 PASS'
