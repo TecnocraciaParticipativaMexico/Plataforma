@@ -98,7 +98,7 @@ jobs:
             supabase/tests/security_catalog_audit.sql --local | tee "$output"
           grep -Eq 'Tests=14([^0-9]|$)' "$output"
 
-      - name: Run 29 production-hardening pgTAP assertions
+      - name: Run 30 production-hardening pgTAP assertions
         shell: bash
         run: |
           set -euo pipefail
@@ -106,7 +106,7 @@ jobs:
           cd "${{ steps.isolated.outputs.root }}"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
             supabase/tests/security_production_hardening.sql --local | tee "$output"
-          grep -Eq 'Tests=29([^0-9]|$)' "$output"
+          grep -Eq 'Tests=30([^0-9]|$)' "$output"
 
       - name: Run concurrent duplicate-vote test
         shell: bash
@@ -200,8 +200,8 @@ jobs:
             echo "- Historical fixture: temporary runner-only migration"
             echo "- Authorization plan: 31"
             echo "- Catalog plan: 14"
-            echo "- Production-hardening plan: 29"
-            echo "- Expected SQL total: 74"
+            echo "- Production-hardening plan: 30"
+            echo "- Expected SQL total: 75"
             echo "- Phase 3 HTTP tests: 22"
             echo "- Phase 4 HTTP tests: 19"
             echo "- Remote Supabase: not linked or accessed"

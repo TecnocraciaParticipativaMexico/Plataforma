@@ -56,8 +56,8 @@ test("headers are restrictive and sensitive handlers do not opt into wildcard CO
 });
 
 test("disposable CI covers the expanded Phase 4 surface", () => {
-  assert.match(workflow, /Run 29 production-hardening pgTAP assertions/);
+  assert.match(workflow, /Run 30 production-hardening pgTAP assertions/);
   assert.match(workflow, /Run 19 Phase 4 HTTP hardening tests/);
   assert.match(workflow, /security_rate_limit_concurrency\.sh/);
-  assert.match(workflow, /Expected SQL total: 74/);
+  assert.match(workflow, /Expected SQL total: 75/);
 });

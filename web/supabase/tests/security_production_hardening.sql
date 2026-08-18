@@ -1,7 +1,7 @@
 -- Run only against disposable local Supabase after every versioned migration.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(29);
+select plan(30);
 
 select has_table('private','rate_limit_buckets','distributed rate buckets exist in private schema');
 select ok(not has_table_privilege('authenticated','private.rate_limit_buckets','SELECT'),'users cannot inspect rate counters');
@@ -80,6 +80,7 @@ select is((select review_status from public.evidence_pointers where id='49000000
 set local role authenticated;
 select set_config('request.jwt.claim.sub','41000000-0000-4000-8000-000000000001',true);
 select ok((select allowed from public.consume_rate_limit('process.create')),'normal rate-limit consumption succeeds');
+select ok((select allowed from public.consume_rate_limit('vote.citizen',gen_random_uuid())),'resource-scoped rate-limit consumption succeeds');
 select ok((select bool_and(allowed) from generate_series(1,9) gs,lateral public.consume_rate_limit('process.create'||left(gs::text,0))),'requests through configured limit succeed');
 select ok(not (select allowed from public.consume_rate_limit('process.create')),'request above configured limit is rejected');
 select set_config('request.jwt.claim.sub','42000000-0000-4000-8000-000000000002',true);

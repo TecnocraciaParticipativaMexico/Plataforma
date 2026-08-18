@@ -31,6 +31,6 @@ Client responses use stable codes such as `AUTH_REQUIRED`, `FORBIDDEN`, `RATE_LI
 
 ## Validation and residual production work
 
-CI recreates the historical fixture plus all versioned migrations in disposable Supabase, exercises 74 SQL assertions, 22 Phase 3 HTTP tests, 19 Phase 4 HTTP tests, concurrent voting and concurrent distributed limiting, Storage, Node tests, TypeScript, build, changed-file lint, diff checks and secret signatures, then stops Supabase without backup.
+CI recreates the historical fixture plus all versioned migrations in disposable Supabase, exercises 75 SQL assertions, 22 Phase 3 HTTP tests, 19 Phase 4 HTTP tests, concurrent voting and concurrent distributed limiting, Storage, Node tests, TypeScript, build, changed-file lint, diff checks and secret signatures, then stops Supabase without backup.
 
 Before production integration: deploy and monitor a real malware scanner; define who may create proposals; replace CSP inline allowances with nonces/hashes; establish retention/cleanup for rate buckets and rejected/orphan evidence; alert on chain failures and significant denials; and validate headers and signed-download behavior at the production edge. No Phase 4 migration has been applied remotely.

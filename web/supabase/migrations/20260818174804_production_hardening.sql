@@ -63,7 +63,7 @@ begin
   else
     insert into private.rate_limit_buckets(actor_user_id,action,resource_id,window_started_at,consumed)
     values(v_user,p_action,p_resource_id,v_window,1)
-    on conflict(actor_user_id,action,resource_id,window_started_at)
+    on conflict(actor_user_id,action,resource_id,window_started_at) where resource_id is not null
     do update set consumed=private.rate_limit_buckets.consumed+1 returning consumed into v_consumed;
   end if;
   allowed:=v_consumed<=v_policy.request_limit;
