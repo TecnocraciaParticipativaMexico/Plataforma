@@ -14,7 +14,7 @@ During the run it:
 2. copies local configuration, real migrations and tests;
 3. copies `historical_baseline.sql` into that temporary directory under the earlier test-only timestamp `20260729000000`;
 4. starts local Supabase and resets it from zero;
-5. executes 31 authorization and 14 catalog pgTAP assertions;
+5. executes 31 authorization, 15 catalog, 30 production-hardening and 25 legacy-bridge pgTAP assertions;
 6. opens two concurrent `psql` sessions and requires one persisted vote plus one rejected duplicate;
 7. runs Node security tests, TypeScript, build, focused lint, diff checks and a non-mutating dependency audit; and
 8. stops the stack without a backup. The runner and its local credentials are then destroyed by GitHub.
@@ -53,10 +53,12 @@ npx supabase --workdir $validationRoot start
 npx supabase --workdir $validationRoot db reset --local --no-seed
 npx supabase --workdir $validationRoot test db `
   supabase/tests/security_authorization.sql `
-  supabase/tests/security_catalog_audit.sql --local
+  supabase/tests/security_catalog_audit.sql `
+  supabase/tests/security_production_hardening.sql `
+  supabase/tests/security_legacy_bridge.sql --local
 ```
 
-The expected plans are 31 authorization assertions and 14 catalog assertions, 45 total. A plan line alone is not success: every assertion must report `ok`, with no SQL error before `finish()`.
+The expected plans are 31 authorization, 15 catalog, 30 production-hardening and 25 legacy-bridge assertions, 101 total. A plan line alone is not success: every assertion must report `ok`, with no SQL error before `finish()`.
 
 For reproducibility, stop and delete the disposable stack, remove the inspected temporary directory, recreate it from scratch and repeat:
 
@@ -70,7 +72,7 @@ Use PowerShell `Remove-Item` only after verifying that `$validationRoot` resolve
 
 `security_catalog_audit.sql` fails when a sensitive table is absent or lacks RLS, anon has writes, authenticated has prohibited direct writes, Storage is public/overwriteable, a definer has PUBLIC execution, private schema helpers are directly addressable, a critical RPC has an excessive/missing grant, or historical tables are reopened by a policy.
 
-Review the catalog manually as well for unexpected pre-existing policies or overloads. A passing fixture proves compatibility only with the narrow fixture, never with an uninspected remote schema.
+Review the catalog manually as well for unexpected pre-existing policies or overloads. The sanitized fixture reproduces the inspected legacy table shapes, row counts, ambiguous ownership, historical states, incompatible MIME rows and inherited RPC signatures documented in the read-only preflight. It contains no production values. A passing fixture proves compatibility with that inspected structural baseline, not with future uninspected drift.
 
 ## Web validation
 
@@ -92,11 +94,11 @@ Report global lint separately from lint on modified TypeScript/JavaScript files.
 - `supabase start`: blocked before database creation because neither Docker nor Podman is installed/on `PATH`.
 - `supabase db reset --local --no-seed`: failed before migrations with `LegacyDbBootstrapError` because the local service does not exist.
 - `supabase test db ... --local`: failed to connect to loopback PostgreSQL port 54322. Thus pgTAP and catalog queries were not executed.
-- `npm test`: 25/25 Node tests passed. These are static/application contracts, not SQL execution.
+- `npm test`: 35/35 Node tests passed. These are static/application contracts, not SQL execution.
 - `npm run typecheck`: passed after adding exact `react-leaflet` 5.0.0.
 - `npm run build`: passed with ephemeral, explicitly fake loopback Supabase placeholders; no `.env` file was written and no connection was made.
 - Global `npm run lint`: 59 existing findings (42 errors, 17 warnings). Lint on the modified JavaScript test passed.
 - `npm audit`: 9 findings in the full dependency tree (1 low, 8 high); no automatic or forced update was applied in this focused phase.
 - No remote connection, schema download or remote mutation was attempted.
 
-The GitHub Actions run record is the authoritative execution evidence once the workflow completes. A passing fixture-based run proves reproducibility against the narrow repository fixture, not compatibility with an unknown production baseline.
+The GitHub Actions run record is the authoritative execution evidence once the workflow completes. A passing fixture-based run proves reproducibility against the sanitized structural baseline captured by the read-only preflight; the backup-and-restore gate remains mandatory before any remote migration.

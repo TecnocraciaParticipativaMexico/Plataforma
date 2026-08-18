@@ -1,6 +1,6 @@
 # Historical schema dependency inventory
 
-This inventory separates what is versioned from what the application merely references. It does not assert that the remote schema has any unversioned object, and no remote project was queried.
+This inventory originally separated versioned objects from code references. An authorized read-only remote preflight on 2026-08-18 subsequently confirmed the historical shapes summarized in `REMOTE-SUPABASE-PREFLIGHT.md`; no row content or personal data was read.
 
 Classification:
 
@@ -18,7 +18,7 @@ Classification:
 | `committee_applications.id` | C, E | exam migration `:21,47,205` | Required as UUID primary/unique identity by two foreign-key directions. |
 | Application payload columns | C, E | exam migration `:175-203`; solicitudes route `:8-11,35-48` | Names and primitive types are derivable; historical constraints, triggers, defaults and policies are not. |
 
-The narrow local-only fixture at `web/supabase/tests/fixtures/historical_baseline.sql` models only these derivable columns. It is not production DDL and must never be copied into `migrations/` or applied remotely.
+The local-only fixture at `web/supabase/tests/fixtures/historical_baseline.sql` is now a sanitized synthetic reconstruction of the confirmed shapes and aggregate conflict counts. It is not a remote dump, contains no production rows and must never be applied remotely.
 
 ## Versioned Phase 2 objects
 

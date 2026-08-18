@@ -6,6 +6,12 @@ Review date: 2026-08-18. Current `origin/main`: `960c10afe8a42f6b485928d7a47143b
 
 **APTA PARA INTEGRACIÓN CONTROLADA**, subject to the production gates and separate remote-database phase in this document.
 
+### Remote-baseline addendum
+
+The original accumulated release passed its disposable baseline, but the subsequent authorized read-only production preflight found a materially different historical schema. Production therefore requires `20260804000000_legacy_security_bridge.sql` before the four security migrations. The bridge preserves ownerless history, quarantines legacy evidence, reconciles required legacy columns, blocks ambiguous states and removes client execution from three inherited `SECURITY DEFINER` RPCs. See `REMOTE-SUPABASE-PREFLIGHT.md` and `LEGACY-SCHEMA-BRIDGE.md`.
+
+This addendum does not authorize a remote migration or merge. The production gate remains `BACKUP NO VERIFICADO` until an encrypted logical backup has been restored successfully in a disposable environment.
+
 No se identificaron rutas conocidas que permitan reproducir las vulnerabilidades auditadas bajo las pruebas ejecutadas.
 
 This conclusion does not mean that the platform is invulnerable. It means the accumulated Fases 1–4 are internally coherent, are a direct descendant of current `main`, and satisfy the documented tests. No merge, production deployment, Supabase link, remote migration or remote policy change was performed during this review.
@@ -50,9 +56,10 @@ The successful disposable GitHub Actions run is `32172316350`.
 | Suite | Result |
 |---|---:|
 | Authorization pgTAP | 31/31 |
-| Catalog/RLS/grants pgTAP | 14/14 |
+| Catalog/RLS/grants pgTAP | 15/15 after bridge validation |
+| Legacy bridge pgTAP | 25/25 after bridge validation |
 | Production-hardening pgTAP | 30/30 |
-| SQL total | 75/75 |
+| SQL total | 101/101 after bridge validation |
 | Phase 3 HTTP | 22/22 |
 | Phase 4 HTTP | 19/19 |
 | Node security tests | 34/34 |
