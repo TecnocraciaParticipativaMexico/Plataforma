@@ -19,6 +19,7 @@ insert into auth.users(id,aud,role,email,encrypted_password,email_confirmed_at,c
 on conflict(id) do nothing;
 
 create temporary table hardening_ids(process_id uuid not null);
+grant select on hardening_ids to authenticated;
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub','41000000-0000-4000-8000-000000000001',true);
@@ -34,6 +35,7 @@ select is((select public.verify_process_chain(process_id) from hardening_ids),'v
 reset role;
 create temporary table hardening_event_backup as
   select * from public.process_events where process_id=(select process_id from hardening_ids);
+grant select on hardening_event_backup to authenticated;
 update public.process_events set payload='{"tampered":true}' where process_id=(select id from public.civic_processes where owner_user_id='41000000-0000-4000-8000-000000000001');
 set local role authenticated;
 select set_config('request.jwt.claim.sub','41000000-0000-4000-8000-000000000001',true);
