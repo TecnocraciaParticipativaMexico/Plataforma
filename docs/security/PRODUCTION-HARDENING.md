@@ -17,6 +17,54 @@ This phase is implemented on `codex/security-production-hardening` and is valida
 - Reputation mutation remains `503`, the unsafe map remains `403`, and legacy application mutation remains `410` as documented in prior phases.
 - Quarantined evidence remains unavailable until an actual scanner promotes it through a separately authorized workflow. This phase does not claim productive antivirus.
 
+## Direct legacy grants
+
+Staging replay found inherited `INSERT`, `UPDATE`, `DELETE` and `TRUNCATE`
+grants for `anon` and `authenticated` on `civic_reputation` and
+`committee_report_events`. RLS kept both tables fail-closed, but the grants
+violated defense in depth. `20260914195151_revoke_legacy_direct_writes.sql`
+revokes only those 16 privilege/role/table combinations. It intentionally
+preserves `SELECT` and does not change the planned grants on `citizen_reports`,
+`civic_processes` or `profiles`.
+
+No authenticated RPC writes either legacy table. Canonical mutations use other
+tables through guarded owner-privileged functions, while any compatibility write
+must remain server-side through `service_role`.
+
+## Authenticated SECURITY DEFINER matrix
+
+All 13 functions deny `anon`, derive the caller with `auth.uid()`, and fix
+`search_path` to `pg_catalog, public, private`. Their residual risk is that an
+implementation defect executes with owner privileges; catalog, authorization,
+idempotency and state-machine tests therefore remain release gates.
+
+| Function | Why authenticated invokes it | Internal controls | Tables modified | Residual risk |
+|---|---|---|---|---|
+| `add_civic_process_note` | Owner adds a process note | owner, state, idempotency, audit | `process_events` | privileged event append |
+| `add_committee_observation` | authorized committee observation | membership, module, conflict, state, audit | `committee_report_observations` | role/configuration error |
+| `authorize_evidence_download` | owner requests accepted evidence | owner/process match, accepted state, rate limit, audit | none | authorization predicate error |
+| `cast_citizen_vote` | citizen casts one qualified vote | owner attempt, active proposal, weight calculation, idempotency | `proposal_votes` | qualification calculation error |
+| `cast_technical_vote` | committee member votes | membership, conflict, report state, idempotency | `committee_technical_votes` | committee configuration error |
+| `close_committee_report` | authorized closure | membership, conflict, version, quorum, audit | `committee_reports` | quorum/configuration error |
+| `consume_rate_limit` | guarded endpoints consume quota | caller/action policy, atomic bucket update | `private.rate_limit_buckets` | policy tuning error |
+| `create_civic_process` | citizen opens an allowed process | type allowlist, ownership, idempotency, audit | `civic_processes`, `process_events` | type-policy error |
+| `create_committee_report` | committee opens a report | membership, proposal state, conflict, audit | `committee_reports` | membership/configuration error |
+| `prepare_evidence_upload` | owner reserves an upload | ownership, MIME/size/hash validation, rate limit | `evidence_pointers` | upload/pointer divergence |
+| `review_committee_application` | reviewer performs an action | reviewer role, module, no self-review, version, transition matrix | `committee_applications` | reviewer configuration error |
+| `transition_civic_process_state` | owner requests allowed transition | ownership, version, transition matrix, idempotency | `civic_processes`, `process_events` | transition-matrix error |
+| `verify_process_chain` | owner/auditor verifies integrity | owner or privileged role, bounded result, audit | none | verifier implementation error |
+
+## Intentionally fail-closed tables
+
+| Table | Reason for no policy | Future enabling condition |
+|---|---|---|
+| `append_only_event` | ownerless MD5-era history | audited ownership reconciliation and read model |
+| `citizen_report_index` | ownerless compatibility index | verified owner backfill or server-only retirement |
+| `civic_reputation` | no authoritative mutation source | server-verifiable reputation event workflow |
+| `committee_exam_attempts` | answers and grading are privileged | remains service-role/RPC only |
+| `committee_quorum_rules` | protected administrative configuration | separately authorized administrative workflow |
+| `committee_report_events` | superseded ownerless legacy event model | verified migration to the canonical event/audit model |
+
 ## Headers, CORS and CSRF
 
 Every Next.js path receives CSP, `nosniff`, strict referrer policy, permissions policy, frame denial and HSTS. CSP allows only the configured Supabase origin and the existing OpenStreetMap/unpkg image/frame resources. It excludes `unsafe-eval`. `unsafe-inline` remains temporarily for Next.js hydration and existing inline styles; reduction requires nonce/hash adoption and a UI regression pass.

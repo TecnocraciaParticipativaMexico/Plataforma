@@ -56,10 +56,10 @@ The successful disposable GitHub Actions run is `32172316350`.
 | Suite | Result |
 |---|---:|
 | Authorization pgTAP | 31/31 |
-| Catalog/RLS/grants pgTAP | 15/15 after bridge validation |
+| Catalog/RLS/grants pgTAP | 31/31 after legacy direct-grant validation |
 | Legacy bridge pgTAP | 25/25 after bridge validation |
 | Production-hardening pgTAP | 30/30 |
-| SQL total | 101/101 after bridge validation |
+| SQL total | 117/117 after legacy direct-grant validation |
 | Phase 3 HTTP | 22/22 |
 | Phase 4 HTTP | 19/19 |
 | Node security tests | 34/34 |
@@ -82,6 +82,12 @@ The four new migrations are chronologically ordered, unique and free of test-obj
 2. `20260805000200_security_rls_and_storage.sql` — RLS, explicit grants/revokes, private helper functions, legacy-table closure and private evidence bucket/policies.
 3. `20260805000300_security_transactional_rpcs.sql` — audited transactional process, evidence, vote, report and state RPCs.
 4. `20260818174804_production_hardening.sql` — atomic distributed limits, event hash chain, server-only evidence pipeline, accepted-only downloads and administrative review.
+5. `20260914195151_revoke_legacy_direct_writes.sql` — removes direct legacy writes from `anon` and `authenticated` on `civic_reputation` and `committee_report_events` without changing planned grants or `SELECT`.
+
+The Staging compatibility replay identified the final direct-grant gap after the
+original 101 assertions passed. Sixteen catalog assertions now enforce all four
+write revocations for both client roles and both legacy tables. The accumulated
+SQL plan is 117 assertions. Production has not received this migration.
 
 The repository already contains `20260730000000_committee_exam_attempts.sql`, which precedes them. It and the security migrations depend on real historical tables, especially `committee_applications`, `append_only_event` and `citizen_report_index`, whose complete historical DDL is absent from version control and recorded in `SCHEMA-BASELINE-GAPS.md`. The local fixture models only the minimum missing `committee_applications` shape. Before any remote operation, a read-only schema inventory must prove that the target objects, columns, constraints and types match the documented baseline.
 

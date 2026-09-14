@@ -1,7 +1,7 @@
 -- Run only against a disposable Supabase local database after all migrations.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(15);
+select plan(31);
 
 select ok(not exists (
   select 1
@@ -117,6 +117,40 @@ select ok(not exists (
     and (has_function_privilege('anon',p.oid,'EXECUTE')
       or has_function_privilege('authenticated',p.oid,'EXECUTE'))
 ), 'unsafe inherited RPCs are never executable by anon or authenticated');
+
+select ok(not has_table_privilege('anon','public.civic_reputation','INSERT'),
+  'anon cannot insert civic reputation');
+select ok(not has_table_privilege('anon','public.civic_reputation','UPDATE'),
+  'anon cannot update civic reputation');
+select ok(not has_table_privilege('anon','public.civic_reputation','DELETE'),
+  'anon cannot delete civic reputation');
+select ok(not has_table_privilege('anon','public.civic_reputation','TRUNCATE'),
+  'anon cannot truncate civic reputation');
+select ok(not has_table_privilege('authenticated','public.civic_reputation','INSERT'),
+  'authenticated cannot insert civic reputation');
+select ok(not has_table_privilege('authenticated','public.civic_reputation','UPDATE'),
+  'authenticated cannot update civic reputation');
+select ok(not has_table_privilege('authenticated','public.civic_reputation','DELETE'),
+  'authenticated cannot delete civic reputation');
+select ok(not has_table_privilege('authenticated','public.civic_reputation','TRUNCATE'),
+  'authenticated cannot truncate civic reputation');
+
+select ok(not has_table_privilege('anon','public.committee_report_events','INSERT'),
+  'anon cannot insert legacy committee report events');
+select ok(not has_table_privilege('anon','public.committee_report_events','UPDATE'),
+  'anon cannot update legacy committee report events');
+select ok(not has_table_privilege('anon','public.committee_report_events','DELETE'),
+  'anon cannot delete legacy committee report events');
+select ok(not has_table_privilege('anon','public.committee_report_events','TRUNCATE'),
+  'anon cannot truncate legacy committee report events');
+select ok(not has_table_privilege('authenticated','public.committee_report_events','INSERT'),
+  'authenticated cannot insert legacy committee report events');
+select ok(not has_table_privilege('authenticated','public.committee_report_events','UPDATE'),
+  'authenticated cannot update legacy committee report events');
+select ok(not has_table_privilege('authenticated','public.committee_report_events','DELETE'),
+  'authenticated cannot delete legacy committee report events');
+select ok(not has_table_privilege('authenticated','public.committee_report_events','TRUNCATE'),
+  'authenticated cannot truncate legacy committee report events');
 
 select * from finish();
 rollback;

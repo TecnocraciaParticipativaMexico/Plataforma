@@ -12,6 +12,7 @@ Date: 2026-08-18. This document describes the compatibility layer required by th
 4. `20260805000200_security_rls_and_storage.sql`
 5. `20260805000300_security_transactional_rpcs.sql`
 6. `20260818174804_production_hardening.sql`
+7. `20260914195151_revoke_legacy_direct_writes.sql`
 
 The bridge is additive and preservation-oriented. It does not delete rows, rewrite hashes, infer identity from `actor_hash`, normalize ambiguous states, create the Storage bucket or make legacy evidence downloadable.
 
@@ -94,6 +95,13 @@ The release application uses the new authenticated RPC surface. Removal of legac
 - the three inherited `SECURITY DEFINER` signatures with their pre-bridge grants.
 
 The 25 bridge assertions prove preservation, quarantine, ownership rules, invalid-MIME rejection, RLS closure, ambiguous-state blocking, nullable compatibility columns, fixed search paths and inherited RPC denial. The catalog plan adds an explicit regression assertion, bringing total SQL coverage to 101.
+
+The Staging replay subsequently exposed inherited direct write grants on
+`civic_reputation` and `committee_report_events`. Neither table is written by an
+authenticated canonical RPC. The follow-up migration revokes `INSERT`, `UPDATE`,
+`DELETE` and `TRUNCATE` from both `anon` and `authenticated`, leaving `SELECT`
+unchanged. Sixteen catalog assertions prevent regression, increasing the catalog
+plan to 31 and total SQL coverage to 117.
 
 ## Backup and controlled migration procedure
 
