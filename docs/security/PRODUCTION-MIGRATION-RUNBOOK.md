@@ -1,8 +1,11 @@
 # Production security migration runbook
 
-Status: **PLAN ONLY — BACKUP NO VERIFICADO**  
-Production target: `TecnocraciaParticipativaMexico` (`evxokjcuzpeaoxrfumyh`)  
-Validated laboratory: `TecnocraciaParticipativaMexico-Staging` (`jlbcgmgkmpiwrstkwcer`)  
+Status: **PLAN ONLY — BACKUP NO VERIFICADO**
+
+Production target: `TecnocraciaParticipativaMexico` (`evxokjcuzpeaoxrfumyh`)
+
+Validated laboratory: `TecnocraciaParticipativaMexico-Staging` (`jlbcgmgkmpiwrstkwcer`)
+
 Release: Draft PR #112, base `main`
 
 This document is an execution plan, not authorization to change Production. It
@@ -299,4 +302,3 @@ fail-closed routes. If database integrity is uncertain, invoke section 6 recover
 - Backup gate: **BACKUP NO VERIFICADO**.
 - Production authorization: **DENIED until BACKUP VERIFICADO and explicit
   change-window approval**.
-
