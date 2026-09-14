@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import AuthGuard from "../../components/AuthGuard";
 import LogoutButton from "../../components/LogoutButton";
 
 const ESTADOS_REVISION = [
@@ -33,6 +32,7 @@ type Solicitud = {
   motivation: string;
   created_at: string;
   review_status?: string | null;
+  state_version: number;
   visibility_level?: string | null;
   conflict_interest?: string | null;
   curriculum_evidence?: string | null;
@@ -77,10 +77,25 @@ export default function RevisionComitesPage() {
   }, [solicitudes, modulo, nivel, estado]);
 
   async function cambiarEstadoSolicitud(id: string, nuevoEstado: string) {
+    const actionByStatus: Record<string, string> = {
+      "Revisión documental": "request_document_review",
+      "Observación comunitaria": "request_community_observation",
+      "Apta": "qualify",
+      "Integrada": "integrate",
+      "Lista de espera": "waitlist",
+      "Suspendida": "suspend",
+      "Rechazada": "reject",
+    };
+    const current = solicitudes.find((item) => item.id === id);
+    const action = actionByStatus[nuevoEstado];
+    if (!current || !action) {
+      alert("La transición solicitada no está habilitada.");
+      return;
+    }
     const res = await fetch("/api/comites/solicitudes", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, review_status: nuevoEstado }),
+      body: JSON.stringify({ id, action, expected_version: current.state_version, idempotency_key: crypto.randomUUID() }),
     });
 
     const data = await res.json();
@@ -92,7 +107,7 @@ export default function RevisionComitesPage() {
 
     setSolicitudes((actuales) =>
       actuales.map((s) =>
-        s.id === id ? { ...s, review_status: nuevoEstado } : s
+        s.id === id ? { ...s, review_status: nuevoEstado, state_version: s.state_version + 1 } : s
       )
     );
   }

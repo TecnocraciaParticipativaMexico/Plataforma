@@ -1,53 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { supabaseServer } from "@/lib/supabaseServer";
+import { requireUser, securityErrorResponse } from "@/lib/security/auth";
+import { assertProcessOwner } from "@/lib/security/processOwnership";
 
 export async function GET(req: NextRequest) {
-  const actorHash = req.nextUrl.searchParams.get("actor_hash");
-
-  if (!actorHash) {
-    return NextResponse.json({ ok: false, error: "Falta actor_hash" }, { status: 400 });
+  try {
+    const user = await requireUser(req);
+    if (req.nextUrl.searchParams.has("actor_hash")) {
+      return NextResponse.json({ ok: false, error: "Client-supplied identity is not allowed" }, { status: 400 });
+    }
+    const { data, error } = await supabaseServer.from("citizen_report_index")
+      .select("process_id,title,category,created_at").eq("actor_hash", user.id)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return NextResponse.json({ ok: true, reports: data || [] });
+  } catch (error) {
+    return securityErrorResponse(error);
   }
-
-  const { data, error } = await supabase
-    .from("citizen_report_index")
-    .select("process_id,title,category,created_at")
-    .eq("actor_hash", actorHash)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ ok: true, reports: data || [] });
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-
-  const actor_hash = body?.actor_hash;
-  const process_id = body?.process_id;
-  const title = body?.title || "Denuncia ciudadana";
-  const category = body?.category || "Otro";
-
-  if (!actor_hash || !process_id) {
-    return NextResponse.json({ ok: false, error: "Faltan datos" }, { status: 400 });
+  try {
+    const user = await requireUser(req);
+    const body = await req.json();
+    if (body?.actor_hash !== undefined || body?.user_id !== undefined) {
+      return NextResponse.json({ ok: false, error: "Client-supplied identity is not allowed" }, { status: 400 });
+    }
+    const processId = String(body?.process_id ?? "").trim();
+    if (!processId) return NextResponse.json({ ok: false, error: "process_id is required" }, { status: 400 });
+    await assertProcessOwner(processId, user.id);
+    const { error } = await supabaseServer.from("citizen_report_index").insert({
+      actor_hash: user.id, process_id: processId,
+      title: String(body?.title || "Denuncia ciudadana"), category: String(body?.category || "Otro"),
+    });
+    if (error && error.code !== "23505") throw error;
+    return NextResponse.json({ ok: true }, { status: error ? 409 : 200 });
+  } catch (error) {
+    return securityErrorResponse(error);
   }
-
-  const { error } = await supabase.from("citizen_report_index").insert({
-    actor_hash,
-    process_id,
-    title,
-    category,
-  });
-
-  if (error && error.code !== "23505") {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ ok: true });
 }
