@@ -88,7 +88,7 @@ jobs:
             supabase/tests/security_authorization.sql --local | tee "$output"
           grep -Eq 'Tests=31([^0-9]|$)' "$output"
 
-      - name: Run 15 catalog pgTAP assertions
+      - name: Run 31 catalog pgTAP assertions
         shell: bash
         run: |
           set -euo pipefail
@@ -96,7 +96,7 @@ jobs:
           cd "${{ steps.isolated.outputs.root }}"
           npx --yes "supabase@${SUPABASE_CLI_VERSION}" test db \
             supabase/tests/security_catalog_audit.sql --local | tee "$output"
-          grep -Eq 'Tests=15([^0-9]|$)' "$output"
+          grep -Eq 'Tests=31([^0-9]|$)' "$output"
 
       - name: Run 25 legacy-bridge pgTAP assertions
         shell: bash
