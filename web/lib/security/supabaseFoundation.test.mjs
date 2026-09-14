@@ -120,7 +120,7 @@ test("CI validation is disposable, secret-free and preserves real migrations", (
   assert.match(ciWorkflow, /20260729000000_local_historical_baseline\.sql/);
   assert.match(ciWorkflow, /db reset --local --no-seed/);
   assert.match(ciWorkflow, /Tests=31/);
-  assert.match(ciWorkflow, /Tests=15/);
+  assert.match(ciWorkflow, /Tests=31/);
   assert.match(ciWorkflow, /Tests=25/);
   assert.doesNotMatch(ciWorkflow, /supabase (link|db push|migration repair)/);
   assert.doesNotMatch(ciWorkflow, /secrets\./);
