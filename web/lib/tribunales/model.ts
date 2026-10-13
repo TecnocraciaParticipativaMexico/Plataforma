@@ -16,6 +16,8 @@ export type Finding = {
   source: string;
   reasoning: string;
   result: "Pendiente" | "Consistente" | "Requiere contraste";
+  reviewState?: "Pendiente" | "Preparada para revisión" | "Requiere aclaración";
+  reviewNote?: string;
 };
 export type Dossier = {
   title: string;
@@ -117,11 +119,38 @@ export function validateDossier(input: unknown): Dossier {
       throw new Error(
         "Cada valoración requiere fuente y al menos 30 caracteres de razonamiento.",
       );
+    if (
+      row.reviewState !== undefined &&
+      !["Pendiente", "Preparada para revisión", "Requiere aclaración"].includes(
+        row.reviewState,
+      )
+    )
+      throw new Error(
+        "No se admite validación colegiada desde un borrador personal.",
+      );
+    if (
+      row.reviewNote !== undefined &&
+      (typeof row.reviewNote !== "string" || row.reviewNote.length > 2000)
+    )
+      throw new Error("Nota de revisión inválida.");
+    if (
+      row.reviewState === "Preparada para revisión" &&
+      (!row.source.trim() || row.reasoning.trim().length < 30)
+    )
+      throw new Error(
+        "Preparar revisión requiere fuente y justificación técnica.",
+      );
     return {
       layer: layers[i],
       source: row.source.trim(),
       reasoning: row.reasoning.trim(),
       result: row.result,
+      ...(row.reviewState !== undefined
+        ? { reviewState: row.reviewState }
+        : {}),
+      ...(row.reviewNote !== undefined
+        ? { reviewNote: row.reviewNote.trim() }
+        : {}),
     };
   });
   return {
@@ -159,7 +188,7 @@ export function report(d: Dossier, hash: string): string {
       : "Resolución aportada para contraste ciudadano.",
     ...d.findings.map(
       (f) =>
-        `${f.layer}\nEstado: ${f.result}\nReferencia: ${f.source || "Pendiente"}\nRazonamiento aportado: ${f.reasoning || "Pendiente"}`,
+        `${f.layer}\nEstado: ${f.result}\nRevisión personal: ${f.reviewState || "Pendiente"}\nNota: ${f.reviewNote || "Pendiente"}\nReferencia: ${f.source || "Pendiente"}\nRazonamiento aportado: ${f.reasoning || "Pendiente"}`,
     ),
     `SHA-256 del contenido normalizado: ${hash}`,
     "Esta huella permite detectar cambios; no acredita autenticidad, sello de tiempo ni registro inmutable. No se utilizó IA. Requiere revisión humana, conflictos de interés y deliberación colegiada antes de cualquier dictamen.",

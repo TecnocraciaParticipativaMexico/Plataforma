@@ -71,3 +71,17 @@ test("SHA-256 detecta manipulación y sobrevive exportación JSON", async () => 
   );
   assert.match(report(d, hash), /NO VALIDADO NI PUBLICADO/);
 });
+test("estado de preparación exige fuentes y no permite validación oficial", () => {
+  const d = valid();
+  d.findings[0].reviewState = "Preparada para revisión";
+  assert.throws(() => validateDossier(d));
+  d.findings[0].source = d.source;
+  d.findings[0].reasoning =
+    "Justificación técnica suficiente para solicitar revisión experta.";
+  assert.equal(
+    validateDossier(d).findings[0].reviewState,
+    "Preparada para revisión",
+  );
+  d.findings[0].reviewState = "Validada por comité";
+  assert.throws(() => validateDossier(d));
+});

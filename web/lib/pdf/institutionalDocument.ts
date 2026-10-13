@@ -10,6 +10,7 @@ export type InstitutionalPdfSection = {
   body?: string[];
   fields?: InstitutionalPdfField[];
   items?: string[];
+  keepTogether?: boolean;
 };
 
 export type InstitutionalPdfOptions = {
@@ -246,7 +247,17 @@ function drawFields(ctx: PdfContext, fields: InstitutionalPdfField[]) {
 }
 
 function drawSection(ctx: PdfContext, section: InstitutionalPdfSection, index: number) {
-  ensureSpace(ctx, 72);
+  let required = 72;
+  if (section.keepTogether) {
+    const width = ctx.pageWidth - ctx.margin * 2;
+    const bodyHeight = (section.body ?? []).reduce((height, text) => height + wrapText(ctx.regular, text, 10, width).length * 14 + 6, 0);
+    const fieldsHeight = (section.fields ?? []).reduce((height, field) => height + Math.max(28, wrapText(ctx.regular, field.value, 9.5, width - 158).length * 13 + 12) + 4, 0);
+    const itemsHeight = (section.items ?? []).reduce((height, text) => height + wrapText(ctx.regular, text, 10, width - 20).length * 14 + 2, 0);
+    const estimated = 72 + bodyHeight + fieldsHeight + itemsHeight + 18;
+    if (estimated <= ctx.pageHeight - 144) required = estimated;
+  }
+  // Opt-in only: existing module layouts retain their behavior.
+  ensureSpace(ctx, required);
   drawText(ctx, `SECCIÓN ${index}`, ctx.margin, ctx.y, { size: 8, font: ctx.bold, color: brand.magenta });
   ctx.y -= 17;
   drawText(ctx, section.title, ctx.margin, ctx.y, { size: 15, font: ctx.bold, color: brand.blue });

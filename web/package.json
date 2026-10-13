@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "test:module07": "node --import ./scripts/register-test-types.mjs --test lib/tribunales/*.test.mjs",
+    "test:documental": "node --import ./scripts/register-test-types.mjs --test lib/tribunales/*.test.mjs lib/observacion-electoral/*.test.mjs",
+    "typecheck": "tsc --noEmit",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
