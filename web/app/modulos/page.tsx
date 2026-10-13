@@ -14,6 +14,7 @@ const modulosDisponibles: Record<number, string> = {
   4: "/derechos-humanos",
   5: "/madres-buscadoras",
   6: "/sistema-judicial-carrera",
+  7: "/tribunales-alta-integridad",
   10: "/salud-publica",
   21: "/observacion-electoral",
   30: "/relaciones-internacionales",

@@ -5,6 +5,11 @@ import { useMemo, useState } from "react";
 import { modulosTecnocracia } from "../../lib/modulosTecnocracia";
 
 const modulosDisponibles: Record<number, { href: string; cta: string; descripcion: string }> = {
+  7: {
+    href: "/tribunales-alta-integridad",
+    cta: "Entrar a Tribunales de Alta Integridad",
+    descripcion: "Contraste jurídico ciudadano con expedientes públicos, matrices e integridad documental; operación colegiada pendiente.",
+  },
   1: {
     href: "/seguridad-ciudadana",
     cta: "Entrar a Seguridad Ciudadana",
@@ -57,7 +62,7 @@ export default function ModulosComitesPage() {
           Participativa. Puedes explorar módulos y solicitar participación
           según tu experiencia técnica.
           <span className="mt-2 block font-semibold text-[#0A4E84]">
-            Por ahora, los Módulos 01, 02, 03 y 05 están disponibles.
+            Desde este panel puedes acceder a los módulos con herramientas disponibles. La operación sensible de cada módulo depende de sus controles habilitados.
           </span>
         </p>
 
