@@ -51,6 +51,7 @@ La descripción antigua del PR hablaba de 75 pruebas SQL; el workflow real tiene
 |---|---|
 | npm ci del lockfile corregido | éxito; instalación local con --ignore-scripts |
 | Node seguridad | 38/38, 0 fallos, 0 omitidos (baseline real: 35) |
+| Node regresión electoral existente | 19/19; runner incluido en npm test, total 57 |
 | TypeScript | exit 0 |
 | Build sin variables Supabase | exit 0; compilación, tipos y prerender completados |
 | Lint de núcleo de seguridad, clientes Supabase y endpoints | exit 0 |
@@ -83,7 +84,7 @@ del nuevo lockfile elimina los avisos runtime conocidos consultados hoy.
 ## Compatibilidad y límites
 
 No se eliminan páginas, rutas ni módulos de main; se conservan componentes y
-assets. La comprobación de rutas y el build no equivalen a una prueba integral
+assets: las 79 páginas/endpoints de la base main siguen presentes. La comprobación de rutas y el build no equivalen a una prueba integral
 con dos usuarios, miembros/revisores, almacenamiento y datos reales. Esa prueba
 es puerta obligatoria en staging. Los campos documentales heredados de propuestas
 y dictámenes necesitan revisión de proyección y esquema: no debe ampliarse un
@@ -126,6 +127,7 @@ release y coordinar app/esquema → reconciliar seguridad con develop archivo po
 archivo → revalidar #113 sobre esa base. No fusionar #113 primero ni copiar
 endpoints antiguos sobre controles nuevos. Recalcular conflictos después de cada
 cambio de head; este inventario fija el punto inicial reproducible.
+La simulación repetida después del commit 7c443a1 conserva 18 conflictos.
 
 ## Supabase: comprobación de sólo lectura
 
