@@ -50,19 +50,21 @@ export default function RevisionComitesPage() {
   const [estado, setEstado] = useState("Todos");
 
   useEffect(() => {
-    cargarSolicitudes();
-  }, []);
-
-  async function cargarSolicitudes() {
-    try {
-      const res = await authenticatedFetch("/api/comites/solicitudes");
-      const data = await res.json();
-
-      if (data.ok) setSolicitudes(data.applications || []);
-    } finally {
-      setLoading(false);
+    let active = true;
+    async function cargarSolicitudes() {
+      try {
+        const res = await authenticatedFetch("/api/comites/solicitudes");
+        const data = await res.json();
+        if (active && data.ok) setSolicitudes(data.applications || []);
+      } catch {
+        if (active) setSolicitudes([]);
+      } finally {
+        if (active) setLoading(false);
+      }
     }
-  }
+    void cargarSolicitudes();
+    return () => { active = false; };
+  }, []);
 
   const modulos = Array.from(new Set(solicitudes.map((s) => s.module_name)));
   const estados = Array.from(

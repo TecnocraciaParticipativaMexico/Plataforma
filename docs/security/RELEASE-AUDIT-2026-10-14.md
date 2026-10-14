@@ -55,13 +55,19 @@ La descripción antigua del PR hablaba de 75 pruebas SQL; el workflow real tiene
 | TypeScript | exit 0 |
 | Build sin variables Supabase | exit 0; compilación, tipos y prerender completados |
 | Lint de núcleo de seguridad, clientes Supabase y endpoints | exit 0 |
-| Lint general | pendiente de limpieza heredada; 64 errores, 24 avisos |
+| Lint general | pendiente de limpieza heredada; 63 errores, 24 avisos |
 | Lint baseline inicial con las mismas herramientas | 66 errores, 24 avisos |
 | HTTP localhost sin sesión | 5/5 respuestas 401 |
 | HTTP localhost con Bearer y configuración ausente | 5/5 respuestas 503 |
 | git diff --check | éxito |
 | Audit completo | 5 high, 0 critical/moderate/low |
 | Audit --omit=dev | 0 vulnerabilidades |
+
+La ejecución Actions 38632232150 (7c443a1) verificó 117/117 pgTAP, 22/22 y 19/19
+HTTP y ambas pruebas de concurrencia. Su build y TypeScript pasaron; falló el
+lint de revisión por react-hooks/immutability. Se corrigió la carga dentro del
+effect con cancelación al desmontar, y el lint completo exigido por CI pasa
+localmente. El nuevo head requiere su propia ejecución final.
 
 Los diez HTTP prueban process/create, comites/solicitudes, citizen/reports,
 comites/votos y process/:id/event. No son pruebas con usuarios reales ni prueban
