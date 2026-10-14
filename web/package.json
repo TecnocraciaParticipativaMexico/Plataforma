@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "test": "node --experimental-strip-types --import ./scripts/register-test-types.mjs --test lib/security/*.test.mjs lib/observacion-electoral/*.test.mjs",
+    "test": "node --experimental-strip-types --import ./scripts/register-security-tests.mjs --test lib/security/*.test.mjs lib/observacion-electoral/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "build": "next build",
     "start": "next start",
