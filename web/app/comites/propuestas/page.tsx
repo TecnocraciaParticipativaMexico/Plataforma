@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useState } from "react";
 import { modulosTecnocracia } from "../../lib/modulosTecnocracia";
@@ -73,7 +75,7 @@ export default function PropuestasComitePage() {
 
       const modulo = modulosTecnocracia.find((m) => m.id === moduleId);
 
-      const res = await fetch("/api/comites/propuestas", {
+      const res = await authenticatedFetch("/api/comites/propuestas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

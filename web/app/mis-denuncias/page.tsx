@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
@@ -47,23 +49,23 @@ const categoriasUnicas = Array.from(
     );
 
     try {
-const res = await fetch("/api/process/mine", {
+const res = await authenticatedFetch("/api/process/mine", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    actor_hash: hash,
+
   }),
 });
 
 const data = await res.json();
 
       const remotas: DenunciaGuardada[] = data?.ok
-  ? data.denuncias.map((r: any) => ({
-      process_id: r.process_id,
-      titulo: r.titulo,
-      categoria: r.titulo || "Otro",
+  ? data.processes.map((r: any) => ({
+      process_id: r.id,
+      titulo: r.title || r.process_type,
+      categoria: r.process_type || "Otro",
       fecha: r.created_at,
     }))
   : [];

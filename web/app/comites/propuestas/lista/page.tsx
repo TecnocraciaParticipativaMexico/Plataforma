@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import AuthGuard from "../../../components/AuthGuard";
@@ -34,7 +36,7 @@ export default function ListaPropuestasPage() {
 
   async function cargarPropuestas() {
     try {
-      const res = await fetch("/api/comites/propuestas");
+      const res = await authenticatedFetch("/api/comites/propuestas");
       const data = await res.json();
 
       if (data.ok) {
