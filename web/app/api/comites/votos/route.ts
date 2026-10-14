@@ -5,10 +5,11 @@ import { idempotencyKey, rateLimitResponse, rejectClientAuthority, requestId, re
 
 export async function GET(req: NextRequest) {
   try {
-    const { supabase } = await requireUserContext(req);
+    const { user, supabase } = await requireUserContext(req);
     const proposalId = req.nextUrl.searchParams.get("proposal_id");
     let query = supabase.from("proposal_votes").select("id,proposal_id,choice,computed_weight,created_at");
     if (proposalId) query = query.eq("proposal_id", requireUuid(proposalId, "proposal ID"));
+    else query = query.eq("user_id", user.id);
     const { data, error } = await query.order("created_at", { ascending: false });
     if (error) throw error;
     return NextResponse.json({ ok: true, votes: data || [] });

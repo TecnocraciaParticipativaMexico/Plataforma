@@ -27,7 +27,7 @@ export async function requireUserContext(request: Request) {
 
 export function securityErrorResponse(error: unknown) {
   if (error instanceof SecurityHttpError) {
-    const code = error.status === 401 ? "AUTH_REQUIRED" : error.status === 403 ? "FORBIDDEN" : "INVALID_REQUEST";
+    const code = error.status === 503 ? "SERVICE_UNAVAILABLE" : error.status === 401 ? "AUTH_REQUIRED" : error.status === 403 ? "FORBIDDEN" : "INVALID_REQUEST";
     return NextResponse.json({ ok: false, code, error: error.message }, { status: error.status });
   }
   if (error instanceof SyntaxError) {

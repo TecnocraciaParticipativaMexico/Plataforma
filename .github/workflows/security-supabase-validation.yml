@@ -156,12 +156,18 @@ jobs:
 
       - name: Run application security checks
         working-directory: web
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: local-ci-placeholder-not-a-secret
-          SUPABASE_SERVICE_ROLE_KEY: local-ci-placeholder-not-a-secret
+        shell: bash
         run: |
           set -euo pipefail
+          status_file="$(mktemp)"
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" \
+            --workdir "${{ steps.isolated.outputs.root }}" status --output env > "$status_file"
+          set -a
+          source "$status_file"
+          set +a
+          export NEXT_PUBLIC_SUPABASE_URL="$API_URL"
+          export NEXT_PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY"
+          export SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
           npm test
           npm run typecheck
           npm run build
@@ -194,6 +200,10 @@ jobs:
               exit 1
             fi
           done < "$files"
+
+      - name: Require no critical runtime dependency advisories
+        working-directory: web
+        run: npm audit --omit=dev --audit-level=critical
 
       - name: Record non-mutating dependency audit
         working-directory: web

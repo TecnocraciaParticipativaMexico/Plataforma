@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import LogoutButton from "../../components/LogoutButton";
@@ -53,7 +55,7 @@ export default function RevisionComitesPage() {
 
   async function cargarSolicitudes() {
     try {
-      const res = await fetch("/api/comites/solicitudes");
+      const res = await authenticatedFetch("/api/comites/solicitudes");
       const data = await res.json();
 
       if (data.ok) setSolicitudes(data.applications || []);
@@ -92,7 +94,7 @@ export default function RevisionComitesPage() {
       alert("La transición solicitada no está habilitada.");
       return;
     }
-    const res = await fetch("/api/comites/solicitudes", {
+    const res = await authenticatedFetch("/api/comites/solicitudes", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, action, expected_version: current.state_version, idempotency_key: crypto.randomUUID() }),

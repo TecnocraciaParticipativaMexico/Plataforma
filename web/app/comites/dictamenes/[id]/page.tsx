@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -13,6 +15,7 @@ type Dictamen = {
   proposal_title: string | null;
   folio: string | null;
   report_version: number | null;
+  state_version: number;
   report_type: string | null;
   status: string | null;
   facts: string | null;
@@ -59,7 +62,7 @@ export default function DictamenDetallePage() {
 }, []);
 
   async function cargarDictamen() {
-    const res = await fetch("/api/comites/dictamenes");
+    const res = await authenticatedFetch("/api/comites/dictamenes");
     const data = await res.json();
 
     if (data.ok) {
@@ -78,7 +81,7 @@ setLoading(false);
 }
 
   async function cargarObservaciones(reportId: string) {
-  const res = await fetch(
+  const res = await authenticatedFetch(
     `/api/comites/dictamenes/observaciones?report_id=${reportId}`
   );
   const data = await res.json();
@@ -89,7 +92,7 @@ setLoading(false);
 }
 
 async function cargarVotosTecnicos(reportId: string) {
-  const res = await fetch(`/api/comites/dictamenes/votos?report_id=${reportId}`);
+  const res = await authenticatedFetch(`/api/comites/dictamenes/votos?report_id=${reportId}`);
   const data = await res.json();
 
   if (data.ok) {
@@ -100,19 +103,16 @@ async function cargarVotosTecnicos(reportId: string) {
 
 async function emitirVotoTecnico() {
   if (!dictamen) return;
+  if (conflictDeclared) {
+    setTechnicalVoteResult({ ok: false, error: "Declara el conflicto ante la revisión institucional antes de votar." });
+    return;
+  }
 
   try {
     setSavingTechnicalVote(true);
     setTechnicalVoteResult(null);
 
-    let actorHash = localStorage.getItem("actor_hash");
-
-    if (!actorHash) {
-      actorHash = crypto.randomUUID();
-      localStorage.setItem("actor_hash", actorHash);
-    }
-
-    const res = await fetch("/api/comites/dictamenes/votos", {
+const res = await authenticatedFetch("/api/comites/dictamenes/votos", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -120,10 +120,8 @@ async function emitirVotoTecnico() {
       body: JSON.stringify({
         report_id: dictamen.id,
         proposal_id: dictamen.proposal_id,
-        actor_hash: actorHash,
-        vote: technicalVote,
+        choice: technicalVote === "Aprobada técnicamente" ? "approve" : technicalVote === "No viable" ? "reject" : "revise",
         reasoning: technicalReasoning,
-        technical_weight: conflictDeclared ? 0 : 1,
         conflict_declared: conflictDeclared,
       }),
     });
@@ -148,21 +146,14 @@ async function cerrarDictamen() {
     setClosingReport(true);
     setCloseResult(null);
 
-    let actorHash = localStorage.getItem("actor_hash");
-
-    if (!actorHash) {
-      actorHash = crypto.randomUUID();
-      localStorage.setItem("actor_hash", actorHash);
-    }
-
-    const res = await fetch("/api/comites/dictamenes/cerrar", {
+const res = await authenticatedFetch("/comites/dictamenes/cerrar", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         report_id: dictamen.id,
-        actor_hash: actorHash,
+        expected_version: dictamen.state_version,
       }),
     });
 
@@ -170,7 +161,7 @@ async function cerrarDictamen() {
     setCloseResult(data);
 
     if (data.ok) {
-      setDictamen(data.report);
+      await cargarDictamen();
     }
   } finally {
     setClosingReport(false);
@@ -184,14 +175,7 @@ async function agregarObservacion() {
     setSavingObservation(true);
     setObservationResult(null);
 
-    let actorHash = localStorage.getItem("actor_hash");
-
-    if (!actorHash) {
-      actorHash = crypto.randomUUID();
-      localStorage.setItem("actor_hash", actorHash);
-    }
-
-    const res = await fetch("/api/comites/dictamenes/observaciones", {
+const res = await authenticatedFetch("/api/comites/dictamenes/observaciones", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -199,7 +183,7 @@ async function agregarObservacion() {
       body: JSON.stringify({
         report_id: dictamen.id,
         proposal_id: dictamen.proposal_id,
-        actor_hash: actorHash,
+        expected_version: dictamen.state_version,
         module_id: dictamen.module_id,
         observation_type: observationType,
         content: observationContent,

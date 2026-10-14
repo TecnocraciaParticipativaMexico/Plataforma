@@ -1,12 +1,14 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import { useEffect, useState } from "react";
 
 type Evento = {
-  event_id: string;
+  id: string;
   event_type: string;
   created_at: string;
-  payload_json?: any;
+  payload?: any;
 };
 
 export default function SeguimientoPage() {
@@ -37,7 +39,7 @@ const [cambiandoEstado, setCambiandoEstado] = useState(false);
     try {
       setLoadingEventos(true);
       setError("");
-      const res = await fetch(`/api/process/${id}/events`);
+      const res = await authenticatedFetch(`/api/process/${id}/events`);
       const data = await res.json();
 
       if (!Array.isArray(data)) {
@@ -61,16 +63,13 @@ const [cambiandoEstado, setCambiandoEstado] = useState(false);
       setEnviandoNota(true);
       setError("");
 
-      const actorHash = localStorage.getItem("actor_hash") || "anon";
-
-      const res = await fetch(`/api/process/${processId}/event`, {
+      const res = await authenticatedFetch(`/api/process/${processId}/event`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           event_type: "CitizenNoteAdded",
-          actor_hash: actorHash,
           payload: {
             note: nuevaNota.trim(),
           },
@@ -102,7 +101,7 @@ const [cambiandoEstado, setCambiandoEstado] = useState(false);
 
     const actorHash = localStorage.getItem("actor_hash") || "anon";
 
-    const res = await fetch(`/api/process/${processId}/event`, {
+    const res = await authenticatedFetch(`/api/process/${processId}/event`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -144,7 +143,7 @@ const [cambiandoEstado, setCambiandoEstado] = useState(false);
 
     try {
       setLoadingVerify(true);
-      const res = await fetch(`/api/process/${processId}/verify`);
+      const res = await authenticatedFetch(`/api/process/${processId}/verify`);
       const data = await res.json();
       setVerify(data);
     } catch {
@@ -206,11 +205,11 @@ function limpiarTextoReporte(texto: string) {
     .find((evento) => evento.event_type === "StatusChanged");
 
   const estadoActualLabel =
-    ultimoEstado?.payload_json?.label ||
-    ultimoEstado?.payload_json?.status ||
+    ultimoEstado?.payload?.label ||
+    ultimoEstado?.payload?.status ||
     "Sin estado";
 
-  const estadoActualRaw = ultimoEstado?.payload_json?.status || "";
+  const estadoActualRaw = ultimoEstado?.payload?.status || "";
   
   return (
     <main className="min-h-screen bg-[#F7F7F5] text-[#0A4E84]">
@@ -321,7 +320,7 @@ function limpiarTextoReporte(texto: string) {
             <div className="space-y-4">
               {eventos.map((evento, index) => (
 <div
-  key={evento.event_id}
+  key={evento.id}
   className="rounded-2xl border border-slate-200 p-4"
 >
   <div className="mb-1 text-sm font-bold text-[#0A4E84]">
@@ -336,10 +335,10 @@ function limpiarTextoReporte(texto: string) {
     <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
       <div>
         <span className="font-semibold">Proceso:</span>{" "}
-        {evento.payload_json?.tipo_proceso || "Sin tipo"}
+        {evento.payload?.tipo_proceso || "Sin tipo"}
       </div>
       <div className="mt-2 break-all text-xs text-slate-500">
-        ID: {evento.payload_json?.process_id || evento.event_id}
+        ID: {evento.payload?.process_id || evento.id}
       </div>
     </div>
   )}
@@ -353,22 +352,22 @@ function limpiarTextoReporte(texto: string) {
     </div>
 
     <div className="whitespace-pre-wrap break-words">
-      {limpiarTextoReporte(evento.payload_json?.note || "Sin contenido")}
+      {limpiarTextoReporte(evento.payload?.note || "Sin contenido")}
     </div>
 
-    {extraerCoordsDireccion(evento.payload_json?.note || "") && (
+    {extraerCoordsDireccion(evento.payload?.note || "") && (
       <div className="mt-3 rounded-xl bg-white p-3 text-xs text-slate-600">
         <div className="font-semibold text-slate-700">Coordenadas detectadas</div>
         <div className="mt-1">
-          Lat: {extraerCoordsDireccion(evento.payload_json?.note || "")?.lat}
+          Lat: {extraerCoordsDireccion(evento.payload?.note || "")?.lat}
         </div>
         <div>
-          Lng: {extraerCoordsDireccion(evento.payload_json?.note || "")?.lng}
+          Lng: {extraerCoordsDireccion(evento.payload?.note || "")?.lng}
         </div>
       </div>
     )}
 
-    {extraerCoordsDireccion(evento.payload_json?.note || "") && (
+    {extraerCoordsDireccion(evento.payload?.note || "") && (
       <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200">
         <iframe
           title="Mini mapa del reporte"
@@ -376,25 +375,25 @@ function limpiarTextoReporte(texto: string) {
           height="220"
           loading="lazy"
           src={`https://www.openstreetmap.org/export/embed.html?bbox=${
-            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lng) - 0.003
+            Number(extraerCoordsDireccion(evento.payload?.note || "")?.lng) - 0.003
           }%2C${
-            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lat) - 0.003
+            Number(extraerCoordsDireccion(evento.payload?.note || "")?.lat) - 0.003
           }%2C${
-            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lng) + 0.003
+            Number(extraerCoordsDireccion(evento.payload?.note || "")?.lng) + 0.003
           }%2C${
-            Number(extraerCoordsDireccion(evento.payload_json?.note || "")?.lat) + 0.003
+            Number(extraerCoordsDireccion(evento.payload?.note || "")?.lat) + 0.003
           }&layer=mapnik&marker=${
-            extraerCoordsDireccion(evento.payload_json?.note || "")?.lat
+            extraerCoordsDireccion(evento.payload?.note || "")?.lat
           }%2C${
-            extraerCoordsDireccion(evento.payload_json?.note || "")?.lng
+            extraerCoordsDireccion(evento.payload?.note || "")?.lng
           }`}
         />
       </div>
     )}
 
-    {extraerGoogleMapsLink(evento.payload_json?.note || "") && (
+    {extraerGoogleMapsLink(evento.payload?.note || "") && (
       <a
-        href={extraerGoogleMapsLink(evento.payload_json?.note || "") || "#"}
+        href={extraerGoogleMapsLink(evento.payload?.note || "") || "#"}
         target="_blank"
         rel="noopener noreferrer"
         className="mt-3 inline-block rounded-xl bg-[#0A4E84] px-4 py-2 font-semibold text-white"
@@ -408,27 +407,27 @@ function limpiarTextoReporte(texto: string) {
   {evento.event_type === "EvidenceSubmitted" && (
   <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
 <div className="font-semibold mb-1">
-  {evento.payload_json?.mime_type?.startsWith("audio/")
+  {evento.payload?.mime_type?.startsWith("audio/")
     ? "🎙️ Audio subido"
-    : evento.payload_json?.mime_type === "application/pdf"
+    : evento.payload?.mime_type === "application/pdf"
     ? "📄 PDF subido"
     : "📸 Evidencia subida"}
 </div>
 
     <div className="mt-2">
-      <div>Archivo: {evento.payload_json?.file_name}</div>
-      <div>Tipo: {evento.payload_json?.mime_type}</div>
+      <div>Archivo: {evento.payload?.file_name}</div>
+      <div>Tipo: {evento.payload?.mime_type}</div>
     </div>
 
-{evento.payload_json?.storage_path && (
+{evento.payload?.storage_path && (
   <div className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
     La evidencia privada no está disponible mediante una URL pública.
   </div>
 )}
 
-    {evento.payload_json?.evidence_id && (
+    {evento.payload?.evidence_id && (
       <div className="mt-2 text-xs text-slate-500 break-all">
-        Evidencia ID: {evento.payload_json.evidence_id}
+        Evidencia ID: {evento.payload.evidence_id}
       </div>
     )}
   </div>
@@ -438,14 +437,14 @@ function limpiarTextoReporte(texto: string) {
   <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
     <div className="font-semibold mb-1">Estado del caso</div>
     <div className="text-lg font-bold text-green-600">
-      {evento.payload_json?.label || evento.payload_json?.status || "Estado actualizado"}
+      {evento.payload?.label || evento.payload?.status || "Estado actualizado"}
     </div>
   </div>
 )}
 
-{!["ProcessCreated", "CitizenNoteAdded", "EvidenceSubmitted", "StatusChanged"].includes(evento.event_type) && evento.payload_json && (
+{!["ProcessCreated", "CitizenNoteAdded", "EvidenceSubmitted", "StatusChanged"].includes(evento.event_type) && evento.payload && (
   <pre className="overflow-x-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-xs text-slate-700">
-    {JSON.stringify(evento.payload_json, null, 2)}
+    {JSON.stringify(evento.payload, null, 2)}
   </pre>
 )}
 </div>

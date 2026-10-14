@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useState } from "react";
 import { PlatformBottomNav } from "@/components/branding/PlatformBottomNav";
@@ -23,7 +25,7 @@ export default function Home() {
       setLoadingTimeline(true);
       setTimelineOut(null);
 
-      const res = await fetch(`/api/process/${processId}/events`);
+      const res = await authenticatedFetch(`/api/process/${processId}/events`);
       const data = await res.json();
       setTimelineOut(data);
     } catch (err: any) {
@@ -39,7 +41,7 @@ export default function Home() {
       setLoadingVerify(true);
       setVerifyOut(null);
 
-      const res = await fetch(`/api/process/${processId}/verify`);
+      const res = await authenticatedFetch(`/api/process/${processId}/verify`);
       const data = await res.json();
       setVerifyOut(data);
     } catch (err: any) {
