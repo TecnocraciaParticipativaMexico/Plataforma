@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -32,11 +34,11 @@ export default function MisVotosPage() {
       localStorage.setItem("actor_hash", actorHash);
     }
 
-    const res = await fetch(`/api/comites/votos?actor_hash=${actorHash}`);
+    const res = await authenticatedFetch("/api/comites/votos");
     const data = await res.json();
 
     if (data.ok) {
-      setVotos(data.votes || []);
+      setVotos((data.votes || []).map((item: { choice: string; computed_weight: number }) => ({ ...item, vote: item.choice, vote_weight: item.computed_weight })));
     }
 
     setLoading(false);
@@ -81,18 +83,18 @@ export default function MisVotosPage() {
                     Voto: <strong>{v.vote}</strong>
                   </div>
                   <div>
-                    Comprensión: <strong>{v.comprehension_score}/10</strong>
+                    Comprensión: <strong>Validada por examen del servidor</strong>
                   </div>
                   <div>
                     Peso ponderado: <strong>{Math.round(Number(v.vote_weight) * 100)}%</strong>
                   </div>
                   <div>
-                    Tipo: <strong>{v.voter_type}</strong>
+                    Tipo: <strong>Voto ciudadano autenticado</strong>
                   </div>
                 </div>
 
                 <Link
-                  href={`/propuestas/${v.proposal_id}`}
+                  href={`/comites/propuestas/${v.proposal_id}`}
                   className="mt-4 block rounded-xl border border-[#0A4E84] px-4 py-3 text-center font-bold text-[#0A4E84]"
                 >
                   Ver propuesta pública

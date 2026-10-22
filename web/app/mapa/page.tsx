@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -191,7 +193,7 @@ function aplicarFiltros(
   async function cargarReportes() {
     try {
       setLoading(true);
-      const res = await fetch("/api/mapa/reportes");
+      const res = await authenticatedFetch("/api/mapa/reportes");
       const data = await res.json();
 
       if (data?.ok) {

@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 
@@ -299,7 +301,7 @@ async function enviarReporte() {
 
     const direccionCompleta = `${calleNumero}, ${colonia}, ${municipio}, ${estadoLugar}, ${codigoPostal}`;
 
-    const validacion = await fetch("/api/validar-direccion", {
+    const validacion = await authenticatedFetch("/api/validar-direccion", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -368,7 +370,7 @@ async function enviarReporte() {
       .join(", ");
 
 // 🧠 Analizar denuncia con IA antes de enviar
-const analisis = await fetch("/api/analizar", {
+const analisis = await authenticatedFetch("/api/analizar", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -398,28 +400,32 @@ const tipoEntrada = archivo
   ? "texto"
   : "sin contenido";
 
-    const res = await fetch("/api/process/create", {
+const processNote = `Tipo de entrada: ${tipoEntrada}\n\n${descripcion || "[Sin descripción escrita]"}\n\nIdioma de nota de voz: ${archivo ? idiomaAudio : "No aplica"}\n\n(Ubicación: ${ubicacionFinal || "No especificada"})`;
+
+    const res = await authenticatedFetch("/api/process/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         tipo_proceso: tipoProceso,
-        actor_hash: actorHash,
-note: `Tipo de entrada: ${tipoEntrada}
-
-${descripcion || "[Sin descripción escrita]"}
-
-Idioma de nota de voz: ${archivo ? idiomaAudio : "No aplica"}
-
-(Ubicación: ${ubicacionFinal || "No especificada"})`,
       }),
     });
 
 const data = await res.json();
-const processId = data?.result?.out_process_id;
+const processId = data?.process_id;
 
 if (data?.ok && processId) {
+  const noteResponse = await authenticatedFetch(`/api/process/${processId}/event`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ note: processNote, idempotency_key: crypto.randomUUID() }),
+  });
+  if (!noteResponse.ok) {
+    const noteError = await noteResponse.json();
+    setResultado({ ok: false, process_id: processId, error: `El expediente fue creado, pero la nota no se guardó: ${noteError.error || "servicio no disponible"}. Conserva el texto y continúa en seguimiento.` });
+    return;
+  }
   const denunciasGuardadas = JSON.parse(
     localStorage.getItem("mis_denuncias") || "[]"
   );
@@ -436,13 +442,13 @@ if (data?.ok && processId) {
     JSON.stringify([nuevaDenuncia, ...denunciasGuardadas])
   );
 
-  await fetch("/api/citizen/reports", {
+  await authenticatedFetch("/api/citizen/reports", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      actor_hash: actorHash,
+
       process_id: processId,
       title: tipoProceso,
       category: categoria,
@@ -453,9 +459,9 @@ if (data?.ok && processId) {
     if (data?.ok && processId && archivo) {
       const formData = new FormData();
       formData.append("file", archivo);
-      formData.append("actor_hash", actorHash);
 
-      const uploadRes = await fetch(`/api/process/${processId}/evidence/upload`, {
+
+      const uploadRes = await authenticatedFetch(`/api/process/${processId}/evidence/upload`, {
         method: "POST",
         body: formData,
       });

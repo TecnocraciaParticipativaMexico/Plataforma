@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -199,16 +201,9 @@ function SolicitarComiteContent() {
         return;
       }
 
-      let actorHash = localStorage.getItem("actor_hash");
+const modulo = modulos.find((m) => m.id === moduleId);
 
-      if (!actorHash) {
-        actorHash = crypto.randomUUID();
-        localStorage.setItem("actor_hash", actorHash);
-      }
-
-      const modulo = modulos.find((m) => m.id === moduleId);
-
-      const res = await fetch("/api/comites/solicitudes", {
+      const res = await authenticatedFetch("/api/comites/solicitudes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -216,7 +211,6 @@ function SolicitarComiteContent() {
         },
         body: JSON.stringify({
           attempt_id: attemptId,
-          actor_hash: actorHash,
           module_id: moduleId,
           module_name: modulo?.nombre,
           level,

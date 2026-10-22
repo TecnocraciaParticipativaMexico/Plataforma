@@ -1,177 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-function sha256(input: any) {
-  return crypto.createHash("sha256").update(JSON.stringify(input)).digest("hex");
-}
-
-function calcularResultado(votes: any[]) {
-  const validVotes = votes.filter((v) => !v.conflict_declared);
-
-  const aprobada = validVotes.filter((v) => v.vote === "Aprobada técnicamente").length;
-  const revision = validVotes.filter((v) => v.vote === "Requiere revisión").length;
-  const inviable = validVotes.filter((v) => v.vote === "No viable").length;
-
-  const max = Math.max(aprobada, revision, inviable);
-
-  if (max === 0) return "Sin votos técnicos válidos";
-  if (aprobada === max) return "Aprobada técnicamente";
-  if (revision === max) return "Requiere revisión";
-  return "No viable";
-}
-
-async function registrarEvento(report_id: string, proposal_id: string, actor_hash: string, payload: any) {
-  const { data: lastEvent } = await supabase
-    .from("committee_report_events")
-    .select("event_hash")
-    .eq("report_id", report_id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const previous_hash = lastEvent?.event_hash || null;
-
-  const event_hash = sha256({
-    report_id,
-    proposal_id,
-    event_type: "DICTAMEN_CERRADO",
-    actor_hash,
-    payload,
-    previous_hash,
-    created_at: new Date().toISOString(),
-  });
-
-  await supabase.from("committee_report_events").insert({
-    report_id,
-    proposal_id,
-    event_type: "DICTAMEN_CERRADO",
-    actor_hash,
-    event_payload: payload,
-    previous_hash,
-    event_hash,
-  });
-
-  return event_hash;
-}
+import { requireUserContext, securityErrorResponse } from "@/lib/security/auth";
+import { auditedDatabaseErrorResponse } from "@/lib/security/securityAudit";
+import { rateLimitResponse, rejectClientAuthority, requestId, requireObject, requireUuid } from "@/lib/security/routeSecurity";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { report_id, actor_hash } = body;
-
-    if (!report_id) {
-      return NextResponse.json(
-        { ok: false, error: "Falta report_id" },
-        { status: 400 }
-      );
+    const { user, supabase } = await requireUserContext(req);
+    const body = requireObject(await req.json());
+    rejectClientAuthority(body);
+    const reportId = requireUuid(body.report_id, "report ID");
+    const correlationId = requestId(req);
+    const limited = await rateLimitResponse(supabase, "report.close", reportId, correlationId);
+    if (limited) return limited;
+    if (!Number.isSafeInteger(body.expected_version)) {
+      return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
     }
-
-    const { data: report, error: reportError } = await supabase
-      .from("committee_reports")
-      .select("*")
-      .eq("id", report_id)
-      .single();
-
-    if (reportError || !report) {
-      return NextResponse.json(
-        { ok: false, error: reportError?.message || "Dictamen no encontrado" },
-        { status: 404 }
-      );
-    }
-
-    if (report.locked) {
-      return NextResponse.json({
-        ok: true,
-        report,
-        already_locked: true,
-      });
-    }
-
-    const { data: votes, error: votesError } = await supabase
-      .from("committee_technical_votes")
-      .select("*")
-      .eq("report_id", report_id);
-
-    if (votesError) {
-      return NextResponse.json(
-        { ok: false, error: votesError.message },
-        { status: 500 }
-      );
-    }
-
-    const validVotes = (votes || []).filter((v) => !v.conflict_declared);
-
-    if (validVotes.length < 1) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "No hay votos técnicos válidos para cerrar el dictamen.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const resultado = calcularResultado(votes || []);
-
-    const dissentNotes = (votes || [])
-      .filter((v) => v.vote !== resultado)
-      .map((v) => `- ${v.vote}: ${v.reasoning}`)
-      .join("\n");
-
-    const finalConclusion = `
-Resultado colegiado: ${resultado}
-
-Total de votos técnicos válidos: ${validVotes.length}
-
-Este cierre se basa en los votos técnicos registrados, excluyendo votos con conflicto de interés declarado.
-`.trim();
-
-    const eventHash = await registrarEvento(
-      report.id,
-      report.proposal_id,
-      actor_hash || "sistema",
-      {
-        resultado,
-        valid_votes: validVotes.length,
-      }
-    );
-
-    const { data: updated, error: updateError } = await supabase
-      .from("committee_reports")
-      .update({
-        status: resultado,
-        consensus_result: resultado,
-        dissent_notes: dissentNotes || "Sin disensos registrados.",
-        final_conclusion: finalConclusion,
-        locked: true,
-        chain_head_hash: eventHash,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", report_id)
-      .select()
-      .single();
-
-    if (updateError) {
-      return NextResponse.json(
-        { ok: false, error: updateError.message },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      ok: true,
-      report: updated,
+    const { data, error } = await supabase.rpc("close_committee_report", {
+      p_report_id: reportId,
+      p_expected_version: body.expected_version,
+      p_request_id: correlationId,
     });
-  } catch (err: any) {
-    return NextResponse.json(
-      { ok: false, error: err?.message || "Error cerrando dictamen" },
-      { status: 500 }
-    );
+    if (error) return auditedDatabaseErrorResponse(error, { actorUserId: user.id, action: "report.close", resourceType: "committee_report", resourceId: reportId, requestId: correlationId });
+    return NextResponse.json({ ok: true, result: data });
+  } catch (error) {
+    return securityErrorResponse(error);
   }
 }

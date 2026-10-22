@@ -1,5 +1,7 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import AuthGuard from "../../components/AuthGuard";
@@ -35,7 +37,7 @@ export default function MisSolicitudesPage() {
       return;
     }
 
-    const res = await fetch("/api/comites/solicitudes");
+    const res = await authenticatedFetch("/api/comites/solicitudes");
     const json = await res.json();
 
     if (json.ok) {

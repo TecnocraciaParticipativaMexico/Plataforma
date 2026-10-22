@@ -1,10 +1,12 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import AuthGuard from "../../../components/AuthGuard";
-import { supabaseBrowser } from "../../../lib/supabaseBrowser";
+
 
 type Proposal = {
   id: string;
@@ -42,7 +44,7 @@ const preguntasBase = [
 export default function ProposalDetailPage() {
   const params = useParams();
   const proposalId = params?.id as string;
-  const supabase = supabaseBrowser();
+
 
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,7 @@ export default function ProposalDetailPage() {
   const [guardandoVoto, setGuardandoVoto] = useState(false);
   const [resumenVotos, setResumenVotos] = useState<any>(null);
   const [yaVoto, setYaVoto] = useState(false);
-  const [startedAt] = useState(Date.now());
+
   const [dictamen, setDictamen] = useState<any>(null);
   const [creandoDictamen, setCreandoDictamen] = useState(false);
 
@@ -66,7 +68,7 @@ export default function ProposalDetailPage() {
 
   async function cargarPropuesta() {
     try {
-      const res = await fetch(`/api/comites/propuestas?id=${proposalId}`);
+      const res = await authenticatedFetch(`/api/comites/propuestas?id=${proposalId}`);
       const data = await res.json();
 
       if (data.ok) {
@@ -78,7 +80,7 @@ export default function ProposalDetailPage() {
   }
 
   async function cargarVotos() {
-    const res = await fetch(`/api/comites/votos?proposal_id=${proposalId}`);
+    const res = await authenticatedFetch(`/api/comites/votos?proposal_id=${proposalId}`);
     const data = await res.json();
 
     if (data.ok) {
@@ -100,11 +102,11 @@ export default function ProposalDetailPage() {
   }
 
   async function cargarDictamen() {
-  const res = await fetch(`/api/comites/dictamenes?proposal_id=${proposalId}`);
+  const res = await authenticatedFetch(`/api/comites/dictamenes?proposal_id=${proposalId}`);
   const data = await res.json();
 
   if (data.ok) {
-    setDictamen(data.report);
+    setDictamen(data.reports?.[0] ?? null);
   }
 }
 
@@ -112,28 +114,21 @@ async function crearDictamenPreliminar() {
   try {
     setCreandoDictamen(true);
 
-    let actorHash = localStorage.getItem("actor_hash");
-
-    if (!actorHash) {
-      actorHash = crypto.randomUUID();
-      localStorage.setItem("actor_hash", actorHash);
-    }
-
-    const res = await fetch("/api/comites/dictamenes", {
+const res = await authenticatedFetch("/api/comites/dictamenes", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         proposal_id: proposalId,
-        actor_hash: actorHash,
+
       }),
     });
 
     const data = await res.json();
 
     if (data.ok) {
-      setDictamen(data.report);
+      await cargarDictamen();
     } else {
       alert(data.error || "Error creando dictamen");
     }
@@ -143,17 +138,17 @@ async function crearDictamenPreliminar() {
 }
 
   async function verificarSiYaVoto() {
-  let actorHash = localStorage.getItem("actor_hash");
 
-  if (!actorHash) return;
 
-  const res = await fetch(
-    `/api/comites/votos?proposal_id=${proposalId}&actor_hash=${actorHash}`
+
+
+  const res = await authenticatedFetch(
+    `/api/comites/votos?proposal_id=${proposalId}`
   );
 
   const data = await res.json();
 
-  if (data.ok && data.yaVoto) {
+  if (data.ok && data.votes?.length > 0) {
     setYaVoto(true);
   }
 }
@@ -163,20 +158,12 @@ async function guardarVoto() {
     setGuardandoVoto(true);
     setResultadoVoto(null);
 
-    const { data } = await supabase.auth.getSession();
-    const userId = data.session?.user?.id;
-
-    let actorHash = localStorage.getItem("actor_hash");
-
-    if (!actorHash) {
-      actorHash = crypto.randomUUID();
-      localStorage.setItem("actor_hash", actorHash);
-    }
-
-    if (score === null) {
+const savedAttempt = sessionStorage.getItem("ultimo_intento_comite_aprobado");
+    const qualification = savedAttempt ? JSON.parse(savedAttempt) : null;
+    if (!qualification?.attempt_id || qualification.module_id !== proposal?.module_id) {
       setResultadoVoto({
         ok: false,
-        error: "Primero debes evaluar tu comprensión.",
+        error: "Completa el examen del módulo antes de votar. La evaluación local no otorga autorización.",
       });
       return;
     }
@@ -189,23 +176,16 @@ async function guardarVoto() {
       return;
     }
 
-    const res = await fetch("/api/comites/votos", {
+    const res = await authenticatedFetch("/api/comites/votos", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         proposal_id: proposalId,
-        user_id: userId || null,
-        actor_hash: actorHash,
-        voter_type: userId ? "miembro_o_ciudadano_autenticado" : "ciudadano",
-        vote,
-        comprehension_score: score,
-        proposal_title: proposal?.title,
-        module_id: proposal?.module_id,
-        module_name: proposal?.module_name,
-        respuestas: answers,
-        time_spent_seconds: Math.floor((Date.now() - startedAt) / 1000),
+        choice: ({ "A favor": "for", "En contra": "against", "Requiere cambios": "changes", "Abstención": "abstain" } as Record<string, string>)[vote],
+        qualification_attempt_id: qualification.attempt_id,
+        idempotency_key: crypto.randomUUID(),
       }),
     });
 
@@ -213,18 +193,6 @@ async function guardarVoto() {
     setResultadoVoto(responseData);
 
     if (responseData.ok) {
-      await fetch("/api/reputacion", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          actor_hash: actorHash,
-          respuestas: answers,
-          comprehension_score: score,
-        }),
-      });
-
       window.location.href = "/comites/mis-votos";
     }
   } catch (err: any) {

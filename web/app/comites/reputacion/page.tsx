@@ -1,19 +1,11 @@
 "use client";
 
+import { authenticatedFetch } from "@/lib/security/authenticatedFetch";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type Reputacion = {
-  id: string;
-  actor_hash: string;
-  technical_score: number;
-  citizen_score: number;
-  spam_flags: number;
-  ethical_flags: number;
-  inactivity_flags: number;
-  suspension_until: string | null;
-  created_at: string;
-};
+type Reputacion = { total: number; events: { points: number; rule_version: string; created_at: string }[] };
 
 export default function ReputacionPage() {
   const [reputacion, setReputacion] = useState<Reputacion | null>(null);
@@ -24,26 +16,15 @@ export default function ReputacionPage() {
   }, []);
 
   async function cargarReputacion() {
-    let actorHash = localStorage.getItem("actor_hash");
-
-    if (!actorHash) {
-      actorHash = crypto.randomUUID();
-      localStorage.setItem("actor_hash", actorHash);
-    }
-
-    const res = await fetch(`/api/reputacion?actor_hash=${actorHash}`);
+    const res = await authenticatedFetch("/api/reputacion");
     const data = await res.json();
 
     if (data.ok) {
-      setReputacion(data.reputacion);
+      setReputacion({ total: data.total, events: data.events });
     }
 
     setLoading(false);
   }
-
-  const suspendido =
-    reputacion?.suspension_until &&
-    new Date(reputacion.suspension_until) > new Date();
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] px-4 py-6 text-[#0A4E84]">
@@ -55,7 +36,7 @@ export default function ReputacionPage() {
         <h1 className="text-3xl font-bold">Mi reputación cívica</h1>
 
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Este panel muestra participación técnica, calidad de respuestas y alertas anti-abuso.
+          Este panel muestra eventos de reputación autorizados por el servidor.
         </p>
 
         {loading ? (
@@ -70,15 +51,15 @@ export default function ReputacionPage() {
           <section className="mt-6 space-y-4">
             <div className="rounded-[28px] bg-white p-6 shadow-sm">
               <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-                Puntaje técnico
+                Puntaje registrado
               </div>
 
               <div className="mt-3 text-5xl font-extrabold">
-                {Number(reputacion.technical_score || 0).toFixed(0)}
+                {Number(reputacion.total).toFixed(0)}
               </div>
 
               <div className="mt-2 text-sm text-slate-600">
-                Acumulado por comprensión demostrada en votaciones.
+                Acumulado de eventos verificados.
               </div>
             </div>
 
@@ -88,45 +69,15 @@ export default function ReputacionPage() {
               </div>
 
               <div className="mt-3 text-5xl font-extrabold">
-                {Number(reputacion.citizen_score || 0).toFixed(0)}
+                {reputacion.events.length}
               </div>
 
               <div className="mt-2 text-sm text-slate-600">
-                Refleja participación informada acumulada.
+                Número de eventos registrados.
               </div>
             </div>
 
-            <div
-              className={`rounded-[28px] p-6 shadow-sm ${
-                suspendido ? "bg-red-50 text-red-900" : "bg-green-50 text-green-900"
-              }`}
-            >
-              <div className="text-sm font-semibold uppercase tracking-[0.2em]">
-                Estado
-              </div>
-
-              <div className="mt-3 text-2xl font-bold">
-                {suspendido ? "Suspendido temporalmente" : "Activo"}
-              </div>
-
-              {suspendido && (
-                <div className="mt-2 text-sm">
-                  Hasta: {new Date(reputacion.suspension_until!).toLocaleString()}
-                </div>
-              )}
-            </div>
-
-            <div className="rounded-[28px] bg-white p-6 shadow-sm">
-              <div className="text-sm font-semibold uppercase tracking-[0.2em] text-[#C2187A]">
-                Alertas
-              </div>
-
-              <div className="mt-4 space-y-2 text-sm text-slate-700">
-                <div>Spam flags: {reputacion.spam_flags || 0}</div>
-                <div>Alertas éticas: {reputacion.ethical_flags || 0}</div>
-                <div>Inactividad: {reputacion.inactivity_flags || 0}</div>
-              </div>
-            </div>
+            <div className="rounded-[28px] bg-white p-6 shadow-sm"><p>El estado y las alertas institucionales requieren una fuente autorizada; no se deducen del navegador.</p></div>
           </section>
         )}
       </div>
