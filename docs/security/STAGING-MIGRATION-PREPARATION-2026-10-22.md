@@ -184,4 +184,3 @@ human authorization naming all of the following:
 That authorization must not include `db reset --linked`, migration-history
 repair, seed application, Production access, merge of PR #112/#113, deployment,
 or any paid Supabase resource unless separately and explicitly approved.
-
